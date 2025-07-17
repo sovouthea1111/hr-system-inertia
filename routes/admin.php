@@ -16,10 +16,6 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         return Inertia::render('Admin/Employees/Index');
     })->name('employees.index');
     
-    Route::get('/employees/create', function () {
-        return Inertia::render('Admin/Employees/Create');
-    })->name('employees.create');
-    
     Route::get('/employees/{id}', function ($id) {
         return Inertia::render('Admin/Employees/Show', ['id' => $id]);
     })->name('employees.show');
