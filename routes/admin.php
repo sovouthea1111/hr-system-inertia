@@ -1,28 +1,22 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\UserController;
 use Inertia\Inertia;
-
-// Admin routes with authentication and admin middleware
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Admin Dashboard
     Route::get('/', function () {
         return Inertia::render('Admin/Dashboard');
     })->name('dashboard');
     
-    // Employee Management
-    Route::get('/employees', function () {
-        return Inertia::render('Admin/Employees/Index');
-    })->name('employees.index');
+    // User Management - Resource Routes
+    Route::resource('users', UserController::class);
+    Route::delete('users-bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
     
-    Route::get('/employees/{id}', function ($id) {
-        return Inertia::render('Admin/Employees/Show', ['id' => $id]);
-    })->name('employees.show');
-    
-    Route::get('/employees/{id}/edit', function ($id) {
-        return Inertia::render('Admin/Employees/Edit', ['id' => $id]);
-    })->name('employees.edit');
+    // Employee Management - Resource Routes
+    Route::resource('employees', EmployeeController::class);
+    Route::delete('employees-bulk-delete', [EmployeeController::class, 'bulkDelete'])->name('employees.bulk-delete');
     
     // Department Management
     Route::get('/departments', function () {
