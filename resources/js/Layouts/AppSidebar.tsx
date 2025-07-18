@@ -8,7 +8,9 @@ import {
     LogOutIcon,
     MoonIcon,
     UsersIcon,
+    User,
 } from "lucide-react";
+import { router } from "@inertiajs/react";
 
 import {
     Sidebar,
@@ -34,12 +36,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/Components/UI/AlertDialog";
+import { PageProps } from "@/types";
 
 const defaultUserData = {
     name: "SOVOUTHEA",
     role: "EMPLOYEE",
     avatar: "/placeholder-user.jpg",
 };
+
 interface UserData {
     name: string;
     role: string;
@@ -50,9 +54,16 @@ interface UserData {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [isDarkMode, setIsDarkMode] = React.useState(false);
-    const [userData, setUserData] = React.useState<UserData>(defaultUserData);
-    const [isLoading, setIsLoading] = React.useState(true);
     const { url } = usePage();
+    const { auth } = usePage<PageProps>().props;
+    const user = auth?.user;
+    const userData: UserData = {
+        name: user?.name || defaultUserData.name,
+        role: user?.user_role || defaultUserData.role,
+        avatar: defaultUserData.avatar,
+        email: user?.email,
+        id: user?.id?.toString(),
+    };
 
     const isHR =
         userData.role?.toUpperCase().includes("HR") ||
@@ -78,55 +89,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 icon: CalendarCheckIcon,
                 isActive: url.startsWith("/admin/leave-application"),
             },
+            {
+                title: "USERS",
+                url: "/admin/users",
+                icon: User,
+                isActive: url.startsWith("/admin/users"),
+            },
         ];
 
         return baseNavigation;
     };
 
-    React.useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch("/api/user/profile", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (response.ok) {
-                    const apiUserData = await response.json();
-                    setUserData({
-                        name:
-                            apiUserData.name ||
-                            apiUserData.fullName ||
-                            defaultUserData.name,
-                        role:
-                            apiUserData.role ||
-                            apiUserData.position ||
-                            defaultUserData.role,
-                        avatar:
-                            apiUserData.avatar ||
-                            apiUserData.profileImage ||
-                            defaultUserData.avatar,
-                        email: apiUserData.email,
-                        id: apiUserData.id,
-                    });
-                } else {
-                    setUserData(defaultUserData);
-                }
-            } catch (error) {
-                setUserData(defaultUserData);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, []);
-
     const handleLogout = () => {
-        setUserData(defaultUserData);
+        router.post(route("logout"));
     };
 
     return (
@@ -138,26 +113,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarHeader className="p-3">
                 {/* User Profile Section */}
                 <div className="flex items-center gap-2 mb-3">
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8 items-center">
                         <AvatarImage
                             src={userData.avatar}
                             alt={userData.name}
                         />
                         <AvatarFallback className="bg-primary text-white font-semibold text-xs">
-                            {isLoading ? "..." : userData.name.charAt(0)}
+                            {userData.name.charAt(0)}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                         <div className="text-xs text-gray-500 font-medium truncate">
-                            {isLoading ? "Loading..." : userData.role}
-                            {isHR && !isLoading && (
+                            {userData.role}
+                            {isHR && (
                                 <span className="ml-1 px-1 py-0.5 bg-green-100 text-green-600 rounded text-xs font-semibold">
                                     HR
                                 </span>
                             )}
                         </div>
                         <div className="text-sm font-semibold text-gray-900 truncate">
-                            {isLoading ? "Loading..." : userData.name}
+                            {userData.name}
                         </div>
                         {userData.email && (
                             <div className="text-xs text-gray-400 truncate">
@@ -231,6 +206,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                 Cancel
                                             </AlertDialogCancel>
                                             <AlertDialogAction
+                                                className="bg-primary text-white hover:bg-danger"
                                                 onClick={handleLogout}
                                             >
                                                 Logout
@@ -254,7 +230,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <Switch
                         checked={isDarkMode}
                         onCheckedChange={setIsDarkMode}
-                        className="data-[state=checked]:bg-blue-500 flex-shrink-0 scale-75"
+                        className="data-[state=checked]:bg-primary flex-shrink-0 scale-75"
                     />
                 </div>
             </SidebarFooter>
