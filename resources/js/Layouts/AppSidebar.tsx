@@ -85,9 +85,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             },
             {
                 title: "LEAVE APPLICATION",
-                url: "/admin/leave-application",
+                url: "/admin/leaves",
                 icon: CalendarCheckIcon,
-                isActive: url.startsWith("/admin/leave-application"),
+                isActive: url.startsWith("/admin/leaves"),
             },
             {
                 title: "USERS",

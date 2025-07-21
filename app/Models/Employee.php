@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -58,5 +59,11 @@ class Employee extends Model
             'active' => 'success',
             'inactive' => 'danger',
         ][$this->status] ?? 'secondary';
+    }
+
+    // Add this relationship method
+    public function leaves(): HasMany
+    {
+        return $this->hasMany(Leave::class);
     }
 }
