@@ -3,7 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LeaveController;
 use Inertia\Inertia;
+
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
     Route::get('/', function () {
@@ -17,6 +19,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Employee Management - Resource Routes
     Route::resource('employees', EmployeeController::class);
     Route::delete('employees-bulk-delete', [EmployeeController::class, 'bulkDelete'])->name('employees.bulk-delete');
+    
+    // Leave Management - Resource Routes
+    Route::resource('leaves', LeaveController::class);
+    Route::put('leaves-status/{leave}', [LeaveController::class, 'updateStatus'])->name('leaves-status.update');
     
     // Department Management
     Route::get('/departments', function () {
