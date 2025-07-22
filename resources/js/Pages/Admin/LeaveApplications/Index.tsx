@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
 import { GroupFilter } from "@/Components/UI/GroupFilter";
 import { Button } from "@/Components/UI/Button";
@@ -10,6 +10,7 @@ import { GroupButton } from "@/Components/UI/GroupButton";
 import { DeleteConfirmationModal } from "@/Components/UI/PopupDelete";
 import { RequestLeaveModal } from "@/Pages/Admin/LeaveApplications/Create";
 import { EditLeaveModal } from "@/Pages/Admin/LeaveApplications/Edit";
+import { ViewLeaveModal } from "@/Pages/Admin/LeaveApplications/View";
 import {
     Table,
     TableBody,
@@ -40,7 +41,7 @@ import toast from "react-hot-toast";
 
 interface LeaveApplication {
     id: number;
-    employee_id?: number; // Make this optional
+    employee_id?: number;
     employee_name: string;
     employee_email: string;
     leave_type: string;
@@ -122,7 +123,20 @@ export default function LeaveApplicationsPage() {
     );
     const [endDateFilter, setEndDateFilter] = useState(filters.end_date || "");
 
-    // Apply filters with server-side filtering
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            applyFilters();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [
+        employeeNameFilter,
+        leaveTypeFilter,
+        statusFilter,
+        startDateFilter,
+        endDateFilter,
+    ]);
+
     const applyFilters = () => {
         const filterData: Record<string, string> = {};
         if (employeeNameFilter) filterData.employee_name = employeeNameFilter;
@@ -196,7 +210,6 @@ export default function LeaveApplicationsPage() {
 
     // Handle leave creation success
     const handleLeaveCreated = () => {
-        // Refresh the page to show the new leave application
         router.get(
             route("admin.leaves.index"),
             {},
@@ -209,7 +222,6 @@ export default function LeaveApplicationsPage() {
 
     // Handle leave update success
     const handleLeaveUpdated = () => {
-        // Refresh the page to show the updated leave application
         router.get(
             route("admin.leaves.index"),
             {},
@@ -227,9 +239,12 @@ export default function LeaveApplicationsPage() {
     };
 
     // View handlers
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+    const [applicationToView, setApplicationToView] =
+        useState<LeaveApplication | null>(null);
     const handleView = (application: LeaveApplication) => {
-        setApplicationToEdit(application);
-        setIsEditDialogOpen(true);
+        setApplicationToView(application);
+        setIsViewDialogOpen(true);
     };
 
     // Delete handlers
@@ -270,11 +285,11 @@ export default function LeaveApplicationsPage() {
             { status: newStatus },
             {
                 onSuccess: (response) => {
+                    
                     toast.success("Leave status updated successfully!");
                     router.reload({ only: ["leaveApplications"] });
                 },
                 onError: (errors) => {
-                    console.error("Status update failed:", errors);
                     toast.error("Failed to update leave status.");
                 },
             }
@@ -397,6 +412,7 @@ export default function LeaveApplicationsPage() {
                         fields={filterOptions}
                         onFieldChange={handleFieldChange}
                         onClear={clearFilters}
+                        title="Filter Employees"
                     />
 
                     {/* Leave Applications Table */}
@@ -773,6 +789,7 @@ export default function LeaveApplicationsPage() {
                     onClose={() => setIsAddDialogOpen(false)}
                     onLeaveCreated={handleLeaveCreated}
                     leaveTypes={leaveTypes}
+                    auth={auth}
                 />
 
                 {/* Edit Leave Modal */}
@@ -787,6 +804,17 @@ export default function LeaveApplicationsPage() {
                     employees={employees}
                     leaveTypes={leaveTypes}
                     statuses={statuses}
+                    auth={auth}
+                />
+
+                {/* View Leave Modal */}
+                <ViewLeaveModal
+                    isOpen={isViewDialogOpen}
+                    onClose={() => {
+                        setIsViewDialogOpen(false);
+                        setApplicationToView(null);
+                    }}
+                    leave={applicationToView}
                 />
 
                 {/* Delete Confirmation Modal */}

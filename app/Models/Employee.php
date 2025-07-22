@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'full_name',
@@ -26,10 +25,11 @@ class Employee extends Model
         'status' => 'string',
     ];
 
-    protected $dates = [
-        'deleted_at',
-        'joint_date',
-    ];
+    // Remove the $dates property since we're removing soft deletes
+    // protected $dates = [
+    //     'deleted_at',
+    //     'joint_date',
+    // ];
 
     // Scopes
     public function scopeActive($query)

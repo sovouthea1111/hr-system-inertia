@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('email')->unique()->index(); 
             $table->dateTime('joint_date')->index(); 
             $table->timestamps();
-            $table->softDeletes();
             $table->index(['department', 'status']); 
             $table->index(['status', 'joint_date']); 
         });
