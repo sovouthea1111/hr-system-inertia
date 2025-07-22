@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Head, router } from "@inertiajs/react";
 import { Modal } from "@/Components/UI/Modal";
 import { Button } from "@/Components/UI/Button";
@@ -27,6 +27,7 @@ interface RequestLeaveModalProps {
     onLeaveCreated: () => void;
     employees: Employee[];
     leaveTypes: Array<{ value: string; label: string }>;
+    auth?: { user?: { user_role: string; email?: string } };
 }
 
 export function RequestLeaveModal({
@@ -35,6 +36,7 @@ export function RequestLeaveModal({
     onLeaveCreated,
     employees,
     leaveTypes,
+    auth,
 }: RequestLeaveModalProps) {
     const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm({
@@ -45,6 +47,23 @@ export function RequestLeaveModal({
             leave_type: "",
             reason: "",
         });
+
+    const isEmployee = auth?.user?.user_role === "Employee";
+    const currentUserEmail = auth?.user?.email;
+    useEffect(() => {
+        if (isEmployee && currentUserEmail && employees.length > 0 && isOpen) {
+            const currentEmployee = employees.find(
+                (emp) => emp.email === currentUserEmail
+            );
+            if (currentEmployee) {
+                setData({
+                    ...data,
+                    employee_id: currentEmployee.id.toString(),
+                    employee_name: currentEmployee.full_name,
+                });
+            }
+        }
+    }, [isEmployee, currentUserEmail, employees, isOpen]);
 
     const handleEmployeeChange = (employeeId: string) => {
         const selectedEmployee = employees.find(
@@ -71,7 +90,6 @@ export function RequestLeaveModal({
                 handleClose();
             },
             onError: (errors) => {
-                console.error("Form submission errors:", errors);
                 toast.error(
                     "Failed to submit leave request. Please check the form."
                 );
@@ -108,19 +126,32 @@ export function RequestLeaveModal({
                     <Select
                         value={data.employee_id}
                         onValueChange={handleEmployeeChange}
+                        disabled={isEmployee}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select an employee" />
+                            <SelectValue
+                                placeholder={
+                                    isEmployee
+                                        ? "Your account"
+                                        : "Select an employee"
+                                }
+                            />
                         </SelectTrigger>
                         <SelectContent>
-                            {employees.map((employee) => (
-                                <SelectItem
-                                    key={employee.id}
-                                    value={employee.id.toString()}
-                                >
-                                    {employee.full_name} ({employee.email})
-                                </SelectItem>
-                            ))}
+                            {employees
+                                .filter(
+                                    (employee) =>
+                                        !isEmployee ||
+                                        employee.email === currentUserEmail
+                                )
+                                .map((employee) => (
+                                    <SelectItem
+                                        key={employee.id}
+                                        value={employee.id.toString()}
+                                    >
+                                        {employee.full_name} ({employee.email})
+                                    </SelectItem>
+                                ))}
                         </SelectContent>
                     </Select>
                     {errors.employee_id && (

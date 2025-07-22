@@ -17,35 +17,96 @@ class LeaveController extends Controller
      * Display a listing of leave applications
      */
     public function index(Request $request): Response
-    {        $perPage = $request->get('per_page', 10);
+    {
+        $perPage = $request->get('per_page', 10);
         $allowedPerPage = [10, 25, 50, 100];
         if (!in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
         }
-        $query = Leave::with('employee');
-        $leaves = $query->paginate($perPage);
+        
+        $user = Auth::user();
+        
+        // Prepare filters from request
+        $filters = $request->only(['employee_name', 'leave_type', 'status', 'start_date', 'end_date']);
+        
+        // Add role-based filtering
+        if ($user && $user->user_role === 'Employee') {
+            $employee = Employee::where('email', $user->email)->first();
+            if ($employee) {
+                $filters['employee_id'] = $employee->id;
+            } else {
+                $leaves = Leave::where('id', -1)->paginate($perPage);
+                $leaves->getCollection()->transform(function ($leave) {
+                    return $this->transformLeaveData($leave);
+                });
+                
+                return $this->renderIndexView($leaves, $filters);
+            }
+        }
+        $leaves = Leave::getFilteredLeaves($filters, $perPage);
+        
         $leaves->getCollection()->transform(function ($leave) {
-            return [
-                'id' => $leave->id,
-                'employee_name' => $leave->employee->full_name,
-                'employee_email' => $leave->employee->email,
-                'leave_type' => $leave->leave_type,
-                'start_date' => $leave->start_date->format('Y-m-d'),
-                'end_date' => $leave->end_date->format('Y-m-d'),
-                'days_requested' => $leave->days_requested,
-                'reason' => $leave->reason,
-                'status' => $leave->status,
-                'applied_date' => $leave->created_at->format('Y-m-d'),
-            ];
+            return $this->transformLeaveData($leave);
         });
     
+        return $this->renderIndexView($leaves, $filters);
+    }
+
+    /**
+     * Transform leave data for frontend
+     */
+    private function transformLeaveData($leave): array
+    {
+        return [
+            'id' => $leave->id,
+            'employee_id' => $leave->employee_id,
+            'employee_name' => $leave->employee->full_name,
+            'employee_email' => $leave->employee->email,
+            'leave_type' => $leave->leave_type,
+            'start_date' => $leave->start_date->format('Y-m-d'),
+            'end_date' => $leave->end_date->format('Y-m-d'),
+            'days_requested' => $leave->days_requested,
+            'reason' => $leave->reason,
+            'status' => $leave->status,
+            'applied_date' => $leave->created_at->format('Y-m-d'),
+        ];
+    }
+
+    /**
+     * Render the index view with data
+     */
+    private function renderIndexView($leaves, $filters): Response
+    {
         return Inertia::render('Admin/LeaveApplications/Index', [
             'leaveApplications' => $leaves,
-            'filters' => $request->only(['employee_name', 'leave_type', 'status', 'start_date', 'end_date']),
+            'filters' => $filters,
             'leaveTypes' => $this->getLeaveTypes(),
             'statuses' => $this->getStatuses(),
             'canManage' => Auth::check() && in_array(Auth::user()->user_role, ['HR', 'SuperAdmin']),
             'employees' => Employee::select('id', 'full_name', 'email')->get(),
+        ]);
+    }
+
+    /**
+     * Get leave statistics (new endpoint)
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $filters = $request->only(['employee_name', 'leave_type', 'status', 'start_date', 'end_date']);
+        
+        $user = Auth::user();
+        if ($user && $user->user_role === 'Employee') {
+            $employee = Employee::where('email', $user->email)->first();
+            if ($employee) {
+                $filters['employee_id'] = $employee->id;
+            }
+        }
+        
+        $stats = Leave::getLeaveStats($filters);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $stats
         ]);
     }
 
@@ -137,9 +198,9 @@ class LeaveController extends Controller
     /**
      * Update the specified leave application
      */
-    public function update(Request $request, Leave $leave)
+    public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
+        $validatedData = $request->validate(rules: [
             'employee_id' => 'required|exists:employees,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -147,14 +208,12 @@ class LeaveController extends Controller
             'status' => ['required', Rule::in(['pending', 'approved', 'rejected'])],
             'reason' => 'required|string|max:1000',
         ]);
-        
         try {
-            $leave->update($validatedData);
-    
+            Leave::where('id', operator:json_decode( $id))->update($validatedData);
             return redirect()->route('admin.leaves.index')->with([
                 'success' => 'Leave application updated successfully.',
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception $e) {        
             return back()
                 ->withErrors(['error' => 'Failed to update leave application: ' . $e->getMessage()])
                 ->withInput();
@@ -194,12 +253,15 @@ class LeaveController extends Controller
     /**
      * Remove the specified leave application
      */
-    public function destroy(Leave $leave) 
+    public function destroy($id) 
     {
         $user = Auth::user();
         if (!$user) {
             return back()->withErrors(['error' => 'Authentication required.']);
         }
+        
+        $leave = Leave::findOrFail($id);
+        
         switch ($user->user_role) {
             case 'HR':
             case 'SuperAdmin':
@@ -217,7 +279,6 @@ class LeaveController extends Controller
         
         try {
             $leave->delete();
-            
             return back()->with([
                 'success' => 'Leave application deleted successfully.'
             ]);

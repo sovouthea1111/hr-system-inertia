@@ -20,11 +20,6 @@ return new class extends Migration
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->index();
             $table->longText('reason');
             $table->timestamps();
-            $table->softDeletes();
-            
-            $table->index(['employee_id', 'status']);
-            $table->index(['start_date', 'end_date']);
-            $table->index(['leave_type', 'status']);
         });
     }
 

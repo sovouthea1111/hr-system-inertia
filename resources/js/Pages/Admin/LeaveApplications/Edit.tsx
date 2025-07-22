@@ -42,6 +42,7 @@ interface EditLeaveModalProps {
     employees: Employee[];
     leaveTypes: Array<{ value: string; label: string }>;
     statuses: Array<{ value: string; label: string }>;
+    auth?: { user?: { user_role: string } };
 }
 
 export function EditLeaveModal({
@@ -52,6 +53,7 @@ export function EditLeaveModal({
     employees,
     leaveTypes,
     statuses,
+    auth,
 }: EditLeaveModalProps) {
     const { data, setData, put, processing, errors, reset, clearErrors } =
         useForm({
@@ -60,7 +62,7 @@ export function EditLeaveModal({
             end_date: "",
             leave_type: "",
             reason: "",
-            status: "", // Add status field
+            status: "",
         });
 
     useEffect(() => {
@@ -83,7 +85,7 @@ export function EditLeaveModal({
                 end_date: leave.end_date,
                 leave_type: leave.leave_type,
                 reason: leave.reason,
-                status: leave.status, // Add status field
+                status: leave.status,
             });
         }
     }, [leave, isOpen, employees]);
@@ -99,15 +101,11 @@ export function EditLeaveModal({
 
         put(route("admin.leaves.update", leave.id), {
             onSuccess: () => {
-                toast.success("Leave application updated successfully!", {
-                    duration: 4000,
-                    position: "top-right",
-                });
+                toast.success("Leave application updated successfully!");
                 onLeaveUpdated();
                 handleClose();
             },
             onError: (errors) => {
-                console.error("Form submission errors:", errors);
                 toast.error(
                     "Failed to update leave application. Please check the form."
                 );
@@ -151,6 +149,7 @@ export function EditLeaveModal({
                     <Select
                         value={data.employee_id}
                         onValueChange={handleEmployeeChange}
+                        disabled={auth?.user?.user_role === "Employee"}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select an employee" />
@@ -273,7 +272,7 @@ export function EditLeaveModal({
                         onValueChange={(value) =>
                             handleInputChange("status", value)
                         }
-                        disabled={true}
+                        disabled={auth?.user?.user_role === "Employee"}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select status" />

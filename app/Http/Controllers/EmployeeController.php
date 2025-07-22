@@ -98,7 +98,7 @@ class EmployeeController extends Controller
     public function update(UpdateEmployeeRequest $request, Employee $employee)
     {
         $user = Auth::user();
-        
+        dd( $employee);
         // If user is an Employee, only allow editing their own record
         if ($user && $user->user_role === 'Employee' && $employee->email !== $user->email) {
             return back()->withErrors(['error' => 'You can only edit your own employee record.']);
