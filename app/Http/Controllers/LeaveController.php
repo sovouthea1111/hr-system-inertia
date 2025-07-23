@@ -148,26 +148,51 @@ class LeaveController extends Controller
     }
 
     /**
-     * Display the specified leave application
+     * Display the specified leave application in a standalone page
      */
-    public function show(Leave $leave): JsonResponse
+    public function view(Leave $leave)
     {
-        $leave->load('employee');
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
         
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $leave->id,
-                'employee_name' => $leave->employee->full_name,
-                'employee_email' => $leave->employee->email,
-                'leave_type' => $leave->leave_type,
-                'start_date' => $leave->start_date->format('Y-m-d'),
-                'end_date' => $leave->end_date->format('Y-m-d'),
-                'days_requested' => $leave->days_requested,
-                'reason' => $leave->reason,
-                'status' => $leave->status,
-                'applied_date' => $leave->created_at->format('Y-m-d'),
-            ]
+        // Check permissions based on role
+        if ($user->user_role === 'Employee') {
+            $employee = Employee::where('email', $user->email)->first();
+            if (!$employee || $leave->employee_id !== $employee->id) {
+                return redirect()->route('admin.leaves.index')
+                    ->with('error', 'You can only view your own leave applications.');
+            }
+        }
+        
+        // Get employee details
+        $employee = Employee::findOrFail($leave->employee_id);
+        
+        // Transform leave data
+        $leaveData = [
+            'id' => $leave->id,
+            'employee_id' => $leave->employee_id,
+            'employee_name' => $employee->full_name,
+            'employee_email' => $employee->email,
+            'leave_type' => ucfirst($leave->leave_type) . ' Leave',
+            'start_date' => $leave->start_date->format('Y-m-d'),
+            'end_date' => $leave->end_date->format('Y-m-d'),
+            'days_requested' => $leave->days_requested,
+            'reason' => $leave->reason,
+            'status' => $leave->status,
+            'applied_date' => $leave->created_at->format('Y-m-d'),
+        ];
+        
+        // Mark notification as read if it exists
+        if ($user->user_role === 'HR' || $user->user_role === 'SuperAdmin') {
+            $leave->update(['hr_notification_read' => true]);
+        } else if ($user->user_role === 'Employee' && $employee && $leave->employee_id === $employee->id) {
+            $leave->update(['employee_notification_read' => true]);
+        }
+        
+        return Inertia::render('Admin/LeaveApplications/ViewPage', [
+            'leave' => $leaveData,
         ]);
     }
 

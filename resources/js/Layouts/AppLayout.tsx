@@ -19,6 +19,8 @@ import {
 import { Button } from "@/Components/UI/Button";
 import { SettingsIcon } from "lucide-react";
 import { NotificationDropdown } from "@/Components/UI/NotificationDropdown";
+import { usePage } from "@inertiajs/react";
+import { PageProps } from "@/types";
 
 interface LeaveRequest {
     id: string;
@@ -41,12 +43,6 @@ interface Notification {
     title?: string;
 }
 
-interface NotificationResponse {
-    success: boolean;
-    data: Notification[];
-    unreadCount: number;
-}
-
 interface AppLayoutProps {
     children: React.ReactNode;
     breadcrumbs?: {
@@ -56,6 +52,7 @@ interface AppLayoutProps {
     title?: string;
     showHeader?: boolean;
     headerActions?: React.ReactNode;
+    userRole?: "HR" | "Employee";
 }
 
 export function AppLayout({
@@ -64,12 +61,14 @@ export function AppLayout({
     title,
     showHeader = true,
     headerActions,
+    userRole = "Employee",
 }: AppLayoutProps) {
+    const { auth } = usePage<PageProps>().props;
+    const authenticatedUserRole = auth?.user?.user_role || "Employee";
     const [notifications, setNotifications] = React.useState<Notification[]>(
         []
     );
     const [unreadCount, setUnreadCount] = React.useState<number>(0);
-    const [userRole, setUserRole] = React.useState<"HR" | "Employee">("HR");
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
     const fetchNotifications = React.useCallback(
@@ -77,25 +76,90 @@ export function AppLayout({
             setIsLoading(true);
             try {
                 const response = await fetch(
-                    `/api/notifications?role=${userRole}&type=${type}`
+                    `/api/notifications?type=${type}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                        credentials: "same-origin",
+                    }
                 );
-                const result: NotificationResponse = await response.json();
 
-                if (result.success) {
-                    setNotifications(result.data);
-                    setUnreadCount(result.unreadCount);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
+                const result = await response.json();
+
+                // Transform backend notifications to match frontend interface
+                const transformedNotifications = result.notifications.map(
+                    (backendNotification: any) => {
+                        // Map leave type to display format
+                        const getLeaveTypeDisplay = (type: string) => {
+                            switch (type.toLowerCase()) {
+                                case "sick":
+                                    return "Sick Leave";
+                                case "annual":
+                                    return "Annual Leave";
+                                case "personal":
+                                    return "Personal Leave";
+                                case "vacation":
+                                    return "Annual Leave";
+                                default:
+                                    return "Personal Leave";
+                            }
+                        };
+
+                        return {
+                            id: backendNotification.id.toString(),
+                            type: backendNotification.type,
+                            message: backendNotification.message,
+                            timestamp: new Date(
+                                backendNotification.created_at
+                            ).toLocaleString(),
+                            read: backendNotification.read,
+                            title: backendNotification.title,
+                            leaveRequest: {
+                                id: backendNotification.data.leave_id.toString(),
+                                employeeName:
+                                    backendNotification.data.employee_name || // Looking in data object
+                                    "Unknown Employee", // Falls back to this
+                                type: getLeaveTypeDisplay(
+                                    backendNotification.data.leave_type
+                                ),
+                                startDate: backendNotification.data.start_date,
+                                endDate: backendNotification.data.end_date,
+                                reason: backendNotification.data.reason,
+                                status: backendNotification.data.status,
+                            },
+                        };
+                    }
+                );
+
+                setNotifications(transformedNotifications);
+                setUnreadCount(result.unread_count);
             } catch (error) {
                 console.error("Failed to fetch notifications:", error);
+                setNotifications([]);
+                setUnreadCount(0);
             } finally {
                 setIsLoading(false);
             }
         },
-        [userRole]
+        []
     );
 
     React.useEffect(() => {
         fetchNotifications();
+
+        // Poll for updates every 30 seconds
+        const interval = setInterval(() => {
+            fetchNotifications();
+        }, 30000);
+
+        return () => clearInterval(interval);
     }, [fetchNotifications]);
 
     const handleNotificationUpdate = (
@@ -104,10 +168,6 @@ export function AppLayout({
     ) => {
         setNotifications(updatedNotifications);
         setUnreadCount(newUnreadCount);
-    };
-
-    const handleRoleChange = (newRole: "HR" | "Employee") => {
-        setUserRole(newRole);
     };
 
     return (
@@ -128,16 +188,19 @@ export function AppLayout({
 
                             {/* Header Actions */}
                             <div className="ml-auto flex items-center gap-2 px-4">
-                                {/* Notification Dropdown with passed data */}
                                 <NotificationDropdown
+                                    onRoleChange={() => {}}
                                     notifications={notifications}
                                     unreadCount={unreadCount}
-                                    userRole={userRole}
+                                    userRole={
+                                        authenticatedUserRole as
+                                            | "HR"
+                                            | "Employee"
+                                    }
                                     isLoading={isLoading}
                                     onNotificationUpdate={
                                         handleNotificationUpdate
                                     }
-                                    onRoleChange={handleRoleChange}
                                     onRefresh={fetchNotifications}
                                 />
 
@@ -153,16 +216,14 @@ export function AppLayout({
                         </header>
                     )}
 
-                    {/* Page Title and Breadcrumbs Section - Now Sticky */}
+                    {/* Page Title and Breadcrumbs Section */}
                     <div className="bg-gray-50 px-6 py-6 border-b">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
-                                {/* Page Title */}
                                 <h1 className="text-2xl font-bold text-gray-900">
                                     {title || "Page Title"}
                                 </h1>
 
-                                {/* Breadcrumbs */}
                                 {breadcrumbs.length > 0 && (
                                     <Breadcrumb>
                                         <BreadcrumbList>
@@ -202,7 +263,6 @@ export function AppLayout({
                                 )}
                             </div>
 
-                            {/* Action Button */}
                             <div className="flex items-center gap-2">
                                 {headerActions}
                             </div>

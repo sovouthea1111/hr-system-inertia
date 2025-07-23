@@ -420,6 +420,7 @@ export default function EmployeesPage() {
                         fields={getFilterFields()}
                         onFieldChange={handleFilterChange}
                         onClear={handleClearFilters}
+                        onApply={applyFilters}
                     />
 
                     {/* Table Section */}

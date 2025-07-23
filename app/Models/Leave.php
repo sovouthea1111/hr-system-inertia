@@ -15,15 +15,34 @@ class Leave extends Model
         'start_date',
         'end_date',
         'leave_type',
-        'status',
         'reason',
+        'status',
+        'approved_by',
+        'hr_notification_read',
+        'employee_notification_read'
     ];
-
 
     protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'hr_notification_read' => 'boolean',
+        'employee_notification_read' => 'boolean'
     ];
+
+    // Add scopes for unread notifications
+    public function scopeHrUnreadNotifications($query)
+    {
+        return $query->where('status', 'pending')
+                     ->where('hr_notification_read', false);
+    }
+
+    public function scopeEmployeeUnreadNotifications($query, $employeeId)
+    {
+        return $query->where('employee_id', $employeeId)
+                     ->whereIn('status', ['approved', 'rejected'])
+                     ->where('employee_notification_read', false);
+    }
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -209,5 +228,11 @@ class Leave extends Model
                                       ->pluck('count', 'leave_type')
                                       ->toArray()
         ];
+    }
+
+    // Add this relationship method
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

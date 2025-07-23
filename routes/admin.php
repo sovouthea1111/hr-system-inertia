@@ -24,6 +24,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('leaves', LeaveController::class);
     Route::put('leaves-status/{leave}', [LeaveController::class, 'updateStatus'])->name('leaves-status.update');
     
+    // Add a new route for viewing a leave application
+    Route::get('leaves/{leave}/view', [LeaveController::class, 'view'])->name('leaves.view');
+    
     // Department Management
     Route::get('/departments', function () {
         return Inertia::render('Admin/Departments/Index');

@@ -11,6 +11,8 @@ import {
     DropdownMenuTrigger,
 } from "@/Components/UI/DropdownMenu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/Components/UI/Tab";
+import toast from "react-hot-toast";
+import { router } from "@inertiajs/react";
 
 interface LeaveRequest {
     id: string;
@@ -57,6 +59,7 @@ export function NotificationDropdown({
 }: NotificationDropdownProps) {
     const [activeTab, setActiveTab] = useState<string>("all");
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
+    const [isMarkingRead, setIsMarkingRead] = useState<string | null>(null);
 
     const getInitials = (name: string) => {
         return name
@@ -75,27 +78,50 @@ export function NotificationDropdown({
     const handleApprove = async (notification: Notification) => {
         setIsProcessing(notification.id);
         try {
+            // Get CSRF token from cookie
+            const xsrfToken = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
+
             const response = await fetch("/api/notifications", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": decodedToken,
                 },
+                credentials: "same-origin",
                 body: JSON.stringify({
-                    notificationId: notification.id,
+                    leave_id: notification.leaveRequest?.id,
                     action: "approve",
                 }),
             });
 
-            const result = await response.json();
-            if (result.success) {
+            if (response.ok) {
+                const responseData = await response.json();
+
+                // Display toast message from backend
+                toast.success(
+                    responseData.message ||
+                        "Leave request approved successfully"
+                );
+
                 const updatedNotifications = notifications.filter(
                     (n) => n.id !== notification.id
                 );
-                const newUnreadCount = unreadCount - 1;
+                const newUnreadCount = Math.max(0, unreadCount - 1);
                 onNotificationUpdate(updatedNotifications, newUnreadCount);
+
+                onRefresh();
+            } else {
+                console.error("Failed to approve leave request");
+                toast.error("Failed to approve leave request");
             }
         } catch (error) {
             console.error("Failed to approve leave request:", error);
+            toast.error("Failed to approve leave request");
         } finally {
             setIsProcessing(null);
         }
@@ -104,24 +130,46 @@ export function NotificationDropdown({
     const handleReject = async (notification: Notification) => {
         setIsProcessing(notification.id);
         try {
+            const xsrfToken = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+
+            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
+
             const response = await fetch("/api/notifications", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": decodedToken,
                 },
+                credentials: "same-origin",
                 body: JSON.stringify({
-                    notificationId: notification.id,
+                    leave_id: notification.leaveRequest?.id,
                     action: "reject",
                 }),
             });
 
-            const result = await response.json();
-            if (result.success) {
+            if (response.ok) {
+                const responseData = await response.json();
+
+                // Display toast message from backend
+                toast.success(
+                    responseData.message ||
+                        "Leave request rejected successfully"
+                );
+
                 const updatedNotifications = notifications.filter(
                     (n) => n.id !== notification.id
                 );
-                const newUnreadCount = unreadCount - 1;
+                const newUnreadCount = Math.max(0, unreadCount - 1);
                 onNotificationUpdate(updatedNotifications, newUnreadCount);
+
+                // Refresh to get updated data
+                onRefresh();
+            } else {
+                console.error("Failed to reject leave request");
             }
         } catch (error) {
             console.error("Failed to reject leave request:", error);
@@ -130,12 +178,58 @@ export function NotificationDropdown({
         }
     };
 
+    const handleMarkAsRead = async (notification: Notification) => {
+        setIsMarkingRead(notification.id);
+        try {
+            // Get CSRF token from cookie
+            const xsrfToken = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
+
+            const response = await fetch("/api/notifications/mark-as-read", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": decodedToken,
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    leave_id: notification.id,
+                }),
+            });
+
+            if (response.ok) {
+                // Update the notification locally
+                const updatedNotifications = notifications.map((n) =>
+                    n.id === notification.id ? { ...n, read: true } : n
+                );
+                const newUnreadCount = Math.max(0, unreadCount - 1);
+                onNotificationUpdate(updatedNotifications, newUnreadCount);
+
+                // Navigate to leave application view page if it's a leave-related notification
+                if (notification.leaveRequest?.id) {
+                    router.visit(
+                        route("admin.leaves.view", notification.leaveRequest.id)
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Failed to mark notification as read:", error);
+        } finally {
+            setIsMarkingRead(null);
+        }
+    };
+
     const handleTabChange = (newTab: string) => {
         setActiveTab(newTab);
         onRefresh(newTab);
     };
 
-    const renderNotificationList = (filteredNotifications: Notification[]) => {
+    // Update the renderNotificationList function to filter notifications by tab
+    const renderNotificationList = (tabValue: string) => {
         if (isLoading) {
             return (
                 <div className="text-center py-8 text-gray-500 text-sm">
@@ -144,12 +238,30 @@ export function NotificationDropdown({
             );
         }
 
+        // Filter notifications based on the active tab
+        const filteredNotifications =
+            tabValue === "all"
+                ? notifications
+                : notifications.filter((notification) => {
+                      const leaveType =
+                          notification.leaveRequest?.type.toLowerCase();
+                      return (
+                          leaveType &&
+                          leaveType.includes(tabValue.replace("-", " "))
+                      );
+                  });
+
         return (
             <div className="space-y-4 max-h-80 overflow-y-auto">
                 {filteredNotifications.map((notification) => (
                     <div
                         key={notification.id}
-                        className="flex items-start gap-3"
+                        className={`flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-gray-50 ${
+                            !notification.read
+                                ? "bg-blue-50 border-l-4 border-blue-500"
+                                : ""
+                        }`}
+                        onClick={() => handleMarkAsRead(notification)}
                     >
                         {/* Avatar */}
                         <Avatar className="h-10 w-10 mt-1">
@@ -172,7 +284,10 @@ export function NotificationDropdown({
                                         <span className="font-medium">
                                             {notification.leaveRequest
                                                 ?.employeeName ||
-                                                notification.title}
+                                                notification.title ||
+                                                (userRole !== "HR"
+                                                    ? "Your"
+                                                    : "")}
                                         </span>{" "}
                                         <span className="text-gray-600">
                                             {notification.message}
@@ -187,11 +302,12 @@ export function NotificationDropdown({
                                                     size="sm"
                                                     variant="danger"
                                                     className="h-8 px-3 text-xs"
-                                                    onClick={() =>
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
                                                         handleReject(
                                                             notification
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     disabled={
                                                         isProcessing ===
                                                         notification.id
@@ -199,18 +315,19 @@ export function NotificationDropdown({
                                                 >
                                                     {isProcessing ===
                                                     notification.id
-                                                        ? "..."
+                                                        ? "Rejecting"
                                                         : "Reject"}
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="primary"
                                                     className="h-8 px-3 text-xs"
-                                                    onClick={() =>
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
                                                         handleApprove(
                                                             notification
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     disabled={
                                                         isProcessing ===
                                                         notification.id
@@ -218,7 +335,7 @@ export function NotificationDropdown({
                                                 >
                                                     {isProcessing ===
                                                     notification.id
-                                                        ? "..."
+                                                        ? "Approving"
                                                         : "Approve"}
                                                 </Button>
                                             </div>
@@ -229,6 +346,11 @@ export function NotificationDropdown({
                                 </div>
                             </div>
                         </div>
+
+                        {/* Unread indicator */}
+                        {!notification.read && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        )}
                     </div>
                 ))}
 
@@ -262,19 +384,7 @@ export function NotificationDropdown({
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold">Notifications</h2>
                         <div className="flex items-center gap-2">
-                            {/* Role Toggle for Demo */}
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                    onRoleChange(
-                                        userRole === "HR" ? "Employee" : "HR"
-                                    )
-                                }
-                                className="text-xs"
-                            >
-                                {userRole}
-                            </Button>
+                            {/* Removed "Mark all as read" button */}
                             <Button
                                 variant="link"
                                 className="text-primary p-0 h-auto font-normal"
@@ -313,20 +423,20 @@ export function NotificationDropdown({
                             </TabsList>
 
                             <TabsContent value="all" className="mt-0">
-                                {renderNotificationList(notifications)}
+                                {renderNotificationList("all")}
                             </TabsContent>
 
                             <TabsContent value="annual-leave" className="mt-0">
-                                {renderNotificationList(notifications)}
+                                {renderNotificationList("annual-leave")}
                             </TabsContent>
 
                             <TabsContent value="sick-leave" className="mt-0">
-                                {renderNotificationList(notifications)}
+                                {renderNotificationList("sick-leave")}
                             </TabsContent>
                         </Tabs>
                     ) : (
                         // Employee view - no tabs
-                        renderNotificationList(notifications)
+                        renderNotificationList("all")
                     )}
                 </div>
             </DropdownMenuContent>

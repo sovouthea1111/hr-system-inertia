@@ -50,3 +50,11 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
+
+// Notification routes
+Route::middleware(['auth'])->prefix('api')->group(function () {
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
+    Route::put('/notifications', [App\Http\Controllers\NotificationController::class, 'update']);
+    Route::post('/notifications/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+});

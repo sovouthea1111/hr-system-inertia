@@ -13,13 +13,46 @@ return new class extends Migration
     {
         Schema::create('leaves', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->dateTime('start_date')->index();
-            $table->dateTime('end_date')->index();
-            $table->enum('leave_type', ['annual', 'sick', 'personal', 'maternity', 'paternity', 'emergency'])->index();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->index();
+            
+            // Foreign key relationships
+            $table->foreignId('employee_id')
+                  ->constrained('employees')
+                  ->onDelete('cascade');
+                  
+            $table->foreignId('approved_by')
+                  ->nullable()
+                  ->constrained('users')
+                  ->nullOnDelete();
+            
+            // Leave details
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
+            $table->enum('leave_type', [
+                'annual', 
+                'sick', 
+                'personal', 
+                'maternity', 
+                'paternity', 
+                'emergency'
+            ]);
+            $table->enum('status', ['pending', 'approved', 'rejected'])
+                  ->default('pending');
             $table->longText('reason');
+            
+            // Notification tracking
+            $table->boolean('hr_notification_read')
+                  ->default(false);                  
+            $table->boolean('employee_notification_read')
+                  ->default(false);            
             $table->timestamps();
+            
+            // Indexes for performance optimization
+            $table->index('start_date');
+            $table->index('end_date');
+            $table->index('leave_type');
+            $table->index('status');
+            $table->index(['status', 'hr_notification_read'], 'idx_status_hr_notification');
+            $table->index(['employee_id', 'employee_notification_read'], 'idx_employee_notification');
         });
     }
 
