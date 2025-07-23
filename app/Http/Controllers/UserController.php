@@ -20,13 +20,19 @@ class UserController extends Controller
         $perPage = $request->get('per_page', 10); 
         $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 10;
         
-        $users = User::query()
-            ->orderBy('updated_at', 'desc')
-            ->paginate($perPage);
+        // Prepare filters from request
+        $filters = $request->only(['name', 'email', 'role']);
+        
+        $user = Auth::user();
+        if ($user && $user->user_role === 'Employee') {
+            $filters['email'] = $user->email;
+        }
+        
+        $users = User::getFilteredUsers($filters, $perPage);
         
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
-            'filters' => $request->only(['name', 'email', 'role']),
+            'filters' => $filters,
             'roles' => User::getRoles(),
             'canManage' => Auth::user() && in_array(Auth::user()->user_role, ['HR', 'SuperAdmin']),
         ]);
