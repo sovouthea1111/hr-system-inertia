@@ -4,13 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\DashboardController; // Add this import
 use Inertia\Inertia;
 
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    Route::get('/', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('dashboard');
+    // Replace this inline function with the controller
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // User Management - Resource Routes
     Route::resource('users', UserController::class);

@@ -1,5 +1,5 @@
 import { AppLayout } from "@/Layouts/AppLayout";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import {
     Card,
     CardContent,
@@ -14,40 +14,163 @@ import {
     ClockIcon,
     TrendingUpIcon,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useState } from "react";
+
+interface PageProps {
+    stats?: {
+        total_employees: number;
+        pending_leaves: number;
+        approved_leaves: number;
+        total_users: number;
+    };
+    recentLeaveRequests?: LeaveRequest[];
+    [key: string]: any;
+}
+
+interface LeaveRequest {
+    id: string;
+    name: string;
+    leaveType: string;
+    duration: string;
+}
 
 export default function AdminDashboard() {
+    const pageProps = usePage<PageProps & { auth: any }>().props;
+    const { stats, recentLeaveRequests } = pageProps;
+    const [isProcessing, setIsProcessing] = useState<string | null>(null);
+
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
 
-    const stats = [
+    const safeStats = stats || {
+        total_employees: 0,
+        pending_leaves: 0,
+        approved_leaves: 0,
+        total_users: 0,
+    };
+    console.log(stats);
+
+    const safeRecentLeaveRequests = recentLeaveRequests || [];
+    const statsData = [
         {
             title: "Total Employees",
-            value: "124",
+            value: safeStats.total_employees.toString(),
             description: "Active employees",
             icon: UsersIcon,
-            trend: "+12%",
         },
         {
             title: "Pending Leaves",
-            value: "8",
+            value: safeStats.pending_leaves.toString(),
             description: "Awaiting approval",
             icon: CalendarCheckIcon,
-            trend: "+3",
         },
         {
-            title: "Today's Attendance",
-            value: "98%",
-            description: "Present today",
+            title: "Approved Leaves",
+            value: safeStats.approved_leaves.toString(),
+            description: "Currently on leave",
             icon: ClockIcon,
-            trend: "+2%",
         },
         {
-            title: "This Month",
-            value: "95%",
-            description: "Average attendance",
+            title: "Total Users",
+            value: safeStats.total_users.toString(),
+            description: "System users",
             icon: TrendingUpIcon,
-            trend: "+5%",
         },
     ];
+
+    const handleApprove = async (request: LeaveRequest) => {
+        setIsProcessing(request.id);
+        try {
+            // Get CSRF token from cookie
+            const xsrfToken = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
+
+            const response = await fetch("/api/notifications", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": decodedToken,
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    leave_id: request.id,
+                    action: "approve",
+                }),
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+
+                // Display success toast
+                toast.success(
+                    responseData.message ||
+                        "Leave request approved successfully"
+                );
+
+                // Refresh the page to get updated data
+                window.location.reload();
+            } else {
+                console.error("Failed to approve leave request");
+                toast.error("Failed to approve leave request");
+            }
+        } catch (error) {
+            console.error("Failed to approve leave request:", error);
+            toast.error("Failed to approve leave request");
+        } finally {
+            setIsProcessing(null);
+        }
+    };
+
+    const handleReject = async (request: LeaveRequest) => {
+        setIsProcessing(request.id);
+        try {
+            const xsrfToken = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+
+            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
+
+            const response = await fetch("/api/notifications", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": decodedToken,
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    leave_id: request.id,
+                    action: "reject",
+                }),
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+
+                // Display success toast
+                toast.success(
+                    responseData.message ||
+                        "Leave request rejected successfully"
+                );
+
+                // Refresh the page to get updated data
+                window.location.reload();
+            } else {
+                console.error("Failed to reject leave request");
+                toast.error("Failed to reject leave request");
+            }
+        } catch (error) {
+            console.error("Failed to reject leave request:", error);
+            toast.error("Failed to reject leave request");
+        } finally {
+            setIsProcessing(null);
+        }
+    };
 
     return (
         <>
@@ -56,13 +179,13 @@ export default function AdminDashboard() {
                 title="Admin Dashboard"
                 breadcrumbs={breadcrumbs}
                 headerActions={
-                    <Button variant="primary">Generate Report</Button>
+                    <Button className="hidden" variant="primary">Generate Report</Button>
                 }
             >
                 <div className="space-y-6">
                     {/* Stats Grid */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        {stats.map((stat, index) => {
+                        {statsData.map((stat, index) => {
                             const IconComponent = stat.icon;
                             return (
                                 <Card key={index}>
@@ -77,9 +200,6 @@ export default function AdminDashboard() {
                                             {stat.value}
                                         </div>
                                         <p className="text-xs text-muted-foreground">
-                                            <span className="text-green-600">
-                                                {stat.trend}
-                                            </span>{" "}
                                             {stat.description}
                                         </p>
                                     </CardContent>
@@ -100,47 +220,63 @@ export default function AdminDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {leaveRequests.length > 0 ? (
-                                        leaveRequests.map((request) => (
-                                            <div
-                                                key={request.id}
-                                                className="flex items-center justify-between p-4 border rounded-lg"
-                                            >
-                                                <div>
-                                                    <p className="font-medium">
-                                                        {request.name}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {request.leaveType} -{" "}
-                                                        {request.duration}
-                                                    </p>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            handleReject(
+                                    {safeRecentLeaveRequests.length > 0 ? (
+                                        safeRecentLeaveRequests.map(
+                                            (request) => (
+                                                <div
+                                                    key={request.id}
+                                                    className="flex items-center justify-between p-4 border rounded-lg"
+                                                >
+                                                    <div>
+                                                        <p className="font-medium">
+                                                            {request.name}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {request.leaveType}{" "}
+                                                            - {request.duration}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            disabled={
+                                                                isProcessing ===
                                                                 request.id
-                                                            )
-                                                        }
-                                                    >
-                                                        Reject
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="primary"
-                                                        onClick={() =>
-                                                            handleApprove(
+                                                            }
+                                                            onClick={() =>
+                                                                handleReject(
+                                                                    request
+                                                                )
+                                                            }
+                                                        >
+                                                            {isProcessing ===
+                                                            request.id
+                                                                ? "Processing..."
+                                                                : "Reject"}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="primary"
+                                                            disabled={
+                                                                isProcessing ===
                                                                 request.id
-                                                            )
-                                                        }
-                                                    >
-                                                        Approve
-                                                    </Button>
+                                                            }
+                                                            onClick={() =>
+                                                                handleApprove(
+                                                                    request
+                                                                )
+                                                            }
+                                                        >
+                                                            {isProcessing ===
+                                                            request.id
+                                                                ? "Processing..."
+                                                                : "Approve"}
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            )
+                                        )
                                     ) : (
                                         <div className="p-4 text-center text-muted-foreground">
                                             No pending leave requests
@@ -194,39 +330,3 @@ export default function AdminDashboard() {
         </>
     );
 }
-
-interface LeaveRequest {
-    id: string;
-    name: string;
-    leaveType: string;
-    duration: string;
-}
-
-const leaveRequests: LeaveRequest[] = [
-    {
-        id: "1",
-        name: "John Doe",
-        leaveType: "Annual Leave",
-        duration: "3 days",
-    },
-    {
-        id: "2",
-        name: "Jane Smith",
-        leaveType: "Sick Leave",
-        duration: "1 day",
-    },
-    {
-        id: "3",
-        name: "Mike Johnson",
-        leaveType: "Personal Leave",
-        duration: "2 days",
-    },
-];
-
-const handleApprove = (requestId: string) => {
-    console.log(`Approving request ${requestId}`);
-};
-
-const handleReject = (requestId: string) => {
-    console.log(`Rejecting request ${requestId}`);
-};
