@@ -61,6 +61,12 @@ class Employee extends Model
         ][$this->status] ?? 'secondary';
     }
 
+    // Add this accessor
+    public function getNameAttribute()
+    {
+        return $this->full_name;
+    }
+
     // Add this relationship method
     public function leaves(): HasMany
     {
