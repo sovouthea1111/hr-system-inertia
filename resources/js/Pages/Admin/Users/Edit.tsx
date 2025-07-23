@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import { Modal } from "@/Components/UI/Modal";
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
@@ -43,6 +43,9 @@ export function EditUserModal({
     user,
     onUserUpdated,
 }: EditUserModalProps) {
+    const { auth } = usePage().props;
+    const isEmployee = auth.user.user_role === "Employee";
+
     const { data, setData, put, processing, errors, reset, clearErrors } =
         useForm({
             name: "",
@@ -128,12 +131,16 @@ export function EditUserModal({
                             id="name"
                             type="text"
                             value={data.name}
-                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange("name", e.target.value)
+                            }
                             placeholder="Enter full name"
-                            className={errors.name ? "border-red-500" : ""}
+                            className={errors.name ? "border-danger" : ""}
                         />
                         {errors.name && (
-                            <p className="text-sm text-red-500">{errors.name}</p>
+                            <p className="text-sm text-danger">
+                                {errors.name}
+                            </p>
                         )}
                     </div>
 
@@ -143,12 +150,16 @@ export function EditUserModal({
                             id="email"
                             type="email"
                             value={data.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange("email", e.target.value)
+                            }
                             placeholder="Enter email address"
-                            className={errors.email ? "border-red-500" : ""}
+                            className={errors.email ? "border-danger" : ""}
                         />
                         {errors.email && (
-                            <p className="text-sm text-red-500">{errors.email}</p>
+                            <p className="text-sm text-danger">
+                                {errors.email}
+                            </p>
                         )}
                     </div>
 
@@ -156,21 +167,38 @@ export function EditUserModal({
                         <Label htmlFor="user_role">Role</Label>
                         <Select
                             value={data.user_role}
-                            onValueChange={(value) => handleInputChange("user_role", value)}
+                            onValueChange={(value) =>
+                                handleInputChange("user_role", value)
+                            }
+                            disabled={isEmployee}
                         >
-                            <SelectTrigger className={errors.user_role ? "border-red-500" : ""}>
+                            <SelectTrigger
+                                className={
+                                    errors.user_role ? "border-danger" : ""
+                                }
+                            >
                                 <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                             <SelectContent>
                                 {roles.map((role) => (
-                                    <SelectItem key={role.value} value={role.value}>
+                                    <SelectItem
+                                        key={role.value}
+                                        value={role.value}
+                                    >
                                         {role.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         {errors.user_role && (
-                            <p className="text-sm text-red-500">{errors.user_role}</p>
+                            <p className="text-sm text-danger">
+                                {errors.user_role}
+                            </p>
+                        )}
+                        {isEmployee && (
+                            <p className="text-sm text-danger">
+                                Role cannot be changed by employees
+                            </p>
                         )}
                     </div>
                 </div>
