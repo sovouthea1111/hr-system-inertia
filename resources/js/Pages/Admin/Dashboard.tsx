@@ -17,14 +17,23 @@ import {
 import toast from "react-hot-toast";
 import { useState } from "react";
 
+interface DepartmentStat {
+    name: string;
+    total: number;
+    active: number;
+    on_leave: number;
+}
+
 interface PageProps {
     stats?: {
         total_employees: number;
+        active_employees: number;
         pending_leaves: number;
         approved_leaves: number;
         total_users: number;
     };
     recentLeaveRequests?: LeaveRequest[];
+    departmentStats?: DepartmentStat[];
     [key: string]: any;
 }
 
@@ -37,7 +46,7 @@ interface LeaveRequest {
 
 export default function AdminDashboard() {
     const pageProps = usePage<PageProps & { auth: any }>().props;
-    const { stats, recentLeaveRequests } = pageProps;
+    const { stats, recentLeaveRequests, departmentStats } = pageProps;
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
@@ -49,6 +58,8 @@ export default function AdminDashboard() {
         total_users: 0,
     };
     console.log(stats);
+
+    const safeDepartmentStats = departmentStats || [];
 
     const safeRecentLeaveRequests = recentLeaveRequests || [];
     const statsData = [
@@ -179,21 +190,37 @@ export default function AdminDashboard() {
                 title="Admin Dashboard"
                 breadcrumbs={breadcrumbs}
                 headerActions={
-                    <Button className="hidden" variant="primary">Generate Report</Button>
+                    <div className="flex gap-2">
+                        <Button className="hidden" variant="outline">
+                            Export Report
+                        </Button>
+                        <Button className="hidden" variant="primary">
+                            Add Employee
+                        </Button>
+                    </div>
                 }
             >
                 <div className="space-y-6">
-                    {/* Stats Grid */}
+                    {/* Enhanced Stats Grid with Trends */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         {statsData.map((stat, index) => {
                             const IconComponent = stat.icon;
                             return (
-                                <Card key={index}>
+                                <Card
+                                    key={index}
+                                    className="hover:shadow-md transition-shadow"
+                                >
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium">
                                             {stat.title}
                                         </CardTitle>
-                                        <IconComponent className="h-4 w-4 text-muted-foreground" />
+                                        <div className="flex items-center gap-2">
+                                            <IconComponent className="h-4 w-4 text-muted-foreground" />
+                                            {/* Add trend indicator */}
+                                            <span className="text-xs text-success">
+                                                +5%
+                                            </span>
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="text-2xl font-bold">
@@ -202,21 +229,33 @@ export default function AdminDashboard() {
                                         <p className="text-xs text-muted-foreground">
                                             {stat.description}
                                         </p>
+                                        {/* Add mini chart or progress bar */}
+                                        <div className="mt-2 h-1 bg-gray-200 rounded">
+                                            <div
+                                                className="h-1 bg-primary rounded"
+                                                style={{ width: "60%" }}
+                                            ></div>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             );
                         })}
                     </div>
 
-                    {/* Recent Activity */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                        <Card className="col-span-4">
-                            <CardHeader>
-                                <CardTitle>Recent Leave Requests</CardTitle>
-                                <CardDescription>
-                                    Latest leave applications requiring
-                                    attention
-                                </CardDescription>
+                    {/* Main Content Grid - 3 Column Layout */}
+                    <div className="grid gap-6 lg:grid-cols-12">
+                        {/* Recent Leave Requests - 5 columns */}
+                        <Card className="lg:col-span-5">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle>Recent Leave Requests</CardTitle>
+                                    <CardDescription>
+                                        Latest applications requiring attention
+                                    </CardDescription>
+                                </div>
+                                <Button variant="ghost" size="sm">
+                                    View All
+                                </Button>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
@@ -285,43 +324,68 @@ export default function AdminDashboard() {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        <Card className="col-span-3">
+                        {/* Department Overview */}
+                        <Card className="lg:col-span-7">
                             <CardHeader>
-                                <CardTitle>Quick Actions</CardTitle>
+                                <CardTitle>Department Overview</CardTitle>
                                 <CardDescription>
-                                    Common administrative tasks
+                                    Employee distribution by department
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                                <Button
-                                    className="w-full justify-start"
-                                    variant="outline"
-                                >
-                                    <UsersIcon className="mr-2 h-4 w-4" />
-                                    Manage Employees
-                                </Button>
-                                <Button
-                                    className="w-full justify-start"
-                                    variant="outline"
-                                >
-                                    <CalendarCheckIcon className="mr-2 h-4 w-4" />
-                                    View All Leaves
-                                </Button>
-                                <Button
-                                    className="w-full justify-start"
-                                    variant="outline"
-                                >
-                                    <ClockIcon className="mr-2 h-4 w-4" />
-                                    Attendance Report
-                                </Button>
-                                <Button
-                                    className="w-full justify-start"
-                                    variant="outline"
-                                >
-                                    <TrendingUpIcon className="mr-2 h-4 w-4" />
-                                    Analytics
-                                </Button>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {safeDepartmentStats.length > 0 ? (
+                                        safeDepartmentStats.map(
+                                            (dept, index) => {
+                                                const maxEmployees = Math.max(
+                                                    ...safeDepartmentStats.map(
+                                                        (d) => d.total
+                                                    )
+                                                );
+                                                const widthPercentage =
+                                                    maxEmployees > 0
+                                                        ? (dept.total /
+                                                              maxEmployees) *
+                                                          80
+                                                        : 0;
+
+                                                return (
+                                                    <div
+                                                        key={index}
+                                                        className="flex justify-between items-center"
+                                                    >
+                                                        <span className="text-sm font-medium">
+                                                            {dept.name}
+                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-20 h-2 bg-gray-200 rounded">
+                                                                <div
+                                                                    className="h-2 bg-primary rounded"
+                                                                    style={{
+                                                                        width: `${widthPercentage}%`,
+                                                                    }}
+                                                                ></div>
+                                                            </div>
+                                                            <span className="text-sm font-medium">
+                                                                {dept.total}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground ml-2">
+                                                                ({dept.active}{" "}
+                                                                active,{" "}
+                                                                {dept.on_leave}{" "}
+                                                                on leave)
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                        )
+                                    ) : (
+                                        <div className="p-4 text-center text-muted-foreground">
+                                            No department data available
+                                        </div>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

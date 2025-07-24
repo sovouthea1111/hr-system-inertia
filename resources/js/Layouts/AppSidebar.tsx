@@ -9,6 +9,7 @@ import {
     MoonIcon,
     UsersIcon,
     User,
+    UserIcon,
 } from "lucide-react";
 import { router } from "@inertiajs/react";
 
@@ -70,7 +71,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         userData.role?.toUpperCase() === "HUMAN RESOURCES";
 
     const getNavigation = () => {
-        const baseNavigation = [
+        // HR/Admin Navigation
+        if (userData.role === "HR" || userData.role === "SuperAdmin") {
+            return [
+                {
+                    title: "DASHBOARD",
+                    url: "/admin",
+                    icon: LayoutDashboardIcon,
+                    isActive: url === "/admin" || url === "/admin/dashboard",
+                },
+                {
+                    title: "EMPLOYEES",
+                    url: "/admin/employees",
+                    icon: UsersIcon,
+                    isActive: url.startsWith("/admin/employees"),
+                },
+                {
+                    title: "LEAVE MANAGEMENT",
+                    url: "/admin/leaves",
+                    icon: CalendarCheckIcon,
+                    isActive: url.startsWith("/admin/leaves"),
+                },
+                {
+                    title: "USERS",
+                    url: "/admin/users",
+                    icon: User,
+                    isActive: url.startsWith("/admin/users"),
+                },
+            ];
+        }
+
+        // Employee Navigation
+        return [
             {
                 title: "DASHBOARD",
                 url: "/dashboard",
@@ -78,27 +110,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 isActive: url === "/dashboard",
             },
             {
-                title: "EMPLOYEES",
-                url: "/admin/employees",
-                icon: UsersIcon,
-                isActive: url.startsWith("/admin/employees"),
-            },
-            {
-                title: "LEAVE APPLICATION",
+                title: "MY LEAVES",
                 url: "/admin/leaves",
                 icon: CalendarCheckIcon,
                 isActive: url.startsWith("/admin/leaves"),
             },
             {
-                title: "USERS",
-                url: "/admin/users",
-                icon: User,
-                isActive: url.startsWith("/admin/users"),
+                title: "MY PROFILE",
+                url: "/admin/employees",
+                icon: UserIcon,
+                isActive: url.startsWith("/admin/employees"),
             },
         ];
-
-        return baseNavigation;
     };
+
+    // Remove the separate getEmployeeNavigation function and use getNavigation() instead
 
     const handleLogout = () => {
         router.post(route("logout"));
