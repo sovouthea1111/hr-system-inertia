@@ -93,9 +93,9 @@ class Leave extends Model
     public function getDaysRequestedAttribute()
     {
         if (!$this->start_date || !$this->end_date) {
-        return 0;
-    }
-    return $this->start_date->diff($this->end_date)->days + 1;
+            return 0;
+        }
+        return $this->start_date->diff($this->end_date)->days + 1;
     }
 
     public function getStatusBadgeAttribute()
@@ -126,22 +126,57 @@ class Leave extends Model
     }
 
     /**
-     * Get employee's leave balance
+     * Get employee's leave balance with detailed breakdown
      */
     public static function getEmployeeLeaveBalance($employeeId, $year = null)
     {
         $year = $year ?? now()->year;
         
+        // Get approved leaves with more efficient query
         $approvedLeaves = static::where('employee_id', $employeeId)
             ->where('status', 'approved')
             ->whereYear('start_date', $year)
-            ->get()
+            ->selectRaw('leave_type, SUM(DATEDIFF(end_date, start_date) + 1) as total_days')
             ->groupBy('leave_type')
-            ->map(function ($leaves) {
-                return $leaves->sum('days_requested');
-            });
+            ->pluck('total_days', 'leave_type');
+
+        // Define default leave entitlements (consider moving to config)
+        $leaveEntitlements = [
+            'annual' => 21,
+            'sick' => 10,
+            'personal' => 5,
+            'maternity' => 90,
+            'paternity' => 14,
+            'compassionate' => 3,
+        ];
+
+        // Calculate balance for each leave type
+        $leaveBalance = collect($leaveEntitlements)->map(function ($entitlement, $leaveType) use ($approvedLeaves) {
+            $used = $approvedLeaves->get($leaveType, 0);
+            return [
+                'entitlement' => $entitlement,
+                'used' => $used,
+                'remaining' => max(0, $entitlement - $used),
+                'percentage_used' => $entitlement > 0 ? round(($used / $entitlement) * 100, 2) : 0
+            ];
+        });
+
+        return $leaveBalance;
+    }
+
+    /**
+     * Get simple used leave days by type (for backward compatibility)
+     */
+    public static function getUsedLeaveDays($employeeId, $year = null)
+    {
+        $year = $year ?? now()->year;
         
-        return $approvedLeaves;
+        return static::where('employee_id', $employeeId)
+            ->where('status', 'approved')
+            ->whereYear('start_date', $year)
+            ->selectRaw('leave_type, SUM(DATEDIFF(end_date, start_date) + 1) as total_days')
+            ->groupBy('leave_type')
+            ->pluck('total_days', 'leave_type');
     }
 
     /**
@@ -230,9 +265,29 @@ class Leave extends Model
         ];
     }
 
-    // Add this relationship method
-    public function user()
+    /**
+     * Relationship to user who approved the leave
+     */
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Get remaining leave balance for a specific leave type
+     */
+    public static function getRemainingBalance($employeeId, $leaveType, $year = null)
+    {
+        $balance = static::getEmployeeLeaveBalance($employeeId, $year);
+        return $balance->get($leaveType, ['remaining' => 0])['remaining'];
+    }
+
+    /**
+     * Check if employee can take leave (has sufficient balance)
+     */
+    public static function canTakeLeave($employeeId, $leaveType, $daysRequested, $year = null)
+    {
+        $remaining = static::getRemainingBalance($employeeId, $leaveType, $year);
+        return $remaining >= $daysRequested;
     }
 }
