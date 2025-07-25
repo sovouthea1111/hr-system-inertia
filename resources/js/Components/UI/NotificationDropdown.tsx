@@ -252,13 +252,13 @@ export function NotificationDropdown({
                   });
 
         return (
-            <div className="space-y-4 max-h-80 overflow-y-auto">
+            <div className="space-y-4 max-h-80 overflow-y-auto border border-card">
                 {filteredNotifications.map((notification) => (
                     <div
                         key={notification.id}
-                        className={`flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-gray-50 ${
+                        className={`flex items-start gap-3 p-2 rounded cursor-pointer bg-card hover:bg-gray-50 ${
                             !notification.read
-                                ? "bg-blue-50 border-l-4 border-blue-500"
+                                ? "bg-blue-50 border-l-4 border-primary"
                                 : ""
                         }`}
                         onClick={() => handleMarkAsRead(notification)}
@@ -281,7 +281,7 @@ export function NotificationDropdown({
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <p className="text-sm">
-                                        <span className="font-medium">
+                                        <span className="text-primary font-medium">
                                             {notification.leaveRequest
                                                 ?.employeeName ||
                                                 notification.title ||

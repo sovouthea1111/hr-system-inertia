@@ -337,45 +337,16 @@ export default function EmployeesPage() {
         router.reload({ only: ["employees"] });
     };
 
+    // Update status badge function
     const getStatusBadgeVariant = (status: string) => {
         switch (status) {
             case "active":
-                return "bg-green-100 text-green-800 border-green-200";
+                return "bg-success/10 text-success border-success/20";
             case "inactive":
-                return "bg-red-100 text-red-800 border-red-200";
+                return "bg-muted text-muted-foreground border-border";
             default:
-                return "bg-gray-100 text-gray-800 border-gray-200";
+                return "bg-muted text-muted-foreground border-border";
         }
-    };
-
-    // Pagination handlers
-    const handlePageChange = (url: string) => {
-        if (url) {
-            router.get(
-                url,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                }
-            );
-        }
-    };
-
-    const handlePerPageChange = (value: string) => {
-        const currentFilters = {
-            ...(nameFilter && { name: nameFilter }),
-            ...(emailFilter && { email: emailFilter }),
-            ...(departmentFilter && { department: departmentFilter }),
-            ...(statusFilter && { status: statusFilter }),
-            per_page: value,
-            page: 1, // Reset to first page when changing per_page
-        };
-
-        router.get(route("admin.employees.index"), currentFilters, {
-            preserveState: true,
-            preserveScroll: true,
-        });
     };
 
     const formatStatus = (status: string) => {
@@ -420,7 +391,6 @@ export default function EmployeesPage() {
                         fields={getFilterFields()}
                         onFieldChange={handleFilterChange}
                         onClear={handleClearFilters}
-                        onApply={applyFilters}
                     />
 
                     {/* Table Section */}
@@ -428,7 +398,7 @@ export default function EmployeesPage() {
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-gray-50">
+                                    <TableRow className="bg-muted/50">
                                         <TableHead className="w-12">
                                             <Checkbox
                                                 checked={selectAll}
@@ -455,7 +425,7 @@ export default function EmployeesPage() {
                                         <TableRow>
                                             <TableCell
                                                 colSpan={9}
-                                                className="text-center py-8 text-gray-500"
+                                                className="text-center py-8 text-muted-foreground"
                                             >
                                                 No employees found
                                             </TableCell>
@@ -464,7 +434,7 @@ export default function EmployeesPage() {
                                         employees.data.map((employee) => (
                                             <TableRow
                                                 key={employee.id}
-                                                className="hover:bg-gray-50"
+                                                className="hover:bg-muted/50"
                                             >
                                                 <TableCell>
                                                     <Checkbox
@@ -504,29 +474,29 @@ export default function EmployeesPage() {
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <div className="font-semibold text-gray-900">
+                                                        <div className="font-semibold text-foreground">
                                                             {employee.full_name}
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-gray-600">
+                                                <TableCell className="text-muted-foreground">
                                                     {employee.email}
                                                 </TableCell>
-                                                <TableCell className="text-gray-600">
+                                                <TableCell className="text-muted-foreground">
                                                     {employee.phone || "N/A"}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge
                                                         variant="outline"
-                                                        className="bg-blue-50 text-primary border-blue-200"
+                                                        className="bg-primary/10 text-primary border-primary/20"
                                                     >
                                                         {employee.department}
                                                     </Badge>
                                                 </TableCell>
-                                                <TableCell className="text-gray-600">
+                                                <TableCell className="text-muted-foreground">
                                                     {employee.position || "N/A"}
                                                 </TableCell>
-                                                <TableCell className="text-gray-600">
+                                                <TableCell className="text-muted-foreground">
                                                     {new Date(
                                                         employee.joint_date
                                                     ).toLocaleDateString()}
@@ -572,9 +542,9 @@ export default function EmployeesPage() {
 
                     {/* Pagination - Only show if there are more than 10 employees */}
                     {employees.total > 10 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
                             {/* Left side - Results info */}
-                            <div className="text-sm text-gray-700">
+                            <div className="text-sm text-muted-foreground">
                                 Showing {employees.from || 0} to{" "}
                                 {employees.to || 0} of {employees.total} results
                             </div>
@@ -588,7 +558,7 @@ export default function EmployeesPage() {
                                             <PaginationItem>
                                                 <PaginationPrevious
                                                     onClick={() =>
-                                                        handlePageChange(
+                                                        router.get(
                                                             employees.links[0]
                                                                 ?.url || ""
                                                         )
@@ -621,7 +591,7 @@ export default function EmployeesPage() {
                                                         >
                                                             <PaginationLink
                                                                 onClick={() =>
-                                                                    handlePageChange(
+                                                                    router.get(
                                                                         link.url ||
                                                                             ""
                                                                     )
@@ -641,7 +611,7 @@ export default function EmployeesPage() {
                                             <PaginationItem>
                                                 <PaginationNext
                                                     onClick={() =>
-                                                        handlePageChange(
+                                                        router.get(
                                                             employees.links[
                                                                 employees.links
                                                                     .length - 1
@@ -662,11 +632,20 @@ export default function EmployeesPage() {
                             </div>
 
                             {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Show:</span>
                                 <Select
                                     value={employees.per_page.toString()}
-                                    onValueChange={handlePerPageChange}
+                                    onValueChange={(value) => {
+                                        router.get(
+                                            route("admin.employees.index"),
+                                            { per_page: value },
+                                            {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                            }
+                                        );
+                                    }}
                                 >
                                     <SelectTrigger className="w-20 h-8">
                                         <SelectValue />

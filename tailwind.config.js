@@ -3,6 +3,7 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: 'class', // Add this line to enable class-based dark mode
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
@@ -18,6 +19,7 @@ export default {
             },
             colors: {
                 border: "hsl(var(--border))",
+                "border-card": "hsl(var(--border-card))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
                 background: "hsl(var(--background))",
@@ -89,6 +91,9 @@ export default {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            borderWidth: {
+                'card': 'var(--border-card)',
+            },
             keyframes: {
                 "accordion-down": {
                     from: { height: "0" },
@@ -110,8 +115,5 @@ export default {
             },
         },
     },
-
-    plugins: [
-        forms,
-    ],
+    plugins: [forms],
 };

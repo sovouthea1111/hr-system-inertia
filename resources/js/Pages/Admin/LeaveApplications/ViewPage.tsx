@@ -32,8 +32,10 @@ interface ViewPageProps {
 }
 
 export default function ViewPage({ leave, auth }: ViewPageProps) {
-    const isHROrSuperAdmin = ["HR", "SuperAdmin"].includes(auth?.user?.user_role);
-    
+    const isHROrSuperAdmin = ["HR", "SuperAdmin"].includes(
+        auth?.user?.user_role
+    );
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case "approved":
@@ -84,10 +86,10 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
     return (
         <AppLayout title="Leave Application Details" breadcrumbs={breadcrumbs}>
             <Head title="Leave Application Details" />
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-6 space-y-6">
+            <div className="max-w-4xl mx-auto border border-border-card bg-card rounded-lg shadow-sm p-6 space-y-6">
                 {/* Header with Status */}
                 <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-card-foreground">
                         Leave Status
                     </h3>
                     <Badge className={getStatusColor(leave.status)}>
@@ -97,19 +99,19 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                 </div>
 
                 {/* Employee Information */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="border border-border-card bg-card rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                        <User className="w-5 h-5 text-gray-600" />
-                        <h4 className="font-medium text-gray-900">
+                        <User className="w-5 h-5 text-card-foreground" />
+                        <h4 className="font-medium text-card-foreground">
                             Employee Information
                         </h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-sm font-medium text-gray-600">
+                            <label className="text-sm font-medium text-card-foreground">
                                 Name
                             </label>
-                            <p className="text-gray-900">
+                            <p className="text-card-foreground">
                                 {leave.employee_name}
                             </p>
                         </div>
@@ -117,7 +119,7 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                             <label className="text-sm font-medium text-gray-600">
                                 Email
                             </label>
-                            <p className="text-gray-900">
+                            <p className="text-card-foreground">
                                 {leave.employee_email}
                             </p>
                         </div>
@@ -125,10 +127,10 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                 </div>
 
                 {/* Leave Details */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="border border-border-card bg-card rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <Calendar className="w-5 h-5 text-gray-600" />
-                        <h4 className="font-medium text-gray-900">
+                        <h4 className="font-medium text-card-foreground">
                             Leave Details
                         </h4>
                     </div>
@@ -137,13 +139,15 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                             <label className="text-sm font-medium text-gray-600">
                                 Leave Type
                             </label>
-                            <p className="text-gray-900">{leave.leave_type}</p>
+                            <p className="text-card-foreground">
+                                {leave.leave_type}
+                            </p>
                         </div>
                         <div>
                             <label className="text-sm font-medium text-gray-600">
                                 Days Requested
                             </label>
-                            <p className="text-gray-900">
+                            <p className="text-card-foreground">
                                 {leave.days_requested} days
                             </p>
                         </div>
@@ -151,7 +155,7 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                             <label className="text-sm font-medium text-gray-600">
                                 Start Date
                             </label>
-                            <p className="text-gray-900">
+                            <p className="text-card-foreground">
                                 {formatDate(leave.start_date)}
                             </p>
                         </div>
@@ -159,7 +163,7 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                             <label className="text-sm font-medium text-gray-600">
                                 End Date
                             </label>
-                            <p className="text-gray-900">
+                            <p className="text-card-foreground">
                                 {formatDate(leave.end_date)}
                             </p>
                         </div>
@@ -167,21 +171,23 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                 </div>
 
                 {/* Reason */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="border border-border-card bg-card rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <FileText className="w-5 h-5 text-gray-600" />
-                        <h4 className="font-medium text-gray-900">Reason</h4>
+                        <h4 className="font-medium text-card-foreground">
+                            Reason
+                        </h4>
                     </div>
-                    <p className="text-gray-900 whitespace-pre-wrap">
+                    <p className="text-card-foreground whitespace-pre-wrap">
                         {leave.reason}
                     </p>
                 </div>
 
                 {/* Application Date */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="border border-border-card bg-card rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <Clock className="w-5 h-5 text-gray-600" />
-                        <h4 className="font-medium text-gray-900">
+                        <h4 className="font-medium text-card-foreground">
                             Application Information
                         </h4>
                     </div>
@@ -189,7 +195,7 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                         <label className="text-sm font-medium text-gray-600">
                             Applied Date
                         </label>
-                        <p className="text-gray-900">
+                        <p className="text-card-foreground">
                             {formatDate(leave.applied_date)}
                         </p>
                     </div>
@@ -197,22 +203,26 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
 
                 {/* Actions */}
                 <div className="flex justify-between pt-4">
-                    <Button type="button" variant="outline" onClick={handleBack}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleBack}
+                    >
                         Back to List
                     </Button>
-                    
+
                     {isHROrSuperAdmin && leave.status === "pending" && (
                         <div className="flex gap-2">
-                            <Button 
-                                type="button" 
-                                variant="primary" 
+                            <Button
+                                type="button"
+                                variant="primary"
                                 onClick={() => handleStatusUpdate("approved")}
                             >
                                 Approve
                             </Button>
-                            <Button 
-                                type="button" 
-                                variant="danger" 
+                            <Button
+                                type="button"
+                                variant="danger"
                                 onClick={() => handleStatusUpdate("rejected")}
                             >
                                 Reject

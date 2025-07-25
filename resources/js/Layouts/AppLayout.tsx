@@ -175,9 +175,9 @@ export function AppLayout({
             <AppSidebar />
             <SidebarInset>
                 {/* Sticky Header Container */}
-                <div className="sticky top-0 z-50 bg-white">
+                <div className="sticky top-0 z-50 bg-background border-border">
                     {showHeader && (
-                        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b bg-white">
+                        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b bg-background">
                             <div className="flex items-center gap-2 px-4">
                                 <SidebarTrigger className="-ml-1" />
                                 <Separator
@@ -217,10 +217,10 @@ export function AppLayout({
                     )}
 
                     {/* Page Title and Breadcrumbs Section */}
-                    <div className="bg-gray-50 px-6 py-6 border-b">
+                    <div className="px-6 py-6 border-b border-border">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
-                                <h1 className="text-2xl font-bold text-gray-900">
+                                <h1 className="text-2xl font-bold text-foreground">
                                     {title || "Page Title"}
                                 </h1>
 
@@ -236,14 +236,14 @@ export function AppLayout({
                                                                     href={
                                                                         breadcrumb.href
                                                                     }
-                                                                    className="text-sm text-gray-600 hover:text-gray-900"
+                                                                    className="text-sm text-muted-foreground hover:text-foreground"
                                                                 >
                                                                     {
                                                                         breadcrumb.label
                                                                     }
                                                                 </BreadcrumbLink>
                                                             ) : (
-                                                                <BreadcrumbPage className="text-sm text-gray-900 font-medium">
+                                                                <BreadcrumbPage className="text-sm text-foreground font-medium">
                                                                     {
                                                                         breadcrumb.label
                                                                     }
@@ -271,7 +271,7 @@ export function AppLayout({
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex flex-1 flex-col bg-gray-50">
+                <div className="flex flex-1 flex-col bg-background">
                     <div className="flex-1 p-6">{children}</div>
                 </div>
             </SidebarInset>

@@ -38,6 +38,7 @@ import {
     AlertDialogTrigger,
 } from "@/Components/UI/AlertDialog";
 import { PageProps } from "@/types";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 const defaultUserData = {
     name: "SOVOUTHEA",
@@ -54,7 +55,7 @@ interface UserData {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const [isDarkMode, setIsDarkMode] = React.useState(false);
+    const { theme, toggleTheme } = useTheme();
     const { url } = usePage();
     const { auth } = usePage<PageProps>().props;
     const user = auth?.user;
@@ -133,7 +134,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar
             collapsible="offcanvas"
-            className="bg-white shadow-md border-r border-gray-200 w-64 min-w-64"
+            className="bg-sidebar border-r border-sidebar-border w-64 min-w-64 shadow-md"
             {...props}
         >
             <SidebarHeader className="p-3">
@@ -144,24 +145,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             src={userData.avatar}
                             alt={userData.name}
                         />
-                        <AvatarFallback className="bg-primary text-white font-semibold text-xs">
+                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs">
                             {userData.name.charAt(0)}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                        <div className="text-xs text-gray-500 font-medium truncate">
+                        <div className="text-xs text-sidebar-foreground/70 font-medium truncate">
                             {userData.role}
                             {isHR && (
-                                <span className="ml-1 px-1 py-0.5 bg-green-100 text-green-600 rounded text-xs font-semibold">
+                                <span className="ml-1 px-1 py-0.5 bg-success/10 text-success rounded text-xs font-semibold">
                                     HR
                                 </span>
                             )}
                         </div>
-                        <div className="text-sm font-semibold text-gray-900 truncate">
+                        <div className="text-sm font-semibold text-sidebar-foreground truncate">
                             {userData.name}
                         </div>
                         {userData.email && (
-                            <div className="text-xs text-gray-400 truncate">
+                            <div className="text-xs text-sidebar-foreground/60 truncate">
                                 {userData.email}
                             </div>
                         )}
@@ -180,8 +181,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         asChild
                                         className={`w-full justify-start h-9 px-2 rounded-lg transition-colors ${
                                             item.isActive
-                                                ? "bg-primary text-white hover:bg-primary hover:text-white"
-                                                : "hover:bg-primary hover:text-white text-gray-700"
+                                                ? theme === "dark"
+                                                    ? "bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-foreground font-medium"
+                                                    : "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground font-medium"
+                                                : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground"
                                         }`}
                                     >
                                         <a
@@ -209,10 +212,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenuItem>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <SidebarMenuButton className="w-full justify-start h-9 px-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <SidebarMenuButton className="w-full justify-start h-9 px-2 rounded-lg hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <LogOutIcon className="h-4 w-4 text-gray-600 flex-shrink-0" />
-                                                <span className="font-medium text-gray-700 text-xs truncate">
+                                                <LogOutIcon className="h-4 w-4 text-sidebar-foreground/70 flex-shrink-0" />
+                                                <span className="font-medium text-sidebar-foreground text-xs truncate">
                                                     LOG OUT
                                                 </span>
                                             </div>
@@ -232,7 +235,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                 Cancel
                                             </AlertDialogCancel>
                                             <AlertDialogAction
-                                                className="bg-primary text-white hover:bg-danger"
+                                                className="bg-primary text-primary-foreground hover:bg-danger"
                                                 onClick={handleLogout}
                                             >
                                                 Logout
@@ -246,16 +249,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
 
                 {/* Night Mode Toggle */}
-                <div className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-gray-50">
+                <div className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <MoonIcon className="h-4 w-4 text-gray-600 flex-shrink-0" />
-                        <span className="font-medium text-gray-700 text-xs truncate">
+                        <MoonIcon className="h-4 w-4 text-sidebar-foreground/70 flex-shrink-0" />
+                        <span className="font-medium text-sidebar-foreground text-xs truncate">
                             NIGHTMODE
                         </span>
                     </div>
                     <Switch
-                        checked={isDarkMode}
-                        onCheckedChange={setIsDarkMode}
+                        checked={theme === "dark"}
+                        onCheckedChange={toggleTheme}
                         className="data-[state=checked]:bg-primary flex-shrink-0 scale-75"
                     />
                 </div>
