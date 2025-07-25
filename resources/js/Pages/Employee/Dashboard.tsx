@@ -85,13 +85,13 @@ export default function EmployeeDashboard() {
 
     const getStatusBadge = (status: string) => {
         const variants = {
-            pending: "bg-yellow-100 text-yellow-800",
-            approved: "bg-green-100 text-green-800",
-            rejected: "bg-red-100 text-red-800",
+            pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+            approved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+            rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
         };
         return (
             variants[status as keyof typeof variants] ||
-            "bg-gray-100 text-gray-800"
+            "bg-muted text-muted-foreground"
         );
     };
 
@@ -236,14 +236,14 @@ export default function EmployeeDashboard() {
                                     {upcomingLeaves.map((leave) => (
                                         <div
                                             key={leave.id}
-                                            className="flex items-center justify-between p-3 border rounded-lg bg-green-50"
+                                            className="flex items-center justify-between p-3 border border-border rounded-lg bg-success/10"
                                         >
                                             <div className="flex-1">
                                                 <div className="flex items-center space-x-2">
                                                     <span className="font-medium">
                                                         {leave.leave_type}
                                                     </span>
-                                                    <Badge className="bg-green-100 text-green-800">
+                                                    <Badge className="bg-success/20 text-success">
                                                         Approved
                                                     </Badge>
                                                 </div>
@@ -257,7 +257,7 @@ export default function EmployeeDashboard() {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-500 text-center py-4">
+                                <p className="text-muted-foreground text-center py-4">
                                     No upcoming leaves scheduled
                                 </p>
                             )}

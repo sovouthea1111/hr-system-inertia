@@ -86,19 +86,19 @@ export function GroupFilter({
     return (
         <div
             className={cn(
-                "border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200",
+                "border border-border rounded-xl bg-card shadow-sm hover:shadow-md transition-all duration-200",
                 className
             )}
         >
             {/* Header */}
             <div
-                className="flex items-center justify-between p-4 cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 rounded-t-xl"
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-all duration-200 rounded-t-xl"
                 onClick={toggleExpanded}
             >
                 <div className="flex items-center gap-3">
-                    <Filter className="h-4 w-4 text-gray-500" />
+                    <Filter className="h-4 w-4 text-muted-foreground" />
                     <div>
-                        <span className="font-semibold text-gray-900 text-lg">
+                        <span className="font-semibold text-foreground text-lg">
                             {title}
                         </span>
                         {hasValues && (
@@ -114,7 +114,7 @@ export function GroupFilter({
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-all duration-200"
                 >
                     {isExpanded ? (
                         <ChevronUp className="h-5 w-5" />
@@ -126,7 +126,7 @@ export function GroupFilter({
 
             {/* Expanded Content */}
             {isExpanded && (
-                <div className="border-t border-gray-100 bg-gradient-to-br from-gray-50 to-blue-50/30">
+                <div className="border-t border-border bg-muted/30">
                     <div className="p-6">
                         {/* Filter Fields Grid with Clear Button */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-end">
@@ -134,7 +134,7 @@ export function GroupFilter({
                                 <div key={field.id} className="space-y-2">
                                     <Label
                                         htmlFor={field.id}
-                                        className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+                                        className="text-sm font-semibold text-foreground flex items-center gap-2"
                                     >
                                         {field.label}
                                     </Label>
@@ -146,7 +146,7 @@ export function GroupFilter({
                                                 onFieldChange(field.id, value)
                                             }
                                         >
-                                            <SelectTrigger className="h-11 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg transition-all duration-200 bg-white shadow-sm hover:shadow-md">
+                                            <SelectTrigger className="h-11 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md">
                                                 <SelectValue
                                                     placeholder={
                                                         field.placeholder
@@ -179,7 +179,7 @@ export function GroupFilter({
                                                 <Button
                                                     variant="outline"
                                                     className={cn(
-                                                        "h-11 w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg transition-all duration-200 bg-white shadow-sm hover:shadow-md",
+                                                        "h-11 w-full justify-start text-left font-normal border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md",
                                                         !field.dateValue &&
                                                             "text-muted-foreground"
                                                     )}
@@ -215,7 +215,7 @@ export function GroupFilter({
                                                         }
                                                         initialFocus
                                                     />
-                                                    <div className="flex justify-end mt-3 pt-3 border-t">
+                                                    <div className="flex justify-end mt-3 pt-3 border-t border-border">
                                                         <Button
                                                             size="sm"
                                                             onClick={() =>
@@ -223,7 +223,7 @@ export function GroupFilter({
                                                                     field.id
                                                                 )
                                                             }
-                                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
                                                         >
                                                             Done
                                                         </Button>
@@ -242,7 +242,7 @@ export function GroupFilter({
                                                     e.target.value
                                                 )
                                             }
-                                            className="h-11 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg transition-all duration-200 bg-white shadow-sm hover:shadow-md"
+                                            className="h-11 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md"
                                         />
                                     )}
                                 </div>
@@ -255,7 +255,7 @@ export function GroupFilter({
                                         variant="outline"
                                         size="sm"
                                         onClick={onClear}
-                                        className="h-11 flex items-center gap-2 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-all duration-200 rounded-lg px-4"
+                                        className="h-11 flex items-center gap-2 text-muted-foreground hover:text-destructive hover:border-destructive hover:bg-destructive/10 transition-all duration-200 rounded-lg px-4"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                         Clear All

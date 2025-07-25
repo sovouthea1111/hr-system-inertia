@@ -16,8 +16,7 @@ class NotificationController extends Controller
         $type = $request->get('type', 'all');
         
         if ($user->user_role === 'HR' || $user->user_role === 'SuperAdmin') {
-            // HR sees pending leave requests as notifications
-            $query = Leave::with(['employee', 'user'])
+            $query = Leave::with(['employee'])  
                 ->where('status', 'pending');
                 
             if ($type === 'pending') {
@@ -158,7 +157,7 @@ class NotificationController extends Controller
         
         return response()->json([
             'message' => "Leave request {$status} successfully",
-            'leave' => $leave->load(['employee', 'user'])
+            'leave' => $leave->load(['employee'])
         ]);
     }
 }
