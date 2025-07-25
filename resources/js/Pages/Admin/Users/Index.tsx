@@ -404,7 +404,7 @@ export default function UsersPage() {
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-gray-50">
+                                    <TableRow>
                                         {canManage && (
                                             <TableHead className="w-12">
                                                 <Checkbox
@@ -514,7 +514,10 @@ export default function UsersPage() {
 
                     {/* Pagination - Always show if there are users */}
                     {users.data.length > 0 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                            <div className="text-sm text-muted-foreground">
+                                Showing {users.from || 0} to {users.to || 0} of {users.total} results
+                            </div>
                             {/* Left side - Results info */}
                             <div className="text-sm text-gray-700">
                                 Showing {users.from || 0} to {users.to || 0} of{" "}
@@ -603,7 +606,7 @@ export default function UsersPage() {
                             </div>
 
                             {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Show:</span>
                                 <Select
                                     value={users.per_page.toString()}

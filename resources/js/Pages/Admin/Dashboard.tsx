@@ -230,7 +230,7 @@ export default function AdminDashboard() {
                                             {stat.description}
                                         </p>
                                         {/* Add mini chart or progress bar */}
-                                        <div className="mt-2 h-1 bg-gray-200 rounded">
+                                        <div className="mt-2 h-1 bg-muted rounded">
                                             <div
                                                 className="h-1 bg-primary rounded"
                                                 style={{ width: "60%" }}
@@ -358,7 +358,7 @@ export default function AdminDashboard() {
                                                             {dept.name}
                                                         </span>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-20 h-2 bg-gray-200 rounded">
+                                                            <div className="w-20 h-2 bg-muted rounded">
                                                                 <div
                                                                     className="h-2 bg-primary rounded"
                                                                     style={{

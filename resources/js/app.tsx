@@ -5,21 +5,17 @@ import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from '@/Contexts/ThemeContext';
 
-const appName = import.meta.env.VITE_APP_NAME || "Laravel";
+const appName =  "HR System";
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) =>
-        resolvePageComponent(
-            `./Pages/${name}.tsx`,
-            import.meta.glob("./Pages/**/*.tsx")
-        ),
+    resolve: (name) => resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
-
         root.render(
-            <>
+            <ThemeProvider>
                 <App {...props} />
                 <Toaster
                     position="top-right"
@@ -41,10 +37,10 @@ createInertiaApp({
                         },
                     }}
                 />
-            </>
+            </ThemeProvider>
         );
     },
     progress: {
-        color: "#4B5563",
+        color: '#4B5563',
     },
 });

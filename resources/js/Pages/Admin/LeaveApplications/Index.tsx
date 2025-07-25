@@ -285,7 +285,6 @@ export default function LeaveApplicationsPage() {
             { status: newStatus },
             {
                 onSuccess: (response) => {
-                    
                     toast.success("Leave status updated successfully!");
                     router.reload({ only: ["leaveApplications"] });
                 },
@@ -440,7 +439,7 @@ export default function LeaveApplicationsPage() {
                                                 colSpan={
                                                     isHROrSuperAdmin ? 8 : 9
                                                 }
-                                                className="text-center py-8 text-gray-500"
+                                                className="text-center py-8 text-muted-foreground"
                                             >
                                                 No leave applications found.
                                             </TableCell>
@@ -451,12 +450,12 @@ export default function LeaveApplicationsPage() {
                                                 <TableRow key={application.id}>
                                                     <TableCell>
                                                         <div>
-                                                            <div className="font-medium">
+                                                            <div className="font-medium text-foreground">
                                                                 {
                                                                     application.employee_name
                                                                 }
                                                             </div>
-                                                            <div className="text-sm text-gray-500">
+                                                            <div className="text-sm text-muted-foreground">
                                                                 {
                                                                     application.employee_email
                                                                 }
@@ -466,24 +465,24 @@ export default function LeaveApplicationsPage() {
                                                     <TableCell>
                                                         <Badge
                                                             variant="outline"
-                                                            className="bg-blue-50 text-primary border-blue-200"
+                                                            className="bg-primary/10 text-primary border-primary/20"
                                                         >
                                                             {
                                                                 application.leave_type
                                                             }
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-gray-600">
+                                                    <TableCell className="text-muted-foreground">
                                                         {formatDate(
                                                             application.start_date
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-gray-600">
+                                                    <TableCell className="text-muted-foreground">
                                                         {formatDate(
                                                             application.end_date
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-gray-600">
+                                                    <TableCell className="text-muted-foreground">
                                                         {
                                                             application.days_requested
                                                         }
@@ -508,7 +507,7 @@ export default function LeaveApplicationsPage() {
                                                                     )
                                                                 }
                                                             >
-                                                                <SelectTrigger className="w-auto min-w-[140px] h-8 rounded-full bg-gray-100 border-2 hover:bg-gray-200 transition-colors">
+                                                                <SelectTrigger className="w-auto min-w-[140px] h-8 rounded-full bg-muted border-2 hover:bg-muted/80 transition-colors">
                                                                     <div className="flex items-center gap-2">
                                                                         <div
                                                                             className={`w-2 h-2 rounded-full ${getStatusIndicatorClass(
@@ -559,50 +558,18 @@ export default function LeaveApplicationsPage() {
                                                                 </SelectContent>
                                                             </Select>
                                                         ) : (
-                                                            <div
-                                                                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium"
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        application.status ===
-                                                                        "approved"
-                                                                            ? "#dcfce7"
-                                                                            : application.status ===
-                                                                              "pending"
-                                                                            ? "#fef3c7"
-                                                                            : "#fee2e2",
-                                                                    color:
-                                                                        application.status ===
-                                                                        "approved"
-                                                                            ? "#166534"
-                                                                            : application.status ===
-                                                                              "pending"
-                                                                            ? "#92400e"
-                                                                            : "#991b1b",
-                                                                }}
-                                                            >
+                                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
+                                                                {application.status ===
+                                                                "approved" ? (
+                                                                    <CheckCircle className="w-4 h-4 text-success" />
+                                                                ) : (
+                                                                    <XCircle className="w-4 h-4 text-danger" />
+                                                                )}
                                                                 <div
-                                                                    className={`${
-                                                                        application.status ===
-                                                                        "approved"
-                                                                            ? "bg-success"
-                                                                            : application.status ===
-                                                                              "pending"
-                                                                            ? "bg-warning animate-pulse"
-                                                                            : "bg-danger"
-                                                                    }`}
+                                                                    className={getStatusIndicatorClass(
+                                                                        application.status
+                                                                    )}
                                                                 />
-                                                                {application.status ===
-                                                                    "approved" && (
-                                                                    <CheckCircle className="w-4 h-4" />
-                                                                )}
-                                                                {application.status ===
-                                                                    "pending" && (
-                                                                    <Clock className="w-4 h-4" />
-                                                                )}
-                                                                {application.status ===
-                                                                    "rejected" && (
-                                                                    <XCircle className="w-4 h-4" />
-                                                                )}
                                                                 <span>
                                                                     {formatStatus(
                                                                         application.status
@@ -611,7 +578,7 @@ export default function LeaveApplicationsPage() {
                                                             </div>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-gray-600">
+                                                    <TableCell className="text-muted-foreground">
                                                         {formatDate(
                                                             application.applied_date
                                                         )}
@@ -666,9 +633,8 @@ export default function LeaveApplicationsPage() {
 
                     {/* Pagination - Only show if there are more than 10 applications */}
                     {leaveApplications.total > 10 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-                            {/* Left side - Results info */}
-                            <div className="text-sm text-gray-700">
+                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                            <div className="text-sm text-muted-foreground">
                                 Showing {leaveApplications.from || 0} to{" "}
                                 {leaveApplications.to || 0} of{" "}
                                 {leaveApplications.total} results
@@ -760,7 +726,7 @@ export default function LeaveApplicationsPage() {
                             </div>
 
                             {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Show:</span>
                                 <Select
                                     value={leaveApplications.per_page.toString()}
