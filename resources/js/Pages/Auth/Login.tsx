@@ -183,7 +183,7 @@ export default function Login({
                                             type="email"
                                             name="email"
                                             value={data.email}
-                                            className="block w-full px-4 py-4 pl-12 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                                            className="block w-full px-4 py-4 pl-12 border dark:text-gray-700 border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                                             placeholder="Enter your work email"
                                             autoComplete="username"
                                             isFocused={true}
@@ -214,7 +214,7 @@ export default function Login({
                                             type="password"
                                             name="password"
                                             value={data.password}
-                                            className="block w-full px-4 py-4 pl-12 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                                            className="block w-full px-4 py-4 pl-12 border dark:text-gray-700 border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                                             placeholder="Enter your password"
                                             autoComplete="current-password"
                                             onChange={(e) =>
