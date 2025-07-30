@@ -99,7 +99,7 @@ class DashboardController extends Controller
 
         // Calculate leave statistics
         $currentYear = Carbon::now()->year;
-        $totalLeaveDays = 25; // Or fetch from employee record/policy
+        $totalLeaveDays = 24;
         
         // Fix: Use raw SQL calculation instead of sum('days_requested')
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
@@ -155,9 +155,25 @@ class DashboardController extends Controller
 
         return Inertia::render('Employee/Dashboard', [
             'employee' => $employee,
+            'employeeData' => Employee::select('id', 'full_name', 'email')->get(),
+            'leaveTypes' => $this->getLeaveTypes(),
             'leaveStats' => $leaveStats,
             'recentLeaves' => $recentLeaves,
             'upcomingLeaves' => $upcomingLeaves,
         ]);
+    }
+
+    /**
+     * Get available leave types
+     */
+    private function getLeaveTypes(): array
+    {
+        return [
+            ['value' => 'annual', 'label' => 'Annual Leave'],
+            ['value' => 'sick', 'label' => 'Sick Leave'],
+            ['value' => 'unpaid', 'label' => 'Unpaid Leave'],
+            ['value' => 'maternity', 'label' => 'Maternity Leave'],
+            ['value' => 'other', 'label' => 'Other Leave'],
+        ];
     }
 }
