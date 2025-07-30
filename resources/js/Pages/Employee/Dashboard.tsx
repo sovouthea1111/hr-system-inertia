@@ -1,5 +1,6 @@
 import { AppLayout } from "@/Layouts/AppLayout";
 import { Head, usePage } from "@inertiajs/react";
+import { RequestLeaveModal } from "../Admin/LeaveApplications/Create";
 import {
     Card,
     CardContent,
@@ -14,9 +15,10 @@ import {
     ClockIcon,
     CheckCircleIcon,
     XCircleIcon,
-    PlusIcon,
+    Plus,
     UserIcon,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@/types";
 
@@ -53,14 +55,25 @@ interface PageProps
         leaveStats: LeaveStats;
         recentLeaves: LeaveRequest[];
         upcomingLeaves: LeaveRequest[];
+        employeeData: Array<{ id: number; full_name: string; email: string }>;
+        leaveTypes: Array<{ value: string; label: string }>;
         error?: string;
     }> {}
 
 export default function EmployeeDashboard() {
-    const { employee, leaveStats, recentLeaves, upcomingLeaves, error, auth } =
-        usePage<PageProps>().props;
+    const {
+        employee,
+        leaveStats,
+        recentLeaves,
+        upcomingLeaves,
+        error,
+        auth,
+        employeeData,
+        leaveTypes,
+    } = usePage<PageProps>().props;
 
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
     if (error) {
         return (
@@ -85,9 +98,12 @@ export default function EmployeeDashboard() {
 
     const getStatusBadge = (status: string) => {
         const variants = {
-            pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-            approved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-            rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+            pending:
+                "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+            approved:
+                "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+            rejected:
+                "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
         };
         return (
             variants[status as keyof typeof variants] ||
@@ -125,9 +141,42 @@ export default function EmployeeDashboard() {
             color: "text-yellow-600",
         },
     ];
+    // Handle leave creation success
+    const handleLeaveCreated = () => {
+        router.get(
+            route("admin.leaves.index"),
+            {},
+            {
+                preserveState: false,
+                preserveScroll: false,
+            }
+        );
+    };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs} title="Dashboard">
+        <AppLayout
+            breadcrumbs={breadcrumbs}
+            title="Dashboard"
+            showHeader={true}
+            headerActions={
+                <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsAddDialogOpen(true)}
+                >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Request Leave
+                </Button>
+            }
+        >
+            <RequestLeaveModal
+                employees={employeeData}
+                isOpen={isAddDialogOpen}
+                onClose={() => setIsAddDialogOpen(false)}
+                onLeaveCreated={handleLeaveCreated}
+                leaveTypes={leaveTypes}
+                auth={auth}
+            />
             <Head title="Employee Dashboard" />
             <div className="space-y-6">
                 {/* Welcome Section */}
