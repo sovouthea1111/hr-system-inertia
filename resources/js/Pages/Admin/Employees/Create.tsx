@@ -36,10 +36,8 @@ interface CreateEmployeeModalProps {
 const departments = [
     { value: "HR", label: "Human Resources" },
     { value: "IT", label: "Information Technology" },
-    { value: "Finance", label: "Finance" },
-    { value: "Marketing", label: "Marketing" },
-    { value: "Sales", label: "Sales" },
-    { value: "Operations", label: "Operations" },
+    { value: "Media", label: "Social Media" },
+    { value: "ISO", label: "ISO" },
 ];
 
 export function CreateEmployeeModal({
@@ -70,8 +68,7 @@ export function CreateEmployeeModal({
 
         post(route("admin.employees.store"), {
             onSuccess: (page: { props: PageProps }) => {
-                console.log(page.props);
-                
+
                 const responseEmployee =
                     page.props.employee || page.props.data?.employee;
 
@@ -161,22 +158,17 @@ export function CreateEmployeeModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Full Name */}
                     <div className="md:col-span-2">
-                        <Label
-                            htmlFor="full_name"
-                            className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                            Full Name <span className="text-danger">*</span>
-                        </Label>
                         <Input
                             id="full_name"
                             type="text"
+                            label="Full Name"
+                            required
                             placeholder="Enter full name"
                             value={data.full_name}
                             onChange={(e) =>
                                 handleInputChange("full_name", e.target.value)
                             }
                             className={errors.full_name ? "border-danger" : ""}
-                            showLabel={false}
                         />
                         {errors.full_name && (
                             <p className="text-danger text-sm mt-1">
@@ -187,22 +179,17 @@ export function CreateEmployeeModal({
 
                     {/* Email */}
                     <div>
-                        <Label
-                            htmlFor="email"
-                            className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                            Email <span className="text-danger">*</span>
-                        </Label>
                         <Input
                             id="email"
                             type="email"
+                            label="Email"
+                            required
                             placeholder="Enter email address"
                             value={data.email}
                             onChange={(e) =>
                                 handleInputChange("email", e.target.value)
                             }
                             className={errors.email ? "border-danger" : ""}
-                            showLabel={false}
                         />
                         {errors.email && (
                             <p className="text-danger text-sm mt-1">
@@ -213,22 +200,16 @@ export function CreateEmployeeModal({
 
                     {/* Phone */}
                     <div>
-                        <Label
-                            htmlFor="phone"
-                            className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                            Phone
-                        </Label>
                         <Input
                             id="phone"
                             type="tel"
+                            label="Phone"
                             placeholder="Enter phone number"
                             value={data.phone}
                             onChange={(e) =>
                                 handleInputChange("phone", e.target.value)
                             }
                             className={errors.phone ? "border-danger" : ""}
-                            showLabel={false}
                         />
                         {errors.phone && (
                             <p className="text-danger text-sm mt-1">
@@ -278,22 +259,16 @@ export function CreateEmployeeModal({
 
                     {/* Position */}
                     <div>
-                        <Label
-                            htmlFor="position"
-                            className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                            Position
-                        </Label>
                         <Input
                             id="position"
                             type="text"
+                            label="Position"
                             placeholder="Enter position/job title"
                             value={data.position}
                             onChange={(e) =>
                                 handleInputChange("position", e.target.value)
                             }
                             className={errors.position ? "border-danger" : ""}
-                            showLabel={false}
                         />
                         {errors.position && (
                             <p className="text-danger text-sm mt-1">
@@ -304,21 +279,16 @@ export function CreateEmployeeModal({
 
                     {/* Join Date */}
                     <div className="md:col-span-2">
-                        <Label
-                            htmlFor="joint_date"
-                            className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                            Join Date <span className="text-danger">*</span>
-                        </Label>
                         <Input
                             id="joint_date"
                             type="date"
+                            label="Join Date"
+                            required
                             value={data.joint_date}
                             onChange={(e) =>
                                 handleInputChange("joint_date", e.target.value)
                             }
                             className={errors.joint_date ? "border-danger" : ""}
-                            showLabel={false}
                         />
                         {errors.joint_date && (
                             <p className="text-danger text-sm mt-1">

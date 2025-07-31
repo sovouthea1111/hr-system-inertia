@@ -54,7 +54,7 @@ class EmployeeController extends Controller
         // Sort and paginate
         $employees = $query
             ->orderBy('created_at', 'desc')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Admin/Employees/Index', [
@@ -98,7 +98,6 @@ class EmployeeController extends Controller
     public function update(UpdateEmployeeRequest $request, Employee $employee)
     {
         $user = Auth::user();
-        dd( $employee);
         // If user is an Employee, only allow editing their own record
         if ($user && $user->user_role === 'Employee' && $employee->email !== $user->email) {
             return back()->withErrors(['error' => 'You can only edit your own employee record.']);
@@ -159,11 +158,10 @@ class EmployeeController extends Controller
     private function getDepartments(): array
     {
         return [
-            ['value' => 'Engineering', 'label' => 'Engineering'],
-            ['value' => 'Marketing', 'label' => 'Marketing'],
-            ['value' => 'Sales', 'label' => 'Sales'],
             ['value' => 'HR', 'label' => 'HR'],
-            ['value' => 'Finance', 'label' => 'Finance'],
+            ['value' => 'IT', 'label' => 'Information Technology'],
+            ['value' => 'Media', 'label' => 'Social Media'],
+            ['value' => 'ISO', 'label' => 'ISO'],
         ];
     }
 
