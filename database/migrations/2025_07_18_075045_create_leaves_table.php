@@ -27,13 +27,13 @@ return new class extends Migration
             // Leave details
             $table->dateTime('start_date');
             $table->dateTime('end_date');
+            $table->string(column: 'image')->nullable();
             $table->enum('leave_type', [
                 'annual', 
                 'sick', 
-                'personal', 
-                'maternity', 
-                'paternity', 
-                'emergency'
+                'unpaid', 
+                'maternity',
+                'other'
             ]);
             $table->enum('status', ['pending', 'approved', 'rejected'])
                   ->default('pending');
