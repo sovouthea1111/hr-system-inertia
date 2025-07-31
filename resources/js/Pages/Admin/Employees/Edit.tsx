@@ -37,10 +37,8 @@ interface EditEmployeeModalProps {
 const departments = [
     { value: "HR", label: "Human Resources" },
     { value: "IT", label: "Information Technology" },
-    { value: "Finance", label: "Finance" },
-    { value: "Marketing", label: "Marketing" },
-    { value: "Sales", label: "Sales" },
-    { value: "Operations", label: "Operations" },
+    { value: "Media", label: "Social Media" },
+    { value: "ISO", label: "ISO" },
 ];
 
 export function EditEmployeeModal({
@@ -161,11 +159,12 @@ export function EditEmployeeModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Full Name */}
                     <div className="space-y-2">
-                        <Label htmlFor="full_name">Full Name *</Label>
                         <Input
                             id="full_name"
                             type="text"
                             value={data.full_name}
+                            required
+                            label="Full Name"
                             onChange={(e) =>
                                 handleInputChange("full_name", e.target.value)
                             }
@@ -181,10 +180,11 @@ export function EditEmployeeModal({
 
                     {/* Email */}
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
                         <Input
                             id="email"
                             type="email"
+                            label="Email"
+                            required
                             value={data.email}
                             onChange={(e) =>
                                 handleInputChange("email", e.target.value)
@@ -201,10 +201,10 @@ export function EditEmployeeModal({
 
                     {/* Phone */}
                     <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
                         <Input
                             id="phone"
                             type="tel"
+                            label="Phone"
                             value={data.phone}
                             onChange={(e) =>
                                 handleInputChange("phone", e.target.value)
@@ -221,7 +221,12 @@ export function EditEmployeeModal({
 
                     {/* Department */}
                     <div className="space-y-2">
-                        <Label htmlFor="department">Department *</Label>
+                        <Label
+                            htmlFor="department"
+                            className="dark:text-gray-700"
+                        >
+                            Department <span className="text-danger">*</span>
+                        </Label>
                         <Select
                             value={data.department}
                             onValueChange={(value) =>
@@ -255,10 +260,10 @@ export function EditEmployeeModal({
 
                     {/* Position */}
                     <div className="space-y-2">
-                        <Label htmlFor="position">Position</Label>
                         <Input
                             id="position"
                             type="text"
+                            label="Position"
                             value={data.position}
                             onChange={(e) =>
                                 handleInputChange("position", e.target.value)
@@ -275,10 +280,11 @@ export function EditEmployeeModal({
 
                     {/* Join Date */}
                     <div className="space-y-2">
-                        <Label htmlFor="joint_date">Join Date *</Label>
                         <Input
                             id="joint_date"
                             type="date"
+                            label="Joint Date"
+                            required
                             value={data.joint_date}
                             onChange={(e) =>
                                 handleInputChange("joint_date", e.target.value)
@@ -295,7 +301,9 @@ export function EditEmployeeModal({
 
                 {/* Status */}
                 <div className="space-y-2">
-                    <Label htmlFor="status">Status *</Label>
+                    <Label htmlFor="status" className="dark:text-gray-700">
+                        Status <span className="text-danger">*</span>
+                    </Label>
                     <Select
                         value={data.status}
                         onValueChange={(value) =>

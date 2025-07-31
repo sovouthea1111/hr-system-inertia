@@ -207,6 +207,7 @@ export default function EmployeesPage() {
                 type: "select" as const,
                 options: departments || [
                     { value: "Engineering", label: "Engineering" },
+                    { value: "IT", label: "Information Technology" },
                     { value: "Marketing", label: "Marketing" },
                     { value: "Sales", label: "Sales" },
                     { value: "HR", label: "HR" },
@@ -541,7 +542,7 @@ export default function EmployeesPage() {
                     </Card>
 
                     {/* Pagination - Only show if there are more than 10 employees */}
-                    {employees.total > 10 && (
+                    {employees.total > 0 && (
                         <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
                             {/* Left side - Results info */}
                             <div className="text-sm text-muted-foreground">

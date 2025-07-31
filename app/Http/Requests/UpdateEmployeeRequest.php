@@ -28,7 +28,7 @@ class UpdateEmployeeRequest extends FormRequest
             'department' => [
                 'required',
                 'string',
-                Rule::in(['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations'])
+                Rule::in(['HR','IT','Media','ISO']) 
             ],
             'position' => ['nullable', 'string', 'max:255'],
             'status' => [
