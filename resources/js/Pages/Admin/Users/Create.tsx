@@ -4,6 +4,7 @@ import { Modal } from "@/Components/UI/Modal";
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
 import { Label } from "@/Components/UI/Label";
+import InputImage from "@/Components/UI/InputImage";
 import {
     Select,
     SelectContent,
@@ -15,6 +16,7 @@ import { X, Save } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface User {
+    image: File | null;
     id: number;
     name: string;
     email: string;
@@ -43,11 +45,12 @@ export function CreateUserModal({
 }: CreateUserModalProps) {
     const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm({
+            image: null,
             name: "",
             email: "",
             password: "",
             password_confirmation: "",
-            user_role: "Employee" as "HR" | "Employee" | "SuperAdmin",
+            user_role: "Employee",
         });
 
     const handleFormSubmit = (e: React.FormEvent) => {
@@ -78,7 +81,6 @@ export function CreateUserModal({
             },
 
             onError: (errors) => {
-                console.error("Validation errors:", errors);
                 toast.error(
                     "Failed to create user. Please check the form and try again.",
                     {
@@ -106,6 +108,13 @@ export function CreateUserModal({
             clearErrors(field as keyof typeof errors);
         }
     };
+    const handleImageChange = (file: File | null) => {
+        setData("image" as any, file);
+    };
+
+    const handleImageRemove = () => {
+        setData("image", null);
+    };
 
     return (
         <Modal
@@ -117,86 +126,142 @@ export function CreateUserModal({
             <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div className="space-y-4 p-6">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
                         <Input
                             id="name"
                             type="text"
+                            label="Full Name"
                             value={data.name}
-                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange("name", e.target.value)
+                            }
                             placeholder="Enter full name"
                             className={errors.name ? "border-red-500" : ""}
                         />
                         {errors.name && (
-                            <p className="text-sm text-red-500">{errors.name}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.name}
+                            </p>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
                             type="email"
+                            label="Email"
+                            required
                             value={data.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange("email", e.target.value)
+                            }
                             placeholder="Enter email address"
                             className={errors.email ? "border-red-500" : ""}
                         />
                         {errors.email && (
-                            <p className="text-sm text-red-500">{errors.email}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.email}
+                            </p>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
                         <Input
                             id="password"
                             type="password"
+                            label="Password"
+                            required
                             value={data.password}
-                            onChange={(e) => handleInputChange("password", e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange("password", e.target.value)
+                            }
                             placeholder="Enter password"
                             className={errors.password ? "border-red-500" : ""}
                         />
                         {errors.password && (
-                            <p className="text-sm text-red-500">{errors.password}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.password}
+                            </p>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password_confirmation">Confirm Password</Label>
                         <Input
                             id="password_confirmation"
                             type="password"
+                            label="Confirm Password"
                             value={data.password_confirmation}
-                            onChange={(e) => handleInputChange("password_confirmation", e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange(
+                                    "password_confirmation",
+                                    e.target.value
+                                )
+                            }
                             placeholder="Confirm password"
-                            className={errors.password_confirmation ? "border-red-500" : ""}
+                            className={
+                                errors.password_confirmation
+                                    ? "border-red-500"
+                                    : ""
+                            }
                         />
                         {errors.password_confirmation && (
-                            <p className="text-sm text-red-500">{errors.password_confirmation}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.password_confirmation}
+                            </p>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="user_role">Role</Label>
+                        <Label
+                            htmlFor="user_role"
+                            className="dark:text-gray-700"
+                        >
+                            Role <span className="text-danger">*</span>
+                        </Label>
                         <Select
                             value={data.user_role}
-                            onValueChange={(value) => handleInputChange("user_role", value)}
+                            onValueChange={(value) =>
+                                handleInputChange("user_role", value)
+                            }
                         >
-                            <SelectTrigger className={errors.user_role ? "border-red-500" : ""}>
+                            <SelectTrigger
+                                className={
+                                    errors.user_role ? "border-red-500" : ""
+                                }
+                            >
                                 <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                             <SelectContent>
                                 {roles.map((role) => (
-                                    <SelectItem key={role.value} value={role.value}>
+                                    <SelectItem
+                                        key={role.value}
+                                        value={role.value}
+                                    >
                                         {role.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         {errors.user_role && (
-                            <p className="text-sm text-red-500">{errors.user_role}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.user_role}
+                            </p>
                         )}
                     </div>
+
+                    <InputImage
+                        id="medical_certificate"
+                        label="Medical Certificate"
+                        value={data.image}
+                        onChange={handleImageChange}
+                        onRemove={handleImageRemove}
+                        required={true}
+                        accept="image/*"
+                        maxSize={2}
+                        placeholder="Upload medical certificate"
+                        error={errors.image}
+                        dragDrop={true}
+                        preview={true}
+                    />
                 </div>
 
                 <div className="flex justify-end gap-3 border-t bg-gray-50 px-6 py-4">
@@ -209,7 +274,11 @@ export function CreateUserModal({
                         <X className="mr-2 h-4 w-4" />
                         Cancel
                     </Button>
-                    <Button type="submit" disabled={processing}>
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        disabled={processing}
+                    >
                         <Save className="mr-2 h-4 w-4" />
                         {processing ? "Creating..." : "Create User"}
                     </Button>

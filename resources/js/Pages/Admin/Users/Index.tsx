@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/Components/UI/Card";
 import { Checkbox } from "@/Components/UI/CheckBox";
 import { GroupButton } from "@/Components/UI/GroupButton";
 import { DeleteConfirmationModal } from "@/Components/UI/PopupDelete";
+import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
 import {
     Table,
     TableBody,
@@ -33,7 +34,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/UI/Select";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, User } from "lucide-react";
 import { PageProps as InertiaPageProps } from "@/types";
 import toast from "react-hot-toast";
 import { CreateUserModal } from "@/Pages/Admin/Users/Create";
@@ -42,6 +43,7 @@ import { EditUserModal } from "@/Pages/Admin/Users/Edit";
 interface User {
     id: number;
     name: string;
+    image: string;
     email: string;
     email_verified_at?: string;
     user_role: "HR" | "Employee" | "SuperAdmin";
@@ -420,6 +422,7 @@ export default function UsersPage() {
                                                 />
                                             </TableHead>
                                         )}
+                                        <TableHead>Profile</TableHead>
                                         <TableHead>Name</TableHead>
                                         <TableHead>Email</TableHead>
                                         <TableHead>Role</TableHead>
@@ -459,6 +462,18 @@ export default function UsersPage() {
                                                         />
                                                     </TableCell>
                                                 )}
+                                                <TableCell>
+                                                    <Avatar className="items-center">
+                                                        <AvatarImage
+                                                            className="h-10 w-10 rounded-full"
+                                                            src={user.image}
+                                                            alt={user.name}
+                                                        />
+                                                        <AvatarFallback className="w-10 h-10 rounded-full bg-gray-500">
+                                                            <User className="w-5 h-5" />
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </TableCell>
                                                 <TableCell className="font-medium">
                                                     {user.name}
                                                 </TableCell>
@@ -516,14 +531,9 @@ export default function UsersPage() {
                     {users.data.length > 0 && (
                         <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
                             <div className="text-sm text-muted-foreground">
-                                Showing {users.from || 0} to {users.to || 0} of {users.total} results
-                            </div>
-                            {/* Left side - Results info */}
-                            <div className="text-sm text-gray-700">
                                 Showing {users.from || 0} to {users.to || 0} of{" "}
                                 {users.total} results
                             </div>
-
                             {/* Center - Pagination controls (only show if more than one page) */}
                             <div className="flex-1 flex justify-center">
                                 {users.last_page > 1 && (
