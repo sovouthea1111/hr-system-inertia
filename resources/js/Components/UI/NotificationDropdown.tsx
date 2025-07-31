@@ -22,6 +22,7 @@ interface LeaveRequest {
     startDate: string;
     endDate: string;
     reason?: string;
+    image?: string;
     status: "pending" | "approved" | "rejected";
 }
 
