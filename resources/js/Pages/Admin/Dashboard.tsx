@@ -57,7 +57,6 @@ export default function AdminDashboard() {
         approved_leaves: 0,
         total_users: 0,
     };
-    console.log(stats);
 
     const safeDepartmentStats = departmentStats || [];
 

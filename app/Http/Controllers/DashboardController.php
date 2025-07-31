@@ -99,7 +99,7 @@ class DashboardController extends Controller
 
         // Calculate leave statistics
         $currentYear = Carbon::now()->year;
-        $totalLeaveDays = 24;
+        $totalLeaveDays = 7;
         
         // Fix: Use raw SQL calculation instead of sum('days_requested')
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
