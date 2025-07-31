@@ -50,6 +50,9 @@ export function EditUserModal({
         useForm({
             name: "",
             email: "",
+            currentPassword: "",
+            password: "",
+            password_confirmation: "",
             user_role: "Employee" as "HR" | "Employee" | "SuperAdmin",
         });
 
@@ -59,6 +62,9 @@ export function EditUserModal({
             setData({
                 name: user.name || "",
                 email: user.email || "",
+                currentPassword: "",
+                password: "",
+                password_confirmation: "",
                 user_role: user.user_role || "Employee",
             });
         }
@@ -85,7 +91,6 @@ export function EditUserModal({
             },
 
             onError: (errors) => {
-                console.error("Validation errors:", errors);
                 toast.error(
                     "Failed to update user. Please check the form and try again.",
                     {
@@ -126,10 +131,10 @@ export function EditUserModal({
             <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div className="space-y-4 p-6">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
                         <Input
                             id="name"
                             type="text"
+                            label="Full Name"
                             value={data.name}
                             onChange={(e) =>
                                 handleInputChange("name", e.target.value)
@@ -138,17 +143,16 @@ export function EditUserModal({
                             className={errors.name ? "border-danger" : ""}
                         />
                         {errors.name && (
-                            <p className="text-sm text-danger">
-                                {errors.name}
-                            </p>
+                            <p className="text-sm text-danger">{errors.name}</p>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
                             type="email"
+                            label="Email"
+                            required
                             value={data.email}
                             onChange={(e) =>
                                 handleInputChange("email", e.target.value)
@@ -164,7 +168,84 @@ export function EditUserModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="user_role">Role</Label>
+                        <Input
+                            id="currentPassword"
+                            type="password"
+                            label="Current Password"
+                            required
+                            value={data.currentPassword}
+                            onChange={(e) =>
+                                handleInputChange(
+                                    "currentPassword",
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Enter current password"
+                            className={
+                                errors.currentPassword ? "border-red-500" : ""
+                            }
+                        />
+                        {errors.currentPassword && (
+                            <p className="text-sm text-red-500">
+                                {errors.currentPassword}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Input
+                            id="newPassword"
+                            type="password"
+                            label="New Password"
+                            required
+                            value={data.password}
+                            onChange={(e) =>
+                                handleInputChange("password", e.target.value)
+                            }
+                            placeholder="Enter new password"
+                            className={errors.password ? "border-red-500" : ""}
+                        />
+                        {errors.password && (
+                            <p className="text-sm text-red-500">
+                                {errors.password}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            label="Confirm Password"
+                            required
+                            value={data.password_confirmation}
+                            onChange={(e) =>
+                                handleInputChange(
+                                    "password_confirmation",
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Confirm new password"
+                            className={
+                                errors.password_confirmation
+                                    ? "border-red-500"
+                                    : ""
+                            }
+                        />
+                        {errors.password_confirmation && (
+                            <p className="text-sm text-red-500">
+                                {errors.password_confirmation}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label
+                            htmlFor="user_role"
+                            className="dark:text-gray-700"
+                        >
+                            Role <span className="text-danger">*</span>
+                        </Label>
                         <Select
                             value={data.user_role}
                             onValueChange={(value) =>
@@ -213,7 +294,11 @@ export function EditUserModal({
                         <X className="mr-2 h-4 w-4" />
                         Cancel
                     </Button>
-                    <Button type="submit" disabled={processing}>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        disabled={processing}
+                    >
                         <Save className="mr-2 h-4 w-4" />
                         {processing ? "Updating..." : "Update User"}
                     </Button>

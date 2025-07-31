@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
-use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -28,7 +28,12 @@ class UserController extends Controller
             $filters['email'] = $user->email;
         }
         
+        
         $users = User::getFilteredUsers($filters, $perPage);
+        $users->getCollection()->transform(function ($user) {
+        $user->image = $user->image ? asset('images/' . $user->image) : null;
+            return $user;
+        });
         
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
@@ -55,12 +60,24 @@ class UserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'user_role' => 'required|in:HR,Employee,SuperAdmin',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+        
 
         try {
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $uniqueName = 'user_' . time() . '_' . Str::random(8) . '.' . $image->getClientOriginalExtension();                
+                $destinationPath = public_path('images');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $image->move($destinationPath, $uniqueName);
+            }
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'image' => $uniqueName,
                 'password' => Hash::make($request->password),
                 'user_role' => $request->user_role,
                 'email_verified_at' => now(),
@@ -92,6 +109,16 @@ class UserController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
+            'currentPassword' => [
+            'required',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
+                        $fail('The current password is incorrect.');
+                    }
+                }
+            ],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password_confirmation' => 'required',
         ];
         
         // Only allow role changes for HR and SuperAdmin
@@ -99,11 +126,27 @@ class UserController extends Controller
             $rules['user_role'] = 'required|in:HR,Employee,SuperAdmin';
         }
 
-        // Only validate password if provided
         if ($request->filled('password')) {
+            $rules['currentPassword'] = [
+                'required',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
+                        $fail('The current password is incorrect.');
+                    }
+                }
+            ];
             $rules['password'] = ['confirmed', Rules\Password::defaults()];
+            $rules['password_confirmation'] = 'required';
         }
-
+        if ($request->filled('password') || $request->filled('currentPassword')) {
+            if (!$request->filled('currentPassword')) {
+                return back()->withErrors(['currentPassword' => 'Current password is required when changing password.']);
+            }
+            
+            if (!Hash::check($request->currentPassword, $user->password)) {
+                return back()->withErrors(['currentPassword' => 'The current password is incorrect.']);
+            }
+        }
         $request->validate($rules);
 
         try {
