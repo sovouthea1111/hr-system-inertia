@@ -15,6 +15,8 @@ return new class extends Migration
             $table->enum('user_role', ['HR', 'Employee', 'SuperAdmin'])
                   ->default('Employee')
                   ->after('email');
+            $table->string(column: 'image')->nullable()
+                  ->after('user_role');      
         });
     }
 
@@ -24,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('user_role');
+        $table->dropColumn(['user_role', 'image']);
         });
     }
 };
