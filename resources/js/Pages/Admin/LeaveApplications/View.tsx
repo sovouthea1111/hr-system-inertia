@@ -14,6 +14,7 @@ interface LeaveApplication {
     end_date: string;
     days_requested: number;
     reason: string;
+    image: string;
     status: "pending" | "approved" | "rejected";
     applied_date: string;
 }
@@ -169,6 +170,23 @@ export function ViewLeaveModal({
                         </p>
                     </div>
                 </div>
+
+                {/* Medical Certificate */}
+                {leave.image && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Clock className="w-5 h-5 text-gray-600" />
+                            <h4 className="font-medium text-gray-900">
+                                Medical Certificate
+                            </h4>
+                        </div>
+                        <img
+                            src={leave.image}
+                            alt={leave.employee_name}
+                            className="w-full h-auto rounded-md"
+                        />
+                    </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex justify-end pt-4">

@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppLayout } from "@/Layouts/AppLayout";
 import { Badge } from "@/Components/UI/Badge";
 import { Button } from "@/Components/UI/Button";
-import { Calendar, User, Clock, FileText } from "lucide-react";
-import { Head, usePage } from "@inertiajs/react";
-import { PageProps } from "@/types";
+import { Calendar, User, Clock, FileText, ZoomIn } from "lucide-react";
+import { Head } from "@inertiajs/react";
 import { router } from "@inertiajs/react";
 import toast from "react-hot-toast";
+import Modal from "@/Components/Modal";
 
 interface LeaveApplication {
     id: number;
@@ -18,6 +18,7 @@ interface LeaveApplication {
     end_date: string;
     days_requested: number;
     reason: string;
+    image: string;
     status: "pending" | "approved" | "rejected";
     applied_date: string;
 }
@@ -82,6 +83,10 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
         { label: "Leave Applications", href: route("admin.leaves.index") },
         { label: `Application #${leave.id}` },
     ];
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
 
     return (
         <AppLayout title="Leave Application Details" breadcrumbs={breadcrumbs}>
@@ -200,6 +205,46 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                         </p>
                     </div>
                 </div>
+
+                {/* Medical Certificate */}
+                {leave.image && (
+                    <>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Clock className="w-5 h-5 text-gray-600" />
+                                <h4 className="font-medium text-gray-900">
+                                    Medical Certificate
+                                </h4>
+                            </div>
+                            <div
+                                className="relative group cursor-pointer"
+                                onClick={openModal}
+                            >
+                                <img
+                                    src={leave.image}
+                                    alt={leave.employee_name}
+                                    className="w-full h-auto rounded-md transition-transform group-hover:scale-105"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-md flex items-center justify-center">
+                                    <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Modal
+                            show={isModalOpen}
+                            onClose={closeModal}
+                            maxWidth="2xl"
+                            closeable={true}
+                        >
+                            <img
+                                src={leave.image}
+                                alt={leave.employee_name}
+                                className="w-full h-auto rounded-lg"
+                            />
+                        </Modal>
+                    </>
+                )}
 
                 {/* Actions */}
                 <div className="flex justify-between pt-4">

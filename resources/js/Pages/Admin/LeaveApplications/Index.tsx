@@ -11,6 +11,7 @@ import { DeleteConfirmationModal } from "@/Components/UI/PopupDelete";
 import { RequestLeaveModal } from "@/Pages/Admin/LeaveApplications/Create";
 import { EditLeaveModal } from "@/Pages/Admin/LeaveApplications/Edit";
 import { ViewLeaveModal } from "@/Pages/Admin/LeaveApplications/View";
+import { Avatar } from "@/Components/UI/Avatar";
 import {
     Table,
     TableBody,
@@ -49,6 +50,7 @@ interface LeaveApplication {
     end_date: string;
     days_requested: number;
     reason: string;
+    image: string;
     status: "pending" | "approved" | "rejected";
     applied_date: string;
 }
@@ -411,7 +413,7 @@ export default function LeaveApplicationsPage() {
                         fields={filterOptions}
                         onFieldChange={handleFieldChange}
                         onClear={clearFilters}
-                        title="Filter Employees"
+                        title="Filter Leaves"
                     />
 
                     {/* Leave Applications Table */}
@@ -632,7 +634,7 @@ export default function LeaveApplicationsPage() {
                     </Card>
 
                     {/* Pagination - Only show if there are more than 10 applications */}
-                    {leaveApplications.total > 10 && (
+                    {leaveApplications.total > 0 && (
                         <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
                             <div className="text-sm text-muted-foreground">
                                 Showing {leaveApplications.from || 0} to{" "}

@@ -18,6 +18,7 @@ class Leave extends Model
         'reason',
         'status',
         'approved_by',
+        'image',
         'hr_notification_read',
         'employee_notification_read'
     ];
@@ -142,12 +143,11 @@ class Leave extends Model
 
         // Define default leave entitlements (consider moving to config)
         $leaveEntitlements = [
-            'annual' => 21,
-            'sick' => 10,
-            'personal' => 5,
+            'annual' => 7,
+            'sick' => 4,
+            'unpaid' => null,
             'maternity' => 90,
-            'paternity' => 14,
-            'compassionate' => 3,
+            'other' => null,
         ];
 
         // Calculate balance for each leave type

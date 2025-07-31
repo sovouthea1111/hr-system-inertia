@@ -10,6 +10,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class LeaveController extends Controller
 {
@@ -68,6 +70,7 @@ class LeaveController extends Controller
             'days_requested' => $leave->days_requested,
             'reason' => $leave->reason,
             'status' => $leave->status,
+            'image' => $leave->image ? asset('images/' . $leave->image) : null,
             'applied_date' => $leave->created_at->format('Y-m-d'),
         ];
     }
@@ -126,20 +129,62 @@ class LeaveController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $validationRules = [
             'employee_id' => 'required|exists:employees,id',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'leave_type' => ['required', Rule::in(['annual', 'sick', 'personal', 'maternity', 'paternity', 'emergency'])],
+            'leave_type' => ['required', Rule::in(['annual', 'sick', 'unpaid', 'maternity', 'other'])],
             'reason' => 'required|string|max:1000',
-        ]);
-        
+        ];
+
+        if ($request->leave_type === 'sick') {
+            $validationRules['image'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
+        }
+
+        $validatedData = $request->validate($validationRules);
+
+        $startDate = new Carbon($validatedData['start_date']);
+        $endDate = new Carbon($validatedData['end_date']);
+        $leaveDays = $startDate->diffInDays($endDate) + 1;
+
+        if ($validatedData['leave_type'] === 'annual' && $leaveDays > 7) {
+            return back()
+                ->withErrors(['end_date' => 'Annual leave cannot exceed 7 days.'])
+                ->withInput();
+        }
+
+        if ($validatedData['leave_type'] === 'sick' && $leaveDays > 4) {
+            return back()
+                ->withErrors(['end_date' => 'Sick leave cannot exceed 4 days.'])
+                ->withInput();
+        }
+
+        if ($validatedData['leave_type'] === 'maternity' && $leaveDays > 90) {
+            return back()
+                ->withErrors(['end_date' => 'Maternity leave cannot exceed 90 days.'])
+                ->withInput();
+        }
+
         try {
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $extension = $image->getClientOriginalExtension();
+                $uniqueName = 'leave_' . $validatedData['employee_id'] . '_' . date('Y-m-d_H-i-s') . '_' . Str::random(8) . '.' . $extension;
+                
+                $destinationPath = public_path('images');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $image->move($destinationPath, $uniqueName);
+                $validatedData['image'] = $uniqueName;
+            }
+
             $leave = Leave::create($validatedData);
-    
+
             return redirect()->route('admin.leaves.index')->with([
                 'success' => 'Leave application created successfully.',
             ]);
+
         } catch (\Exception $e) {
             return back()
                 ->withErrors(['error' => 'Failed to create leave application: ' . $e->getMessage()])
@@ -181,6 +226,7 @@ class LeaveController extends Controller
             'days_requested' => $leave->days_requested,
             'reason' => $leave->reason,
             'status' => $leave->status,
+            'image' => $leave->image ? asset('images/' . $leave->image) : null,
             'applied_date' => $leave->created_at->format('Y-m-d'),
         ];
         
@@ -213,6 +259,7 @@ class LeaveController extends Controller
                 'leave_type' => $leave->leave_type,
                 'reason' => $leave->reason,
                 'status' => $leave->status,
+                'image' => $leave->image ? asset('images/' . $leave->image) : null,
             ],
             'employees' => Employee::select('id', 'full_name', 'email')->get(),
             'leaveTypes' => $this->getLeaveTypes(),
@@ -229,7 +276,7 @@ class LeaveController extends Controller
             'employee_id' => 'required|exists:employees,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'leave_type' => ['required', Rule::in(['annual', 'sick', 'personal', 'maternity', 'paternity', 'emergency'])],
+            'leave_type' => ['required', Rule::in(['annual', 'sick', 'personal', 'unpaid', 'other',])],
             'status' => ['required', Rule::in(['pending', 'approved', 'rejected'])],
             'reason' => 'required|string|max:1000',
         ]);
@@ -328,10 +375,9 @@ class LeaveController extends Controller
         return [
             ['value' => 'annual', 'label' => 'Annual Leave'],
             ['value' => 'sick', 'label' => 'Sick Leave'],
-            ['value' => 'personal', 'label' => 'Personal Leave'],
+            ['value' => 'unpaid', 'label' => 'Unpaid Leave'],
             ['value' => 'maternity', 'label' => 'Maternity Leave'],
-            ['value' => 'paternity', 'label' => 'Paternity Leave'],
-            ['value' => 'emergency', 'label' => 'Emergency Leave'],
+            ['value' => 'other', 'label' => 'Other Leave'],
         ];
     }
 
