@@ -142,7 +142,7 @@ export function EditLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="employee_id"
-                        className="text-sm font-medium"
+                        className="text-sm font-medium  dark:text-gray-700"
                     >
                         Employee <span className="text-danger">*</span>
                     </Label>
@@ -174,12 +174,10 @@ export function EditLeaveModal({
 
                 {/* Start Date */}
                 <div className="space-y-2">
-                    <Label htmlFor="start_date" className="text-sm font-medium">
-                        Start Date <span className="text-danger">*</span>
-                    </Label>
                     <Input
                         id="start_date"
                         type="date"
+                        label="Start Date"
                         value={data.start_date}
                         onChange={(e) =>
                             handleInputChange("start_date", e.target.value)
@@ -196,12 +194,10 @@ export function EditLeaveModal({
 
                 {/* End Date */}
                 <div className="space-y-2">
-                    <Label htmlFor="end_date" className="text-sm font-medium">
-                        End Date <span className="text-danger">*</span>
-                    </Label>
                     <Input
                         id="end_date"
                         type="date"
+                        label="End Date"
                         value={data.end_date}
                         onChange={(e) =>
                             handleInputChange("end_date", e.target.value)
@@ -216,7 +212,10 @@ export function EditLeaveModal({
 
                 {/* Leave Type */}
                 <div className="space-y-2">
-                    <Label htmlFor="leave_type" className="text-sm font-medium">
+                    <Label
+                        htmlFor="leave_type"
+                        className="text-sm font-medium  dark:text-gray-700"
+                    >
                         Leave Type <span className="text-danger">*</span>
                     </Label>
                     <Select
@@ -244,7 +243,10 @@ export function EditLeaveModal({
                 </div>
                 {/* Reason */}
                 <div className="space-y-2">
-                    <Label htmlFor="reason" className="text-sm font-medium">
+                    <Label
+                        htmlFor="reason"
+                        className="text-sm font-medium  dark:text-gray-700"
+                    >
                         Reason <span className="text-danger">*</span>
                     </Label>
                     <textarea
@@ -253,7 +255,7 @@ export function EditLeaveModal({
                         onChange={(e) =>
                             handleInputChange("reason", e.target.value)
                         }
-                        className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+                        className="w-full min-h-[100px] px-3 py-2 border  dark:text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
                         placeholder="Enter reason for leave..."
                         required
                     />
@@ -264,7 +266,10 @@ export function EditLeaveModal({
 
                 {/* Status */}
                 <div className="space-y-2">
-                    <Label htmlFor="status" className="text-sm font-medium">
+                    <Label
+                        htmlFor="status"
+                        className="text-sm font-medium dark:text-gray-700"
+                    >
                         Status <span className="text-danger">*</span>
                     </Label>
                     <Select

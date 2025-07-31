@@ -11,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/UI/Select";
+import { InputImage } from "@/Components/UI/InputImage";
 import { Save } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -39,17 +40,35 @@ export function RequestLeaveModal({
     auth,
 }: RequestLeaveModalProps) {
     const { data, setData, post, processing, errors, reset, clearErrors } =
-        useForm({
+        useForm<{
+            employee_id: string;
+            employee_name: string;
+            start_date: string;
+            end_date: string;
+            leave_type: string;
+            reason: string;
+            image: File | null;
+        }>({
             employee_id: "",
             employee_name: "",
             start_date: "",
             end_date: "",
             leave_type: "",
             reason: "",
+            image: null,
         });
 
     const isEmployee = auth?.user?.user_role === "Employee";
     const currentUserEmail = auth?.user?.email;
+    const isSickLeave = data.leave_type === "sick";
+
+    const handleImageChange = (file: File | null) => {
+        setData("image", file);
+    };
+
+    const handleImageRemove = () => {
+        setData("image", null);
+    };
     useEffect(() => {
         if (isEmployee && currentUserEmail && employees.length > 0 && isOpen) {
             const currentEmployee = employees.find(
@@ -119,7 +138,7 @@ export function RequestLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="employee_id"
-                        className="text-sm font-medium"
+                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Employee <span className="text-danger">*</span>
                     </Label>
@@ -163,12 +182,10 @@ export function RequestLeaveModal({
 
                 {/* Start Date */}
                 <div className="space-y-2">
-                    <Label htmlFor="start_date" className="text-sm font-medium">
-                        Start Date <span className="text-danger">*</span>
-                    </Label>
                     <Input
                         id="start_date"
                         type="date"
+                        label="Start Date"
                         value={data.start_date}
                         onChange={(e) => setData("start_date", e.target.value)}
                         className="w-full"
@@ -183,12 +200,10 @@ export function RequestLeaveModal({
 
                 {/* End Date */}
                 <div className="space-y-2">
-                    <Label htmlFor="end_date" className="text-sm font-medium">
-                        End Date <span className="text-danger">*</span>
-                    </Label>
                     <Input
                         id="end_date"
                         type="date"
+                        label="End Date"
                         value={data.end_date}
                         onChange={(e) => setData("end_date", e.target.value)}
                         className="w-full"
@@ -201,7 +216,7 @@ export function RequestLeaveModal({
 
                 {/* Leave Type */}
                 <div className="space-y-2">
-                    <Label htmlFor="leave_type" className="text-sm font-medium">
+                    <Label htmlFor="leave_type" className="text-sm font-medium dark:text-gray-700">
                         Leave Type <span className="text-danger">*</span>
                     </Label>
                     <Select
@@ -228,7 +243,7 @@ export function RequestLeaveModal({
 
                 {/* Reason */}
                 <div className="space-y-2">
-                    <Label htmlFor="reason" className="text-sm font-medium">
+                    <Label htmlFor="reason" className="text-sm font-medium dark:text-gray-700">
                         Reason <span className="text-danger">*</span>
                     </Label>
                     <textarea
@@ -243,6 +258,22 @@ export function RequestLeaveModal({
                         <p className="text-sm text-danger">{errors.reason}</p>
                     )}
                 </div>
+                {isSickLeave && (
+                    <InputImage
+                        id="medical_certificate"
+                        label="Medical Certificate"
+                        value={data.image}
+                        onChange={handleImageChange}
+                        onRemove={handleImageRemove}
+                        required={true}
+                        accept="image/*"
+                        maxSize={2}
+                        placeholder="Upload medical certificate"
+                        error={errors.image}
+                        dragDrop={true}
+                        preview={true}
+                    />
+                )}
 
                 {/* Form Actions */}
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
