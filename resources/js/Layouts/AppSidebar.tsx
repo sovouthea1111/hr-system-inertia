@@ -122,6 +122,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 icon: UserIcon,
                 isActive: url.startsWith("/admin/employees"),
             },
+            {
+                title: "USER",
+                url: "/admin/users",
+                icon: User,
+                isActive: url.startsWith("/admin/users"),
+            },
         ];
     };
 
@@ -221,7 +227,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             </div>
                                         </SidebarMenuButton>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent>
+                                    <AlertDialogContent className="w-full max-w-sm mx-auto">
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>
                                                 Confirm Logout
@@ -230,7 +236,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                 Are you sure to logout?
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
-                                        <AlertDialogFooter>
+                                        <AlertDialogFooter className="flex flex-row justify-center items-center space-x-2">
                                             <AlertDialogCancel>
                                                 Cancel
                                             </AlertDialogCancel>
