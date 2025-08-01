@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LeaveApplicationNotification;
 
 class LeaveController extends Controller
 {
@@ -180,10 +182,29 @@ class LeaveController extends Controller
             }
 
             $leave = Leave::create($validatedData);
+            
+            $employee = Employee::find($validatedData['employee_id']);        
+            $emailSent = false;
+            try {
+                if ($employee && $employee->email) {
+                Mail::to(config('mail.from.address'))->send(new LeaveApplicationNotification($leave, $employee));
+                $emailSent = true;
 
-            return redirect()->route('admin.leaves.index')->with([
-                'success' => 'Leave application created successfully.',
-            ]);
+                }
+            } catch (\Exception $mailException) {
+                \Log::error('Failed to send leave notification email: ' . $mailException->getMessage());
+            }
+
+            $successMessage = 'Leave application created successfully.';
+            if ($emailSent) {
+                $successMessage .= ' Notification email sent.';
+            } else {
+                $successMessage .= ' (Email notification could not be sent)';
+            }
+
+        return redirect()->route('admin.leaves.index')->with([
+            'success' => $successMessage,
+        ]);
 
         } catch (\Exception $e) {
             return back()
@@ -272,6 +293,7 @@ class LeaveController extends Controller
      */
     public function update(Request $request, $id)
     {
+
         $validatedData = $request->validate(rules: [
             'employee_id' => 'required|exists:employees,id',
             'start_date' => 'required|date',
