@@ -465,7 +465,7 @@ export default function UsersPage() {
                                                 <TableCell>
                                                     <Avatar className="items-center">
                                                         <AvatarImage
-                                                            className="h-10 w-10 rounded-full"
+                                                            className="h-10 w-10 rounded-full object-cover"
                                                             src={user.image}
                                                             alt={user.name}
                                                         />

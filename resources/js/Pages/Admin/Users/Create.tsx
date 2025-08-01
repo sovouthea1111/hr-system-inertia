@@ -135,12 +135,10 @@ export function CreateUserModal({
                                 handleInputChange("name", e.target.value)
                             }
                             placeholder="Enter full name"
-                            className={errors.name ? "border-red-500" : ""}
+                            className={errors.name ? "border-danger" : ""}
                         />
                         {errors.name && (
-                            <p className="text-sm text-red-500">
-                                {errors.name}
-                            </p>
+                            <p className="text-sm text-danger">{errors.name}</p>
                         )}
                     </div>
 
@@ -155,10 +153,10 @@ export function CreateUserModal({
                                 handleInputChange("email", e.target.value)
                             }
                             placeholder="Enter email address"
-                            className={errors.email ? "border-red-500" : ""}
+                            className={errors.email ? "border-danger" : ""}
                         />
                         {errors.email && (
-                            <p className="text-sm text-red-500">
+                            <p className="text-sm text-danger">
                                 {errors.email}
                             </p>
                         )}
@@ -175,10 +173,10 @@ export function CreateUserModal({
                                 handleInputChange("password", e.target.value)
                             }
                             placeholder="Enter password"
-                            className={errors.password ? "border-red-500" : ""}
+                            className={errors.password ? "border-danger" : ""}
                         />
                         {errors.password && (
-                            <p className="text-sm text-red-500">
+                            <p className="text-sm text-danger">
                                 {errors.password}
                             </p>
                         )}
@@ -189,6 +187,7 @@ export function CreateUserModal({
                             id="password_confirmation"
                             type="password"
                             label="Confirm Password"
+                            required
                             value={data.password_confirmation}
                             onChange={(e) =>
                                 handleInputChange(
@@ -199,12 +198,12 @@ export function CreateUserModal({
                             placeholder="Confirm password"
                             className={
                                 errors.password_confirmation
-                                    ? "border-red-500"
+                                    ? "border-danger"
                                     : ""
                             }
                         />
                         {errors.password_confirmation && (
-                            <p className="text-sm text-red-500">
+                            <p className="text-sm text-danger">
                                 {errors.password_confirmation}
                             </p>
                         )}
@@ -225,7 +224,7 @@ export function CreateUserModal({
                         >
                             <SelectTrigger
                                 className={
-                                    errors.user_role ? "border-red-500" : ""
+                                    errors.user_role ? "border-danger" : ""
                                 }
                             >
                                 <SelectValue placeholder="Select role" />
@@ -242,7 +241,7 @@ export function CreateUserModal({
                             </SelectContent>
                         </Select>
                         {errors.user_role && (
-                            <p className="text-sm text-red-500">
+                            <p className="text-sm text-danger">
                                 {errors.user_role}
                             </p>
                         )}
@@ -254,7 +253,7 @@ export function CreateUserModal({
                         value={data.image}
                         onChange={handleImageChange}
                         onRemove={handleImageRemove}
-                        required={true}
+                        required={false}
                         accept="image/*"
                         maxSize={2}
                         placeholder="Upload medical certificate"
