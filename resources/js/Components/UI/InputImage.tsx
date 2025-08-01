@@ -1,4 +1,4 @@
-import React, { useState, useRef, forwardRef } from "react";
+import React, { useState, useRef, forwardRef, useEffect } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/Components/UI/Button";
 import { Label } from "@/Components/UI/Label";
@@ -10,7 +10,7 @@ interface InputImageProps {
     onChange?: (file: File | null) => void;
     onRemove?: () => void;
     accept?: string;
-    maxSize?: number; // in MB
+    maxSize?: number;
     required?: boolean;
     disabled?: boolean;
     error?: string;
@@ -18,6 +18,17 @@ interface InputImageProps {
     preview?: boolean;
     className?: string;
     dragDrop?: boolean;
+    allowEdit?: boolean;
+    existingImageUrl?: string;
+}
+
+interface Transform {
+    rotate: number;
+    scaleX: number;
+    scaleY: number;
+    brightness: number;
+    contrast: number;
+    saturation: number;
 }
 
 export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
@@ -37,28 +48,37 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
             preview = true,
             className = "",
             dragDrop = true,
+            allowEdit = false,
+            existingImageUrl,
             ...props
         },
         ref
     ) => {
-        const [imagePreview, setImagePreview] = useState<string | null>(null);
+        const [imagePreview, setImagePreview] = useState<string | undefined>(
+            undefined
+        );
         const [isDragOver, setIsDragOver] = useState(false);
+        const [showEditActions, setShowEditActions] = useState(false);
+
         const fileInputRef = useRef<HTMLInputElement>(null);
 
+        useEffect(() => {
+            if (existingImageUrl && !value && !imagePreview) {
+                setImagePreview(existingImageUrl);
+            }
+        }, [existingImageUrl, value, imagePreview]);
+
         const handleFileSelect = (file: File) => {
-            // Validate file size
             if (file.size > maxSize * 1024 * 1024) {
                 return;
             }
 
-            // Validate file type
             if (!file.type.startsWith("image/")) {
                 return;
             }
 
             onChange?.(file);
 
-            // Create preview if enabled
             if (preview) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -78,7 +98,8 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
         const handleRemove = () => {
             onChange?.(null);
             onRemove?.();
-            setImagePreview(null);
+            setImagePreview(existingImageUrl || undefined);
+            setShowEditActions(false);
 
             // Reset file input
             if (fileInputRef.current) {
@@ -87,6 +108,12 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
         };
 
         const handleClick = () => {
+            if (!disabled && !imagePreview) {
+                fileInputRef.current?.click();
+            }
+        };
+
+        const handleReplace = () => {
             if (!disabled) {
                 fileInputRef.current?.click();
             }
@@ -129,10 +156,13 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
             <div className={`space-y-2 ${className}`}>
                 {/* Label */}
                 {label && (
-                    <Label htmlFor={id} className="text-sm font-medium dark:text-gray-700">
+                    <Label
+                        htmlFor={id}
+                        className="text-sm font-medium dark:text-gray-700"
+                    >
                         {label}
                         {required && (
-                            <span className="text-red-500 ml-1">*</span>
+                            <span className="text-danger ml-1">*</span>
                         )}
                     </Label>
                 )}
@@ -140,24 +170,30 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                 {/* Upload Area */}
                 <div
                     className={`
-                    relative border-2 border-dashed rounded-lg transition-colors
-                    ${
-                        isDragOver
-                            ? "border-blue-400 bg-blue-50"
-                            : error
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300 bg-gray-50 hover:bg-gray-100"
-                    }
-                    ${
-                        disabled
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer"
-                    }
-                `}
+                        relative border-2 border-dashed rounded-lg transition-colors
+                        ${
+                            isDragOver
+                                ? "border-blue-400 bg-blue-50"
+                                : error
+                                ? "border-red-300 bg-red-50"
+                                : "border-gray-300 bg-gray-50 hover:bg-gray-100"
+                        }
+                        ${
+                            disabled
+                                ? "opacity-50 cursor-not-allowed"
+                                : imagePreview
+                                ? "cursor-default"
+                                : "cursor-pointer"
+                        }
+                    `}
                     onClick={handleClick}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
+                    onMouseEnter={() =>
+                        imagePreview && setShowEditActions(true)
+                    }
+                    onMouseLeave={() => setShowEditActions(false)}
                 >
                     {/* Hidden File Input */}
                     <input
@@ -193,6 +229,27 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                                 className="max-w-full max-h-48 mx-auto rounded-lg object-cover"
                             />
 
+                            {/* Replace Actions Overlay - Only shows Replace button now */}
+                            {showEditActions && (
+                                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleReplace();
+                                            }}
+                                            className="bg-white text-gray-800 hover:bg-gray-100"
+                                        >
+                                            <Upload className="w-4 h-4 mr-1" />
+                                            Replace
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Remove Button */}
                             <Button
                                 type="button"
@@ -202,20 +259,22 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                                     e.stopPropagation();
                                     handleRemove();
                                 }}
-                                className="absolute top-2 right-2 bg-white shadow-md hover:bg-gray-50"
+                                className="absolute top-2 right-2 bg-white shadow-md hover:bg-gray-50 z-10"
                             >
                                 <X className="w-4 h-4" />
                             </Button>
 
                             {/* File Info */}
-                            {value && (
+                            {(value || existingImageUrl) && (
                                 <div className="mt-3 text-center">
                                     <p className="text-sm text-gray-600">
-                                        {value.name}
+                                        {value ? value.name : "Current image"}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        {formatFileSize(value.size)}
-                                    </p>
+                                    {value && (
+                                        <p className="text-xs text-gray-500">
+                                            {formatFileSize(value.size)}
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -223,13 +282,14 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                 </div>
 
                 {/* Error Message */}
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {error && <p className="text-sm text-danger">{error}</p>}
 
                 {/* Helper Text */}
                 {!error && (
                     <p className="text-xs text-gray-500">
                         Supported formats: JPG, PNG, GIF, WebP. Maximum size:{" "}
                         {maxSize}MB
+                        {imagePreview && " • Hover to replace"}
                     </p>
                 )}
             </div>
