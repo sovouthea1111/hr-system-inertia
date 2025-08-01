@@ -4,6 +4,7 @@ import { Modal } from "@/Components/UI/Modal";
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
 import { Label } from "@/Components/UI/Label";
+import InputImage from "@/Components/UI/InputImage";
 import {
     Select,
     SelectContent,
@@ -20,6 +21,7 @@ interface User {
     email: string;
     email_verified_at?: string;
     user_role: "HR" | "Employee" | "SuperAdmin";
+    image?: string; // URL string for existing image
     created_at?: string;
     updated_at?: string;
 }
@@ -46,26 +48,31 @@ export function EditUserModal({
     const { auth } = usePage().props;
     const isEmployee = auth.user.user_role === "Employee";
 
-    const { data, setData, put, processing, errors, reset, clearErrors } =
+    const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm({
+            image: null as File | null,
             name: "",
             email: "",
             currentPassword: "",
             password: "",
             password_confirmation: "",
             user_role: "Employee" as "HR" | "Employee" | "SuperAdmin",
+            _method: "PUT",
         });
 
-    // Populate form with user data when modal opens
+    const isPasswordChangeMode = data.currentPassword.trim().length > 0;
+
     useEffect(() => {
         if (user && isOpen) {
             setData({
+                image: null,
                 name: user.name || "",
                 email: user.email || "",
                 currentPassword: "",
                 password: "",
                 password_confirmation: "",
                 user_role: user.user_role || "Employee",
+                _method: "PUT",
             });
         }
     }, [user, isOpen]);
@@ -75,7 +82,8 @@ export function EditUserModal({
 
         if (!user) return;
 
-        put(route("admin.users.update", user.id), {
+        // Use post() for file uploads, even with PUT method
+        post(route("admin.users.update", user.id), {
             onSuccess: () => {
                 toast.success(
                     `User "${data.name}" has been updated successfully!`,
@@ -116,6 +124,30 @@ export function EditUserModal({
         setData(field as any, value);
         if (errors[field as keyof typeof errors]) {
             clearErrors(field as keyof typeof errors);
+        }
+        if (field === "currentPassword" && !value.trim()) {
+            setData((prev) => ({
+                ...prev,
+                currentPassword: value,
+                password: "",
+                password_confirmation: "",
+            }));
+            clearErrors("password");
+            clearErrors("password_confirmation");
+        }
+    };
+
+    const handleImageChange = (file: File | null) => {
+        setData("image", file);
+        if (errors.image) {
+            clearErrors("image");
+        }
+    };
+
+    const handleImageRemove = () => {
+        setData("image", null);
+        if (errors.image) {
+            clearErrors("image");
         }
     };
 
@@ -172,7 +204,6 @@ export function EditUserModal({
                             id="currentPassword"
                             type="password"
                             label="Current Password"
-                            required
                             value={data.currentPassword}
                             onChange={(e) =>
                                 handleInputChange(
@@ -182,63 +213,71 @@ export function EditUserModal({
                             }
                             placeholder="Enter current password"
                             className={
-                                errors.currentPassword ? "border-red-500" : ""
+                                errors.currentPassword ? "border-danger" : ""
                             }
                         />
                         {errors.currentPassword && (
-                            <p className="text-sm text-red-500">
+                            <p className="text-sm text-danger">
                                 {errors.currentPassword}
                             </p>
                         )}
                     </div>
 
-                    <div className="space-y-2">
-                        <Input
-                            id="newPassword"
-                            type="password"
-                            label="New Password"
-                            required
-                            value={data.password}
-                            onChange={(e) =>
-                                handleInputChange("password", e.target.value)
-                            }
-                            placeholder="Enter new password"
-                            className={errors.password ? "border-red-500" : ""}
-                        />
-                        {errors.password && (
-                            <p className="text-sm text-red-500">
-                                {errors.password}
-                            </p>
-                        )}
-                    </div>
+                    {isPasswordChangeMode && (
+                        <>
+                            <div className="space-y-2">
+                                <Input
+                                    id="newPassword"
+                                    type="password"
+                                    label="New Password"
+                                    required={isPasswordChangeMode}
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            "password",
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Enter new password"
+                                    className={
+                                        errors.password ? "border-danger" : ""
+                                    }
+                                />
+                                {errors.password && (
+                                    <p className="text-sm text-danger">
+                                        {errors.password}
+                                    </p>
+                                )}
+                            </div>
 
-                    <div className="space-y-2">
-                        <Input
-                            id="password_confirmation"
-                            type="password"
-                            label="Confirm Password"
-                            required
-                            value={data.password_confirmation}
-                            onChange={(e) =>
-                                handleInputChange(
-                                    "password_confirmation",
-                                    e.target.value
-                                )
-                            }
-                            placeholder="Confirm new password"
-                            className={
-                                errors.password_confirmation
-                                    ? "border-red-500"
-                                    : ""
-                            }
-                        />
-                        {errors.password_confirmation && (
-                            <p className="text-sm text-red-500">
-                                {errors.password_confirmation}
-                            </p>
-                        )}
-                    </div>
-
+                            <div className="space-y-2">
+                                <Input
+                                    id="password_confirmation"
+                                    type="password"
+                                    label="Confirm Password"
+                                    required={isPasswordChangeMode}
+                                    value={data.password_confirmation}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            "password_confirmation",
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Confirm new password"
+                                    className={
+                                        errors.password_confirmation
+                                            ? "border-danger"
+                                            : ""
+                                    }
+                                />
+                                {errors.password_confirmation && (
+                                    <p className="text-sm text-danger">
+                                        {errors.password_confirmation}
+                                    </p>
+                                )}
+                            </div>
+                        </>
+                    )}
                     <div className="space-y-2">
                         <Label
                             htmlFor="user_role"
@@ -279,6 +318,31 @@ export function EditUserModal({
                         {isEmployee && (
                             <p className="text-sm text-danger">
                                 Role cannot be changed by employees
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Profile Image Upload */}
+                    <div className="space-y-2">
+                        <InputImage
+                            id="image"
+                            label="Profile Image"
+                            value={data.image}
+                            onChange={handleImageChange}
+                            onRemove={handleImageRemove}
+                            required={false}
+                            accept="image/*"
+                            maxSize={2}
+                            placeholder="Upload profile image"
+                            error={errors.image}
+                            dragDrop={true}
+                            preview={true}
+                            allowEdit={true}
+                            existingImageUrl={user?.image}
+                        />
+                        {errors.image && (
+                            <p className="text-sm text-danger">
+                                {errors.image}
                             </p>
                         )}
                     </div>
