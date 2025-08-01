@@ -53,16 +53,32 @@ interface UserData {
     email?: string;
     id?: string;
 }
+interface ExtendedUser {
+    id: number;
+    name: string;
+    email: string;
+    user_role: "HR" | "Employee" | "SuperAdmin";
+    image?: string;
+    email_verified_at?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+interface ExtendedPageProps extends Omit<PageProps, "auth"> {
+    auth: {
+        user: ExtendedUser;
+    };
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { theme, toggleTheme } = useTheme();
     const { url } = usePage();
-    const { auth } = usePage<PageProps>().props;
+    const { auth } = usePage<ExtendedPageProps>().props;
     const user = auth?.user;
     const userData: UserData = {
         name: user?.name || defaultUserData.name,
         role: user?.user_role || defaultUserData.role,
-        avatar: defaultUserData.avatar,
+        avatar: user?.image || defaultUserData.avatar,
         email: user?.email,
         id: user?.id?.toString(),
     };
@@ -148,7 +164,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="flex items-center gap-2 mb-3">
                     <Avatar className="h-8 w-8 items-center">
                         <AvatarImage
-                            src={userData.avatar}
+                            className="object-cover"
+                            src={`/images/${userData.avatar}`}
                             alt={userData.name}
                         />
                         <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs">
