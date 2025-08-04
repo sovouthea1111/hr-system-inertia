@@ -32,30 +32,139 @@ class LeaveController extends Controller
         
         $user = Auth::user();
         
-        // Prepare filters from request
         $filters = $request->only(['employee_name', 'leave_type', 'status', 'start_date', 'end_date']);
         
-        // Add role-based filtering
-        if ($user && $user->user_role === 'Employee') {
-            $employee = Employee::where('email', $user->email)->first();
-            if ($employee) {
-                $filters['employee_id'] = $employee->id;
-            } else {
-                $leaves = Leave::where('id', -1)->paginate($perPage);
-                $leaves->getCollection()->transform(function ($leave) {
-                    return $this->transformLeaveData($leave);
-                });
-                
-                return $this->renderIndexView($leaves, $filters);
+        if ($user) {
+            switch ($user->user_role) {
+                case 'SuperAdmin':
+                    if (!isset($filters['status']) || empty($filters['status'])) {
+                        $filters['status'] = 'pending';
+                    }
+                    break;
+                    
+                case 'HR':
+                    $employee = Employee::whereNot('email', $user->email)->first();
+                    if ($employee) {
+                        $filters['employee_id'] = $employee->id;
+                    } else {
+                        $leaves = Leave::where('id', -1)->paginate($perPage);
+                        $leaves->getCollection()->transform(function ($leave) {
+                            return $this->transformLeaveData($leave);
+                        });
+                        
+                        return $this->renderIndexView($leaves, $filters);
+                    }
+                    break;
+                    
+                case 'Employee':
+                    $employee = Employee::where('email', $user->email)->first();
+                    if ($employee) {
+                        $filters['employee_id'] = $employee->id;
+                    } else {
+                        $leaves = Leave::where('id', -1)->paginate($perPage);
+                        $leaves->getCollection()->transform(function ($leave) {
+                            return $this->transformLeaveData($leave);
+                        });
+                        
+                        return $this->renderIndexView($leaves, $filters);
+                    }
+                    break;
+                    
+                default:
+                    $leaves = Leave::where('id', -1)->paginate($perPage);
+                    $leaves->getCollection()->transform(function ($leave) {
+                        return $this->transformLeaveData($leave);
+                    });
+                    
+                    return $this->renderIndexView($leaves, $filters);
             }
         }
-        $leaves = Leave::getFilteredLeaves($filters, $perPage);
         
-        $leaves->getCollection()->transform(function ($leave) {
-            return $this->transformLeaveData($leave);
-        });
-    
-        return $this->renderIndexView($leaves, $filters);
+        try {
+            $leaves = Leave::getFilteredLeaves($filters, $perPage);
+            
+            $leaves->getCollection()->transform(function ($leave) {
+                return $this->transformLeaveData($leave);
+            });
+        
+            return $this->renderIndexView($leaves, $filters);
+            
+        } catch (\Exception $e) {
+            \Log::error('Leave index failed', [
+                'user_id' => $user->id ?? null,
+                'user_role' => $user->user_role ?? null,
+                'filters' => $filters,
+                'error' => $e->getMessage()
+            ]);
+            $leaves = Leave::where('id', -1)->paginate($perPage);
+            $leaves->getCollection()->transform(function ($leave) {
+                return $this->transformLeaveData($leave);
+            });
+            
+            return $this->renderIndexView($leaves, $filters);
+        }
+    }
+
+    /**
+        * Display HR-specific leave management view
+    */
+    public function hrLeave(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return Inertia::render('Auth/Login');
+        }
+        
+        if (!in_array($user->user_role, ['HR', 'SuperAdmin'])) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'You do not have permission to access this page.');
+        }
+        
+        // Find the employee record that matches the authenticated user's email
+        $employee = Employee::where('email', $user->email)->first();
+        if (!$employee) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Employee record not found for your account.');
+        }
+        
+        $perPage = $request->get('per_page', 10);
+        $allowedPerPage = [10, 25, 50, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+        $filters = $request->only(['employee_name', 'leave_type', 'status', 'start_date', 'end_date']);
+        $filters['employee_id'] = $employee->id;
+        try {
+            $leaves = Leave::getFilteredLeaves($filters, $perPage);
+            
+            $leaves->getCollection()->transform(function ($leave) {
+                return $this->transformLeaveData($leave);
+            });
+            
+            return Inertia::render('Admin/LeaveApplications/HRIndex', [
+                'leaveApplications' => $leaves,
+                'filters' => $filters,
+                'leaveTypes' => $this->getLeaveTypes(),
+                'statuses' => $this->getStatuses(),
+                'canManage' => true,
+                'employees' => Employee::select('id', 'full_name', 'email')
+                    ->where('id', $employee->id) // Only show the current user's employee record
+                    ->get(),
+                'stats' => Leave::getLeaveStats($filters),
+                'currentEmployee' => $employee,
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('HR Leave view failed', [
+                'user_id' => $user->id,
+                'employee_id' => $employee->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Unable to load leave management. Please try again.')
+                ->with('success', false);
+        }
     }
 
     /**
@@ -292,9 +401,7 @@ class LeaveController extends Controller
         try {
             $validatedData['image'] = $this->handleImageUpload($request);
             Leave::where('id', operator:json_decode( $id))->update($validatedData);
-            return redirect()->route('admin.leaves.index')->with([
-                'success' => 'Leave application updated successfully.',
-            ]);
+            return redirect()->back()->with('success', 'Leave application updated successfully.');
         } catch (\Exception $e) {        
             return back()
                 ->withErrors(['error' => 'Failed to update leave application: ' . $e->getMessage()])

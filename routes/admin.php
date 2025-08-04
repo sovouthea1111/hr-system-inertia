@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     
     // Leave Management - Resource Routes
     Route::resource('leaves', LeaveController::class);
+    Route::get('hr-leaves',[LeaveController::class,'hrLeave'])->name('hr-leaves');
     Route::put('leaves-status/{leave}', [LeaveController::class, 'updateStatus'])->name('leaves-status.update');
     
     // Add a new route for viewing a leave application
