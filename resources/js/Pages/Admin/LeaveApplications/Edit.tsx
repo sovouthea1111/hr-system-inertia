@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, router } from "@inertiajs/react";
 import { Modal } from "@/Components/UI/Modal";
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
 import { Label } from "@/Components/UI/Label";
+import { InputImage } from "@/Components/UI/InputImage";
 import {
     Select,
     SelectContent,
@@ -22,7 +23,7 @@ interface Employee {
 
 interface LeaveApplication {
     id: number;
-    employee_id?: number; // Make this optional to match Index.tsx
+    employee_id?: number;
     employee_name: string;
     employee_email: string;
     leave_type: string;
@@ -30,7 +31,8 @@ interface LeaveApplication {
     end_date: string;
     days_requested: number;
     reason: string;
-    status: "pending" | "approved" | "rejected"; // Add missing status field
+    image: string;
+    status: "pending" | "approved" | "rejected";
     applied_date: string;
 }
 
@@ -63,6 +65,8 @@ export function EditLeaveModal({
             leave_type: "",
             reason: "",
             status: "",
+            image: null as File | null,
+            remove_existing_image: false,
         });
 
     useEffect(() => {
@@ -78,7 +82,6 @@ export function EditLeaveModal({
                     ? matchingEmployee.id.toString()
                     : "";
             }
-
             setData({
                 employee_id: employeeId,
                 start_date: leave.start_date,
@@ -86,6 +89,8 @@ export function EditLeaveModal({
                 leave_type: leave.leave_type,
                 reason: leave.reason,
                 status: leave.status,
+                image: null,
+                remove_existing_image: false,
             });
         }
     }, [leave, isOpen, employees]);
@@ -99,7 +104,21 @@ export function EditLeaveModal({
 
         if (!leave) return;
 
-        put(route("admin.leaves.update", leave.id), {
+        const formData = new FormData();
+
+        formData.append("employee_id", data.employee_id);
+        formData.append("start_date", data.start_date);
+        formData.append("end_date", data.end_date);
+        formData.append("leave_type", data.leave_type);
+        formData.append("reason", data.reason);
+        formData.append("status", data.status);
+        formData.append("_method", "PUT");
+        if (data.image) {
+            formData.append("image", data.image);
+        } else if (data.remove_existing_image) {
+            formData.append("remove_image", "1");
+        }
+        router.post(route("admin.leaves.update", leave.id), formData, {
             onSuccess: () => {
                 toast.success("Leave application updated successfully!");
                 onLeaveUpdated();
@@ -127,6 +146,22 @@ export function EditLeaveModal({
         setData(field as any, value);
         if (errors[field as keyof typeof errors]) {
             clearErrors(field as keyof typeof errors);
+        }
+    };
+
+    const isSickLeave = data.leave_type === "sick";
+
+    const handleImageChange = (file: File | null) => {
+        setData("image", file);
+        if (file) {
+            setData("remove_existing_image", false);
+        }
+    };
+
+    const handleImageRemove = () => {
+        setData("image", null);
+        if (leave?.image) {
+            setData("remove_existing_image", false);
         }
     };
 
@@ -295,6 +330,29 @@ export function EditLeaveModal({
                     </Select>
                     {errors.status && (
                         <p className="text-sm text-danger">{errors.status}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    {isSickLeave && (
+                        <InputImage
+                            id="medical_certificate"
+                            label="Medical Certificate"
+                            value={data.image}
+                            onChange={handleImageChange}
+                            onRemove={handleImageRemove}
+                            required={!leave?.image}
+                            accept="image/*"
+                            maxSize={2}
+                            placeholder="Upload medical certificate"
+                            error={errors.image}
+                            dragDrop={true}
+                            preview={true}
+                            existingImageUrl={leave?.image}
+                        />
+                    )}
+                    {errors.image && (
+                        <p className="text-sm text-danger">{errors.image}</p>
                     )}
                 </div>
                 {/* Form Actions */}
