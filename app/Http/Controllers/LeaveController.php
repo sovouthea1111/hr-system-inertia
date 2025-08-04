@@ -17,6 +17,8 @@ use App\Mail\LeaveApplicationNotification;
 
 class LeaveController extends Controller
 {
+     private const IMAGE_PATH = 'images';
+
     /**
      * Display a listing of leave applications
      */
@@ -168,19 +170,7 @@ class LeaveController extends Controller
         }
 
         try {
-            if ($request->hasFile('image')) {
-                $image = $request->file('image');
-                $extension = $image->getClientOriginalExtension();
-                $uniqueName = 'leave_' . $validatedData['employee_id'] . '_' . date('Y-m-d_H-i-s') . '_' . Str::random(8) . '.' . $extension;
-                
-                $destinationPath = public_path('images');
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0755, true);
-                }
-                $image->move($destinationPath, $uniqueName);
-                $validatedData['image'] = $uniqueName;
-            }
-
+            $validatedData['image'] = $this->handleImageUpload(request: $request);
             $leave = Leave::create($validatedData);
             
             $employee = Employee::find($validatedData['employee_id']);        
@@ -232,10 +222,7 @@ class LeaveController extends Controller
             }
         }
         
-        // Get employee details
         $employee = Employee::findOrFail($leave->employee_id);
-        
-        // Transform leave data
         $leaveData = [
             'id' => $leave->id,
             'employee_id' => $leave->employee_id,
@@ -251,7 +238,6 @@ class LeaveController extends Controller
             'applied_date' => $leave->created_at->format('Y-m-d'),
         ];
         
-        // Mark notification as read if it exists
         if ($user->user_role === 'HR' || $user->user_role === 'SuperAdmin') {
             $leave->update(['hr_notification_read' => true]);
         } else if ($user->user_role === 'Employee' && $employee && $leave->employee_id === $employee->id) {
@@ -301,8 +287,10 @@ class LeaveController extends Controller
             'leave_type' => ['required', Rule::in(['annual', 'sick', 'personal', 'unpaid', 'other',])],
             'status' => ['required', Rule::in(['pending', 'approved', 'rejected'])],
             'reason' => 'required|string|max:1000',
+            'image' => 'nullable|image|max:2048',
         ]);
         try {
+            $validatedData['image'] = $this->handleImageUpload($request);
             Leave::where('id', operator:json_decode( $id))->update($validatedData);
             return redirect()->route('admin.leaves.index')->with([
                 'success' => 'Leave application updated successfully.',
@@ -413,5 +401,23 @@ class LeaveController extends Controller
             ['value' => 'approved', 'label' => 'Approved'],
             ['value' => 'rejected', 'label' => 'Rejected'],
         ];
+    }
+    private function handleImageUpload(Request $request): ?string
+    {
+        if (!$request->hasFile('image')) {
+            return null;
+        }
+        $image = $request->file('image');
+        $uniqueName = 'leave_' . time() . '_' . Str::random(8) . '.' . $image->getClientOriginalExtension();
+        $destinationPath = public_path(self::IMAGE_PATH);
+        $this->ensureDirectoryExists($destinationPath);
+        $image->move($destinationPath, $uniqueName);
+        return $uniqueName;
+    }
+    private function ensureDirectoryExists(string $path): void
+    {
+        if (!file_exists($path)) {
+            mkdir($path, 0755, true);
+        }
     }
 }
