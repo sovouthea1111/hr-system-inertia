@@ -39,13 +39,13 @@ interface Notification {
 interface NotificationDropdownProps {
     notifications: Notification[];
     unreadCount: number;
-    userRole: "HR" | "Employee";
+    userRole: "HR" | "Employee" | "SuperAdmin";
     isLoading: boolean;
     onNotificationUpdate: (
         notifications: Notification[],
         unreadCount: number
     ) => void;
-    onRoleChange: (role: "HR" | "Employee") => void;
+    onRoleChange: (role: "HR" | "Employee" | "SuperAdmin") => void;
     onRefresh: (type?: string) => void;
 }
 
@@ -229,7 +229,8 @@ export function NotificationDropdown({
         onRefresh(newTab);
     };
 
-    // Update the renderNotificationList function to filter notifications by tab
+    const hasAdminPrivileges = userRole === "HR" || userRole === "SuperAdmin";
+
     const renderNotificationList = (tabValue: string) => {
         if (isLoading) {
             return (
@@ -239,7 +240,6 @@ export function NotificationDropdown({
             );
         }
 
-        // Filter notifications based on the active tab
         const filteredNotifications =
             tabValue === "all"
                 ? notifications
@@ -286,7 +286,7 @@ export function NotificationDropdown({
                                             {notification.leaveRequest
                                                 ?.employeeName ||
                                                 notification.title ||
-                                                (userRole !== "HR"
+                                                (!hasAdminPrivileges
                                                     ? "Your"
                                                     : "")}
                                         </span>{" "}
@@ -294,11 +294,12 @@ export function NotificationDropdown({
                                             {notification.message}
                                         </span>
                                     </p>
-                                    {/* Action Buttons - Only show for HR role and leave requests */}
-                                    {userRole === "HR" &&
-                                        notification.type ===
-                                            "leave_request" && (
-                                            <div className="flex gap-2">
+                                    {/* Action Buttons - Only show for admin roles, leave requests, and pending status */}
+                                    {hasAdminPrivileges &&
+                                        notification.type === "leave_request" &&
+                                        notification.leaveRequest?.status ===
+                                            "pending" && (
+                                            <div className="flex gap-2 mt-2">
                                                 <Button
                                                     size="sm"
                                                     variant="danger"
@@ -316,7 +317,7 @@ export function NotificationDropdown({
                                                 >
                                                     {isProcessing ===
                                                     notification.id
-                                                        ? "Rejecting"
+                                                        ? "Rejecting..."
                                                         : "Reject"}
                                                 </Button>
                                                 <Button
@@ -336,7 +337,7 @@ export function NotificationDropdown({
                                                 >
                                                     {isProcessing ===
                                                     notification.id
-                                                        ? "Approving"
+                                                        ? "Approving..."
                                                         : "Approve"}
                                                 </Button>
                                             </div>
@@ -395,8 +396,8 @@ export function NotificationDropdown({
                         </div>
                     </div>
 
-                    {/* Tabs Component - Only show for HR */}
-                    {userRole === "HR" ? (
+                    {/* Tabs Component - Only show for admin roles (HR or SuperAdmin) */}
+                    {hasAdminPrivileges ? (
                         <Tabs
                             value={activeTab}
                             onValueChange={handleTabChange}

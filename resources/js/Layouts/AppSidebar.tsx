@@ -88,29 +88,64 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         userData.role?.toUpperCase() === "HUMAN RESOURCES";
 
     const getNavigation = () => {
-        // HR/Admin Navigation
-        if (userData.role === "HR" || userData.role === "SuperAdmin") {
+        if (userData.role === "SuperAdmin") {
             return [
                 {
-                    title: "DASHBOARD",
+                    title: "Dashboard",
                     url: "/admin",
                     icon: LayoutDashboardIcon,
                     isActive: url === "/admin" || url === "/admin/dashboard",
                 },
                 {
-                    title: "EMPLOYEES",
+                    title: "Employees",
                     url: "/admin/employees",
                     icon: UsersIcon,
                     isActive: url.startsWith("/admin/employees"),
                 },
                 {
-                    title: "LEAVE MANAGEMENT",
+                    title: "Leave Management",
                     url: "/admin/leaves",
                     icon: CalendarCheckIcon,
                     isActive: url.startsWith("/admin/leaves"),
                 },
                 {
-                    title: "USERS",
+                    title: "Users",
+                    url: "/admin/users",
+                    icon: User,
+                    isActive: url.startsWith("/admin/users"),
+                },
+            ];
+        }
+
+        // HR Navigation
+        if (userData.role === "HR") {
+            return [
+                {
+                    title: "Dashboard",
+                    url: "/admin",
+                    icon: LayoutDashboardIcon,
+                    isActive: url === "/admin" || url === "/admin/dashboard",
+                },
+                {
+                    title: "Employees",
+                    url: "/admin/employees",
+                    icon: UsersIcon,
+                    isActive: url.startsWith("/admin/employees"),
+                },
+                {
+                    title: "Leave Management",
+                    url: "/admin/leaves",
+                    icon: CalendarCheckIcon,
+                    isActive: url.startsWith("/admin/leaves"),
+                },
+                {
+                    title: "My Leaves",
+                    url: "/admin/hr-leaves",
+                    icon: CalendarCheckIcon,
+                    isActive: url.startsWith("/admin/hr-leaves"),
+                },
+                {
+                    title: "Users",
                     url: "/admin/users",
                     icon: User,
                     isActive: url.startsWith("/admin/users"),
@@ -121,25 +156,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         // Employee Navigation
         return [
             {
-                title: "DASHBOARD",
+                title: "Dashboard",
                 url: "/dashboard",
                 icon: LayoutDashboardIcon,
                 isActive: url === "/dashboard",
             },
             {
-                title: "MY LEAVES",
+                title: "My Leaves",
                 url: "/admin/leaves",
                 icon: CalendarCheckIcon,
                 isActive: url.startsWith("/admin/leaves"),
             },
             {
-                title: "MY PROFILE",
+                title: "My Profile",
                 url: "/admin/employees",
                 icon: UserIcon,
                 isActive: url.startsWith("/admin/employees"),
             },
             {
-                title: "USER",
+                title: "Users",
                 url: "/admin/users",
                 icon: User,
                 isActive: url.startsWith("/admin/users"),
@@ -175,11 +210,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <div className="flex-1 min-w-0">
                         <div className="text-xs text-sidebar-foreground/70 font-medium truncate">
                             {userData.role}
-                            {isHR && (
-                                <span className="ml-1 px-1 py-0.5 bg-success/10 text-success rounded text-xs font-semibold">
-                                    HR
-                                </span>
-                            )}
                         </div>
                         <div className="text-sm font-semibold text-sidebar-foreground truncate">
                             {userData.name}
