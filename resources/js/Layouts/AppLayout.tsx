@@ -185,7 +185,7 @@ export function AppLayout({
                                     className="mr-2 h-4"
                                 />
                             </div>
-
+                            
                             {/* Header Actions */}
                             <div className="ml-auto flex items-center gap-2 px-4">
                                 <NotificationDropdown
