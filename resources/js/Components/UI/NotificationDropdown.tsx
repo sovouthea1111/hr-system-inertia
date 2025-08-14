@@ -176,25 +176,6 @@ export function NotificationDropdown({
         (n) => !n.read
     ).length;
 
-    useEffect(() => {
-        console.log("NotificationDropdown props:", {
-            notifications: notifications.length,
-            unreadCount,
-            userRole,
-            currentUserId,
-            currentUserName,
-            isLoading,
-            notificationsData: notifications,
-        });
-    }, [
-        notifications,
-        unreadCount,
-        userRole,
-        currentUserId,
-        currentUserName,
-        isLoading,
-    ]);
-
     const getTabCount = (tab: string) => {
         if (tab === "all") return filteredNotifications.length;
         return filteredNotifications.filter((n) =>
