@@ -113,4 +113,9 @@ class User extends Authenticatable
             ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
     }
+
+    public function reviewedOvertimes()
+{
+    return $this->hasMany(Overtime::class, 'reviewed_by');
+}
 }
