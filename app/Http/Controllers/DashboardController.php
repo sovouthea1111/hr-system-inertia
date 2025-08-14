@@ -30,19 +30,34 @@ class DashboardController extends Controller
     
     private function hrDashboard(): Response
     {
-        // HR-specific statistics
+        $currentUser = Auth::user();
+        $currentEmployee = Employee::where('email', $currentUser->email)->first();
+        
+        $pendingLeavesQuery = Leave::where('status', 'pending');
+        $approvedLeavesQuery = Leave::where('status', 'approved');
+        
+        if ($currentEmployee) {
+            $pendingLeavesQuery->where('employee_id', '!=', $currentEmployee->id);
+            $approvedLeavesQuery->where('employee_id', '!=', $currentEmployee->id);
+        }
+        
         $stats = [
             'total_employees' => Employee::count(),
             'active_employees' => Employee::where('status', 'active')->count(),
-            'pending_leaves' => Leave::where('status', 'pending')->count(),
-            'approved_leaves' => Leave::where('status', 'approved')->count(),
+            'pending_leaves' => $pendingLeavesQuery->count(),
+            'approved_leaves' => $approvedLeavesQuery->count(),
             'total_users' => User::count(),
         ];
-
-        // Recent leave requests for HR review
-        $recentLeaveRequests = Leave::with('employee')
+    
+        $recentLeaveRequestsQuery = Leave::with('employee')
             ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'desc');
+        
+        if ($currentEmployee) {
+            $recentLeaveRequestsQuery->where('employee_id', '!=', $currentEmployee->id);
+        }
+        
+        $recentLeaveRequests = $recentLeaveRequestsQuery
             ->take(5)
             ->get()
             ->map(function ($leave) {
@@ -56,7 +71,6 @@ class DashboardController extends Controller
                 ];
             });
             
-        // Department overview
         $departmentStats = Employee::selectRaw('department, COUNT(*) as total, SUM(CASE WHEN status = "active" THEN 1 ELSE 0 END) as active')
             ->groupBy('department')
             ->get()
@@ -76,7 +90,7 @@ class DashboardController extends Controller
                     'on_leave' => $onLeaveCount,
                 ];
             });
-
+    
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
             'recentLeaveRequests' => $recentLeaveRequests,

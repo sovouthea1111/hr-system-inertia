@@ -47,6 +47,7 @@ interface Employee {
     phone: string | null;
     department: string;
     position: string | null;
+    salary: number | null;
     joint_date: string;
     status: "active" | "inactive";
 }
@@ -680,6 +681,7 @@ export default function EmployeesPage() {
                     }}
                     employee={selectedEmployee}
                     onEmployeeUpdated={handleEmployeeUpdated}
+                    auth={auth}
                 />
 
                 {/* Delete Confirmation Modal */}
