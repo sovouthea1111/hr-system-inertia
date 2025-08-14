@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('phone')->nullable(); 
             $table->string('department')->index(); 
             $table->string('position')->nullable();
+            $table->bigInteger('salary')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active')->index();
             $table->string('email')->unique()->index(); 
             $table->dateTime('joint_date')->index(); 

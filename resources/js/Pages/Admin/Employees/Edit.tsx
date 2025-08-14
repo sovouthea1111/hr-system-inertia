@@ -21,6 +21,7 @@ interface Employee {
     phone: string | null;
     department: string;
     position: string | null;
+    salary: number | null;
     joint_date: string;
     status: "active" | "inactive";
     created_at?: string;
@@ -32,6 +33,11 @@ interface EditEmployeeModalProps {
     onClose: () => void;
     employee: Employee | null;
     onEmployeeUpdated: () => void;
+    auth: {
+        user?: {
+            user_role?: string;
+        };
+    } | null;
 }
 
 const departments = [
@@ -46,7 +52,12 @@ export function EditEmployeeModal({
     onClose,
     employee,
     onEmployeeUpdated,
+    auth,
 }: EditEmployeeModalProps) {
+    const isHROrSuperAdmin =
+        auth?.user?.user_role === "HR" ||
+        auth?.user?.user_role === "SuperAdmin";
+    
     const { data, setData, put, processing, errors, reset, clearErrors } =
         useForm({
             full_name: "",
@@ -54,11 +65,11 @@ export function EditEmployeeModal({
             phone: "",
             department: "",
             position: "",
+            salary: "",
             joint_date: "",
             status: "active" as "active" | "inactive",
         });
 
-    // Populate form with employee data when modal opens
     useEffect(() => {
         if (employee && isOpen) {
             setData({
@@ -67,6 +78,7 @@ export function EditEmployeeModal({
                 phone: employee.phone || "",
                 department: employee.department || "",
                 position: employee.position || "",
+                salary: employee.salary ? employee.salary.toString() : "",
                 joint_date: employee.joint_date
                     ? employee.joint_date.split("T")[0]
                     : "",
@@ -82,7 +94,6 @@ export function EditEmployeeModal({
 
         put(route("admin.employees.update", employee.id), {
             onSuccess: () => {
-                // Show success message
                 toast.success(
                     `Employee "${data.full_name}" has been updated successfully!`,
                     {
@@ -97,7 +108,6 @@ export function EditEmployeeModal({
             },
 
             onError: (errors) => {
-                console.error("Validation errors:", errors);
                 toast.error(
                     "Failed to update employee. Please check the form and try again.",
                     {
@@ -277,13 +287,36 @@ export function EditEmployeeModal({
                             </p>
                         )}
                     </div>
+                    {/* Salary - Only visible to HR and SuperAdmin */}
+                    {isHROrSuperAdmin && (
+                        <div className="space-y-2">
+                            <Input
+                                id="salary"
+                                type="number"
+                                label="Salary"
+                                placeholder="Enter salary"
+                                value={data.salary}
+                                onChange={(e) =>
+                                    handleInputChange("salary", e.target.value)
+                                }
+                                className={errors.salary ? "border-danger" : ""}
+                                min="0"
+                                step="0.01"
+                            />
+                            {errors.salary && (
+                                <p className="text-sm text-danger">
+                                    {errors.salary}
+                                </p>
+                            )}
+                        </div>
+                    )}
 
                     {/* Join Date */}
                     <div className="space-y-2">
                         <Input
                             id="joint_date"
                             type="date"
-                            label="Joint Date"
+                            label="Join Date"
                             required
                             value={data.joint_date}
                             onChange={(e) =>
@@ -331,7 +364,7 @@ export function EditEmployeeModal({
                 <div className="bg-blue-50 p-4 rounded-lg">
                     <p className="text-sm text-primary">
                         <strong>Note:</strong> All fields marked with * are
-                        required. Changes will be saved immediately upon
+                        required. {isHROrSuperAdmin ? "Salary information is only visible to HR and SuperAdmin users." : ""} Changes will be saved immediately upon
                         submission.
                     </p>
                 </div>

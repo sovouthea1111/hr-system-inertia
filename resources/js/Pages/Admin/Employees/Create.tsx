@@ -21,6 +21,7 @@ interface Employee {
     phone: string | null;
     department: string;
     position: string | null;
+    salary: number | null;
     joint_date: string;
     status: "active" | "inactive";
     created_at?: string;
@@ -52,6 +53,7 @@ export function CreateEmployeeModal({
             phone: "",
             department: "",
             position: "",
+            salary: "",
             joint_date: "",
             status: "active" as "active" | "inactive",
         });
@@ -68,7 +70,6 @@ export function CreateEmployeeModal({
 
         post(route("admin.employees.store"), {
             onSuccess: (page: { props: PageProps }) => {
-
                 const responseEmployee =
                     page.props.employee || page.props.data?.employee;
 
@@ -76,9 +77,10 @@ export function CreateEmployeeModal({
                     id: Date.now(),
                     full_name: data.full_name,
                     email: data.email,
-                    phone: data.phone,
+                    phone: data.phone || null,
                     department: data.department,
-                    position: data.position,
+                    position: data.position || null,
+                    salary: data.salary ? Number(data.salary) : null,
                     joint_date: data.joint_date,
                     status: data.status,
                 };
@@ -273,6 +275,26 @@ export function CreateEmployeeModal({
                         {errors.position && (
                             <p className="text-danger text-sm mt-1">
                                 {errors.position}
+                            </p>
+                        )}
+                    </div>
+                    {/* Salary */}
+                    <div>
+                        <Input
+                            id="salary"
+                            type="number"
+                            label="Salary"
+                            placeholder="Enter salary"
+                            value={data.salary}
+                            onChange={(e) =>
+                                handleInputChange("salary", e.target.value)
+                            }
+                            className={errors.salary ? "border-danger" : ""}
+                            required
+                        />
+                        {errors.salary && (
+                            <p className="text-danger text-sm mt-1">
+                                {errors.salary}
                             </p>
                         )}
                     </div>

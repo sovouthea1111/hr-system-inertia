@@ -29,6 +29,7 @@ class StoreEmployeeRequest extends FormRequest
                 Rule::in(['HR','IT','Media','ISO']) 
             ],
             'position' => ['nullable', 'string', 'max:255'],
+            'salary' => ['required', 'integer', 'min:0', 'max:99999999'],
             'status' => [
                 'required',
                 Rule::in(['active', 'inactive'])
@@ -47,6 +48,9 @@ class StoreEmployeeRequest extends FormRequest
             'email.unique' => 'This email address is already registered.',
             'department.required' => 'Department selection is required.',
             'department.in' => 'Please select a valid department.',
+            'salary.integer' => 'Salary must be a whole number.',
+            'salary.min' => 'Salary cannot be negative.',
+            'salary.max' => 'Salary exceeds maximum allowed value.',
             'status.in' => 'Please select a valid status.',
             'joint_date.required' => 'Join date is required.',
             'joint_date.date' => 'Please provide a valid date.',
@@ -61,6 +65,7 @@ class StoreEmployeeRequest extends FormRequest
             'email' => strtolower(trim($this->email)),
             'phone' => $this->phone ? trim($this->phone) : null,
             'position' => $this->position ? trim($this->position) : null,
+            'salary' => $this->salary ? (int) $this->salary : null,
         ]);
     }
 }

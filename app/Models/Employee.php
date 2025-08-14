@@ -15,6 +15,7 @@ class Employee extends Model
         'phone',
         'department',
         'position',
+        'salary',
         'status',
         'email',
         'joint_date',
@@ -24,12 +25,6 @@ class Employee extends Model
         'joint_date' => 'datetime',
         'status' => 'string',
     ];
-
-    // Remove the $dates property since we're removing soft deletes
-    // protected $dates = [
-    //     'deleted_at',
-    //     'joint_date',
-    // ];
 
     // Scopes
     public function scopeActive($query)
@@ -68,6 +63,11 @@ class Employee extends Model
     }
 
     // Add this relationship method
+    public function overtimes()
+{
+    return $this->hasMany(Overtime::class);
+}
+
     public function leaves(): HasMany
     {
         return $this->hasMany(Leave::class);
