@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeaveController;
-use App\Http\Controllers\DashboardController; // Add this import
+use App\Http\Controllers\DashboardController; 
+use App\Http\Controllers\OvertimeController;
 use Inertia\Inertia;
 
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
@@ -51,4 +52,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/settings', function () {
         return Inertia::render('Admin/Settings/Index');
     })->name('settings.index');
+
+    Route::resource('overtime', OvertimeController::class);
+    Route::put('overtime-status/{overtime}', [OvertimeController::class, 'updateStatus'])->name('overtime-status.update');
+    Route::get('overtime-reports', [OvertimeController::class, 'reports'])->name('overtime.reports');
+    Route::delete('overtimes-bulk-delete', [OvertimeController::class, 'bulkDelete'])->name('overtimes.bulk-delete');
+    Route::get('overtime-payroll', [OvertimeController::class, 'payroll'])->name('overtime-payroll');
 });
