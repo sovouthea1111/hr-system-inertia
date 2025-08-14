@@ -18,7 +18,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/UI/Select";
-import { Calendar } from "@/Components/UI/Calendar";
 import {
     Popover,
     PopoverContent,
@@ -26,6 +25,198 @@ import {
 } from "@/Components/UI/Popover";
 import { cn } from "../../../../lib/utils";
 import { format } from "date-fns";
+
+interface CalendarProps {
+    mode?: "single";
+    selected?: Date;
+    onSelect?: (date: Date | undefined) => void;
+    initialFocus?: boolean;
+}
+
+function Calendar({ selected, onSelect }: CalendarProps) {
+    const [currentDate, setCurrentDate] = React.useState(
+        selected || new Date()
+    );
+    const [viewDate, setViewDate] = React.useState(selected || new Date());
+
+    const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+
+    const getDaysInMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    };
+
+    const getFirstDayOfMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    };
+
+    const handleDateClick = (day: number) => {
+        const newDate = new Date(
+            viewDate.getFullYear(),
+            viewDate.getMonth(),
+            day
+        );
+        setCurrentDate(newDate);
+        onSelect?.(newDate);
+    };
+
+    const handleMonthChange = (monthIndex: number) => {
+        const newDate = new Date(viewDate.getFullYear(), monthIndex, 1);
+        setViewDate(newDate);
+    };
+
+    const handleYearChange = (year: number) => {
+        const newDate = new Date(year, viewDate.getMonth(), 1);
+        setViewDate(newDate);
+    };
+
+    const renderCalendarDays = () => {
+        const daysInMonth = getDaysInMonth(viewDate);
+        const firstDay = getFirstDayOfMonth(viewDate);
+        const days = [];
+
+        const prevMonth = new Date(
+            viewDate.getFullYear(),
+            viewDate.getMonth() - 1,
+            0
+        );
+        for (let i = firstDay - 1; i >= 0; i--) {
+            const day = prevMonth.getDate() - i;
+            days.push(
+                <button
+                    key={`prev-${day}`}
+                    className="h-8 w-8 text-sm text-gray-400 hover:bg-gray-100 rounded"
+                    onClick={() => {
+                        const newDate = new Date(
+                            prevMonth.getFullYear(),
+                            prevMonth.getMonth(),
+                            day
+                        );
+                        setViewDate(newDate);
+                        setCurrentDate(newDate);
+                        onSelect?.(newDate);
+                    }}
+                >
+                    {day}
+                </button>
+            );
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isSelected =
+                selected &&
+                selected.getDate() === day &&
+                selected.getMonth() === viewDate.getMonth() &&
+                selected.getFullYear() === viewDate.getFullYear();
+
+            days.push(
+                <button
+                    key={day}
+                    onClick={() => handleDateClick(day)}
+                    className={`h-8 w-8 text-sm rounded hover:bg-gray-100 ${
+                        isSelected
+                            ? "bg-blue-500 text-white hover:bg-blue-600"
+                            : "text-gray-700"
+                    }`}
+                >
+                    {day}
+                </button>
+            );
+        }
+
+        const totalCells = 42;
+        const remainingCells = totalCells - days.length;
+        for (let day = 1; day <= remainingCells; day++) {
+            days.push(
+                <button
+                    key={`next-${day}`}
+                    className="h-8 w-8 text-sm text-gray-400 hover:bg-gray-100 rounded"
+                    onClick={() => {
+                        const nextMonth = new Date(
+                            viewDate.getFullYear(),
+                            viewDate.getMonth() + 1,
+                            day
+                        );
+                        setViewDate(nextMonth);
+                        setCurrentDate(nextMonth);
+                        onSelect?.(nextMonth);
+                    }}
+                >
+                    {day}
+                </button>
+            );
+        }
+
+        return days;
+    };
+
+    const years = Array.from(
+        { length: 20 },
+        (_, i) => new Date().getFullYear() - 10 + i
+    );
+
+    return (
+        <div className="p-3">
+            {/* Month and Year selectors */}
+            <div className="flex gap-2 mb-4">
+                <select
+                    value={viewDate.getMonth()}
+                    onChange={(e) =>
+                        handleMonthChange(parseInt(e.target.value))
+                    }
+                    className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
+                >
+                    {months.map((month, index) => (
+                        <option key={month} value={index}>
+                            {month}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={viewDate.getFullYear()}
+                    onChange={(e) => handleYearChange(parseInt(e.target.value))}
+                    className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
+                >
+                    {years.map((year) => (
+                        <option key={year} value={year}>
+                            {year}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Calendar header */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                    <div
+                        key={day}
+                        className="h-8 flex items-center justify-center"
+                    >
+                        <span className="text-xs font-medium text-gray-500">
+                            {day}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">{renderCalendarDays()}</div>
+        </div>
+    );
+}
 
 interface SelectOption {
     value: string;
@@ -72,7 +263,7 @@ export function GroupFilter({
 
     const handleDateSelect = (fieldId: string, date: Date | undefined) => {
         const dateString = date ? format(date, "yyyy-MM-dd") : "";
-        onFieldChange(fieldId, dateString, date);
+        onFieldChange(fieldId, dateString, date); // Passing 3 parameters
     };
 
     const handleDateDone = (fieldId: string) => {
@@ -201,33 +392,29 @@ export function GroupFilter({
                                                 className="w-auto p-0"
                                                 align="start"
                                             >
-                                                <div className="p-3">
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={
-                                                            field.dateValue
-                                                        }
-                                                        onSelect={(date) =>
-                                                            handleDateSelect(
-                                                                field.id,
-                                                                date
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.dateValue}
+                                                    onSelect={(date) =>
+                                                        handleDateSelect(
+                                                            field.id,
+                                                            date
+                                                        )
+                                                    }
+                                                    initialFocus
+                                                />
+                                                <div className="flex justify-end mt-3 pt-3 border-t border-border px-3 pb-3">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDateDone(
+                                                                field.id
                                                             )
                                                         }
-                                                        initialFocus
-                                                    />
-                                                    <div className="flex justify-end mt-3 pt-3 border-t border-border">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleDateDone(
-                                                                    field.id
-                                                                )
-                                                            }
-                                                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                                                        >
-                                                            Done
-                                                        </Button>
-                                                    </div>
+                                                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                                    >
+                                                        Done
+                                                    </Button>
                                                 </div>
                                             </PopoverContent>
                                         </Popover>

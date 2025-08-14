@@ -13,6 +13,7 @@ interface GroupButtonProps {
     canEdit?: boolean;
     canDelete?: boolean;
     canView?: boolean;
+    disabled?: boolean;
 
     onEdit?: () => void;
     onDelete?: () => void;
@@ -37,6 +38,7 @@ export function GroupButton({
     canEdit = false,
     canDelete = false,
     canView = false,
+    disabled = false,
     onEdit,
     onDelete,
     onView,
@@ -121,6 +123,7 @@ export function GroupButton({
                     <Button
                         variant={variant}
                         size={size}
+                        disabled={disabled}
                         className="transition-all duration-150 hover:scale-105 active:scale-95"
                         title={`Actions for ${itemName || "item"}`}
                     >
