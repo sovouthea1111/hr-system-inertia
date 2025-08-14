@@ -141,7 +141,6 @@ export function AppLayout({
                 setNotifications(transformedNotifications);
                 setUnreadCount(result.unread_count);
             } catch (error) {
-                console.error("Failed to fetch notifications:", error);
                 setNotifications([]);
                 setUnreadCount(0);
             } finally {

@@ -10,6 +10,7 @@ import {
     UsersIcon,
     User,
     UserIcon,
+    ClockIcon, // Add this import for overtime icon
 } from "lucide-react";
 import { router } from "@inertiajs/react";
 
@@ -109,6 +110,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     isActive: url.startsWith("/admin/leaves"),
                 },
                 {
+                    title: "Overtime Management",
+                    url: "/admin/overtime",
+                    icon: ClockIcon,
+                    isActive: url.startsWith("/admin/overtime"),
+                },
+                {
                     title: "Users",
                     url: "/admin/users",
                     icon: User,
@@ -139,6 +146,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     isActive: url.startsWith("/admin/leaves"),
                 },
                 {
+                    title: "Overtime Management",
+                    url: "/admin/overtime",
+                    icon: ClockIcon,
+                    isActive:
+                        url.startsWith("/admin/overtime") &&
+                        !url.startsWith("/admin/overtime-payroll"),
+                },
+                {
+                    title: "Overtime Payroll",
+                    url: "/admin/overtime-payroll",
+                    icon: ClockIcon,
+                    isActive: url.startsWith("/admin/overtime-payroll"),
+                },
+                {
                     title: "My Leaves",
                     url: "/admin/hr-leaves",
                     icon: CalendarCheckIcon,
@@ -166,6 +187,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 url: "/admin/leaves",
                 icon: CalendarCheckIcon,
                 isActive: url.startsWith("/admin/leaves"),
+            },
+            {
+                title: "My Overtime",
+                url: "/admin/overtime",
+                icon: ClockIcon,
+                isActive: url.startsWith("/admin/overtime"),
             },
             {
                 title: "My Profile",

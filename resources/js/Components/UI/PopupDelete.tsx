@@ -10,6 +10,7 @@ interface DeleteConfirmationModalProps {
     isDeleting?: boolean;
     type: "single" | "bulk";
     count?: number;
+    itemType?: string;
 }
 
 export function DeleteConfirmationModal({
@@ -20,10 +21,11 @@ export function DeleteConfirmationModal({
     isDeleting = false,
     type,
     count,
+    itemType = "Employee",
 }: DeleteConfirmationModalProps) {
     const getTitle = () => {
         if (type === "bulk") {
-            return `Delete ${count} Employee${count !== 1 ? "s" : ""}?`;
+            return `Delete ${count} ${itemType}${count !== 1 ? "s" : ""}?`;
         }
         return `Delete ${itemName}?`;
     };
@@ -35,7 +37,8 @@ export function DeleteConfirmationModal({
                     <p className="text-gray-700 text-base leading-relaxed">
                         Are you sure you want to delete{" "}
                         <span className="font-semibold text-gray-900">
-                            {count} employee{count !== 1 ? "s" : ""}?
+                            {count} {itemType}
+                            {count !== 1 ? "s" : ""}?
                         </span>
                     </p>
                     <p className="text-gray-600 text-sm">
