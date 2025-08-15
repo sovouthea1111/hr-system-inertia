@@ -111,10 +111,7 @@ export default function OvertimeIndex() {
     const [employeeNameFilter, setEmployeeNameFilter] = useState(
         filters?.employee_name || ""
     );
-    const [startDateFilter, setStartDateFilter] = useState(
-        filters?.start_date || ""
-    );
-    const [endDateFilter, setEndDateFilter] = useState(filters?.end_date || "");
+    const [dateFilter, setDateFilter] = useState(filters?.start_date || "");
     const [applicationToDelete, setApplicationToDelete] =
         useState<Overtime | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -127,8 +124,7 @@ export default function OvertimeIndex() {
         if (statusFilter) filterData.status = statusFilter;
         if (overtimeTypeFilter) filterData.overtime_type = overtimeTypeFilter;
         if (employeeNameFilter) filterData.employee_name = employeeNameFilter;
-        if (startDateFilter) filterData.start_date = startDateFilter;
-        if (endDateFilter) filterData.end_date = endDateFilter;
+        if (dateFilter) filterData.date = dateFilter;
 
         router.get(route("admin.overtime.index"), filterData, {
             preserveState: true,
@@ -142,13 +138,7 @@ export default function OvertimeIndex() {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [
-        statusFilter,
-        overtimeTypeFilter,
-        employeeNameFilter,
-        startDateFilter,
-        endDateFilter,
-    ]);
+    }, [statusFilter, overtimeTypeFilter, employeeNameFilter, dateFilter]);
 
     // Add these helper functions at the top of the component
     const getCurrentMonthRange = () => {
@@ -157,27 +147,30 @@ export default function OvertimeIndex() {
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         return { firstDay, lastDay };
     };
-    
+
     const isDateInCurrentMonth = (date: Date) => {
         const now = new Date();
-        return date.getFullYear() === now.getFullYear() && 
-               date.getMonth() === now.getMonth();
+        return (
+            date.getFullYear() === now.getFullYear() &&
+            date.getMonth() === now.getMonth()
+        );
     };
-    
-    // Modify the handleFilterChange function
+
     const handleFilterChange = (
         field: string,
         value: string,
         dateValue?: Date
     ) => {
-        // Validate date restrictions for start_date and end_date
-        if ((field === "start_date" || field === "end_date") && dateValue) {
+        // Validate date restrictions for date field
+        if (field === "date" && dateValue) {
             if (!isDateInCurrentMonth(dateValue)) {
-                toast.error("Please select a date within the current month only.");
+                toast.error(
+                    "Please select a date within the current month only."
+                );
                 return; // Don't update the filter if date is outside current month
             }
         }
-    
+
         switch (field) {
             case "status":
                 setStatusFilter(value);
@@ -188,77 +181,17 @@ export default function OvertimeIndex() {
             case "employee_name":
                 setEmployeeNameFilter(value);
                 break;
-            case "start_date":
-                setStartDateFilter(value);
-                break;
-            case "end_date":
-                setEndDateFilter(value);
+            case "date":
+                setDateFilter(value);
                 break;
         }
-    };
-    
-    const getFilterFieldsWithDateRange = () => {
-        const { firstDay, lastDay } = getCurrentMonthRange();
-        
-        return [
-            {
-                id: "status",
-                label: "Status",
-                placeholder: "Select status",
-                value: statusFilter,
-                type: "select" as const,
-                options: [
-                    { value: "pending", label: "Pending" },
-                    { value: "approved", label: "Approved" },
-                    { value: "rejected", label: "Rejected" },
-                ],
-            },
-            {
-                id: "overtime_type",
-                label: "Overtime Type",
-                placeholder: "Select type",
-                value: overtimeTypeFilter,
-                type: "select" as const,
-                options:
-                    overtimeTypes?.map((type) => ({
-                        value: type.value,
-                        label: type.label,
-                    })) || [],
-            },
-            {
-                id: "employee_name",
-                label: "Employee Name",
-                placeholder: "Search by employee name...",
-                value: employeeNameFilter,
-                type: "input" as const,
-            },
-            {
-                id: "start_date",
-                label: "Start Date (Current Month Only)",
-                placeholder: `Select date (${firstDay.toLocaleDateString()} - ${lastDay.toLocaleDateString()})`,
-                value: startDateFilter,
-                type: "datetime" as const,
-                dateValue: startDateFilter
-                    ? new Date(startDateFilter)
-                    : undefined,
-            },
-            {
-                id: "end_date",
-                label: "End Date (Current Month Only)",
-                placeholder: `Select date (${firstDay.toLocaleDateString()} - ${lastDay.toLocaleDateString()})`,
-                value: endDateFilter,
-                type: "datetime" as const,
-                dateValue: endDateFilter ? new Date(endDateFilter) : undefined,
-            },
-        ];
     };
 
     const handleClearFilters = () => {
         setStatusFilter("");
         setOvertimeTypeFilter("");
         setEmployeeNameFilter("");
-        setStartDateFilter("");
-        setEndDateFilter("");
+        setDateFilter("");
 
         router.get(
             route("admin.overtime.index"),
@@ -411,6 +344,10 @@ export default function OvertimeIndex() {
     };
 
     const getFilterFields = () => {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
         return [
             {
                 id: "status",
@@ -444,22 +381,14 @@ export default function OvertimeIndex() {
                 type: "input" as const,
             },
             {
-                id: "start_date",
-                label: "Start Date",
-                placeholder: "Select start date",
-                value: startDateFilter,
+                id: "date",
+                label: "Date (Current Month Only)",
+                placeholder: `Select date (${firstDay.toLocaleDateString()} - ${lastDay.toLocaleDateString()})`,
+                value: dateFilter,
                 type: "datetime" as const,
-                dateValue: startDateFilter
-                    ? new Date(startDateFilter)
-                    : undefined,
-            },
-            {
-                id: "end_date",
-                label: "End Date",
-                placeholder: "Select end date",
-                value: endDateFilter,
-                type: "datetime" as const,
-                dateValue: endDateFilter ? new Date(endDateFilter) : undefined,
+                dateValue: dateFilter ? new Date(dateFilter) : undefined,
+                disableMonthSelection: true,
+                disableYearSelection: true,
             },
         ];
     };

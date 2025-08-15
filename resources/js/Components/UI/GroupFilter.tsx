@@ -31,9 +31,16 @@ interface CalendarProps {
     selected?: Date;
     onSelect?: (date: Date | undefined) => void;
     initialFocus?: boolean;
+    disableMonthSelection?: boolean;
+    disableYearSelection?: boolean;
 }
 
-function Calendar({ selected, onSelect }: CalendarProps) {
+function Calendar({ 
+    selected, 
+    onSelect, 
+    disableMonthSelection = false, 
+    disableYearSelection = false 
+}: CalendarProps) {
     const [currentDate, setCurrentDate] = React.useState(
         selected || new Date()
     );
@@ -73,11 +80,13 @@ function Calendar({ selected, onSelect }: CalendarProps) {
     };
 
     const handleMonthChange = (monthIndex: number) => {
+        if (disableMonthSelection) return;
         const newDate = new Date(viewDate.getFullYear(), monthIndex, 1);
         setViewDate(newDate);
     };
 
     const handleYearChange = (year: number) => {
+        if (disableYearSelection) return;
         const newDate = new Date(year, viewDate.getMonth(), 1);
         setViewDate(newDate);
     };
@@ -176,7 +185,12 @@ function Calendar({ selected, onSelect }: CalendarProps) {
                     onChange={(e) =>
                         handleMonthChange(parseInt(e.target.value))
                     }
-                    className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
+                    disabled={disableMonthSelection}
+                    className={`flex-1 text-sm border border-gray-300 rounded px-2 py-1 ${
+                        disableMonthSelection 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : ''
+                    }`}
                 >
                     {months.map((month, index) => (
                         <option key={month} value={index}>
@@ -188,7 +202,12 @@ function Calendar({ selected, onSelect }: CalendarProps) {
                 <select
                     value={viewDate.getFullYear()}
                     onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                    className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
+                    disabled={disableYearSelection}
+                    className={`flex-1 text-sm border border-gray-300 rounded px-2 py-1 ${
+                        disableYearSelection 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : ''
+                    }`}
                 >
                     {years.map((year) => (
                         <option key={year} value={year}>
@@ -231,6 +250,8 @@ interface FilterField {
     type?: "input" | "select" | "datetime";
     options?: SelectOption[];
     dateValue?: Date;
+    disableMonthSelection?: boolean;
+    disableYearSelection?: boolean;
 }
 
 interface GroupFilterProps {
@@ -402,6 +423,8 @@ export function GroupFilter({
                                                         )
                                                     }
                                                     initialFocus
+                                                    disableMonthSelection={field.disableMonthSelection}
+                                                    disableYearSelection={field.disableYearSelection}
                                                 />
                                                 <div className="flex justify-end mt-3 pt-3 border-t border-border px-3 pb-3">
                                                     <Button
