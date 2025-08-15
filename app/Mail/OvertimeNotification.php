@@ -23,7 +23,7 @@ class OvertimeNotification extends Mailable
 
     public function build()
     {
-        return $this->subject('New Overtime Request - ' . $this->employee->full_name)
+        return $this->subject('Overtime Request - ' . $this->employee->full_name . ' - ' . date('M d, Y', strtotime($this->overtime->overtime_date)))
                     ->view('emails.overtime-notification')
                     ->with([
                         'overtime' => $this->overtime,
