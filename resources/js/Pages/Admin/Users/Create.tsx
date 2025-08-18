@@ -249,14 +249,14 @@ export function CreateUserModal({
 
                     <InputImage
                         id="medical_certificate"
-                        label="Medical Certificate"
+                        label="Profile Image"
                         value={data.image}
                         onChange={handleImageChange}
                         onRemove={handleImageRemove}
                         required={false}
                         accept="image/*"
                         maxSize={2}
-                        placeholder="Upload medical certificate"
+                        placeholder="Upload profile image"
                         error={errors.image}
                         dragDrop={true}
                         preview={true}
