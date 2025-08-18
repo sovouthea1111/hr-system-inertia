@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
+use App\Models\Overtime;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
@@ -18,8 +19,6 @@ class EmployeeController extends Controller
      */
     public function index(Request $request): Response
     {
-
-        // Get per_page from request,  default to 10, validate against allowed values
         $perPage = $request->get('per_page', 10);
         $allowedPerPage = [10, 25, 50, 100];
         if (!in_array($perPage, $allowedPerPage)) {
@@ -29,11 +28,9 @@ class EmployeeController extends Controller
         $query = Employee::query();
         $user = Auth::user();
         
-        // If user is an Employee, only show their own data
         if ($user && $user->user_role === 'Employee') {
             $query->where('email', $user->email);
         } else {
-            // Apply filters only for HR and SuperAdmin
             if ($request->filled('name')) {
                 $query->where('full_name', 'like', '%' . $request->name . '%');
             }
@@ -51,10 +48,9 @@ class EmployeeController extends Controller
             }
         }
 
-        // Sort and paginate
         $employees = $query
             ->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate($perPage)  // Changed from hardcoded 10 to $perPage
             ->withQueryString();
 
         return Inertia::render('Admin/Employees/Index', [
@@ -73,7 +69,6 @@ class EmployeeController extends Controller
     {
         $user = Auth::user();
         
-        // Prevent employees from creating new employee records
         if ($user && $user->user_role === 'Employee') {
             return back()->withErrors(['error' => 'You do not have permission to create employee records.']);
         }
@@ -98,14 +93,36 @@ class EmployeeController extends Controller
     public function update(UpdateEmployeeRequest $request, Employee $employee)
     {
         $user = Auth::user();
-        // If user is an Employee, only allow editing their own record
         if ($user && $user->user_role === 'Employee' && $employee->email !== $user->email) {
             return back()->withErrors(['error' => 'You can only edit your own employee record.']);
         }
-        
+
         try {
+            $original_salary = $employee->salary;
             $employee->update($request->validated());
-    
+            $new_salary = $employee->salary;
+            if($original_salary !== $new_salary){
+                $employee_id = $employee->id;
+            if ($employee) {
+                $monthlyOT = 26;
+                $dayOT = 8;
+                $basicOT = $employee->salary / $monthlyOT;
+                $price = $basicOT / $dayOT;
+            }
+
+            $overtimePrice = round($price, 2);
+                $pendingOvertimes = Overtime::with('employee:id,full_name,email,department')
+                    ->where('employee_id', $employee_id)
+                    ->where('status', 'pending')
+                    ->get();
+                    foreach($pendingOvertimes as $overtime){
+                        $total_amount = round($overtimePrice * $overtime->hour, 2);
+                        $overtime->update([
+                            'hourly_rate' => $overtimePrice,
+                            'total_amount' => $total_amount,
+                        ]);
+                    }
+            }    
             return back()->with([
                 'success' => 'Employee updated successfully.',
                 'employee' => $employee->fresh()
@@ -135,7 +152,6 @@ class EmployeeController extends Controller
     {
         $user = Auth::user();
         
-        // Prevent employees from deleting records
         if ($user && $user->user_role === 'Employee') {
             return back()->withErrors(['error' => 'You do not have permission to delete employee records.']);
         }
