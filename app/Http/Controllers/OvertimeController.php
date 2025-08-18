@@ -36,7 +36,8 @@ class OvertimeController extends Controller
         $filters = $request->only(['employee_name', 'status', 'overtime_type', 'date']);
 
         $query = Overtime::with(['employee:id,full_name,email,department', 'reviewer:id,name'])
-            ->latest();
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->orderBy('updated_at', 'desc');
 
         if (empty($filters['date'])) {
             $query->whereYear('overtime_date', Carbon::now()->year)
@@ -117,6 +118,7 @@ class OvertimeController extends Controller
                     'name' => $overtime->reviewer->name,
                 ] : null,
                 'created_at' => $overtime->created_at,
+                'updated_at' => $overtime->updated_at,
             ];
         });
         
@@ -172,72 +174,6 @@ class OvertimeController extends Controller
             ['value' => 'weekend', 'label' => 'Weekend Overtime', 'price' => $overtimePrice],
         ];
     }
-
-    /**
-     * Store a new overtime record
-     */
-    // public function store(Request $request): RedirectResponse
-    // {
-    //     $user = Auth::user();
-    //     $employee = Employee::where('email', $user->email)->first();
-        
-    //     if (!$employee) {
-    //         return Redirect::back()->withErrors([
-    //             'employee' => 'Employee record not found. Please contact HR.'
-    //         ]);
-    //     }
-
-    //     $validatedData = $request->validate([
-    //         'overtime_type' => [
-    //             'required',
-    //             'string',
-    //             Rule::in(['regular', 'weekend'])
-    //         ],
-    //         'start_time' => 'required|string',
-    //         'end_time' => 'required|string',
-    //         'overtime_date' => 'required|date|before_or_equal:today',
-    //         'reason' => 'required|string|max:500',
-    //         'hourly_rate' => 'required|numeric|min:0'
-    //     ]);
-
-    //     try {
-    //         $startTime = $this->parseTime($validatedData['start_time']);
-    //         $endTime = $this->parseTime($validatedData['end_time']);
-            
-    //         if ($endTime->lt($startTime)) {
-    //             $endTime->addDay();
-    //         }
-            
-    //         $totalHours = $startTime->diffInHours($endTime, true);
-            
-    //         if ($totalHours <= 0) {
-    //             return Redirect::back()->withErrors([
-    //                 'time' => 'End time must be after start time.'
-    //             ]);
-    //         }
-
-    //         Overtime::create([
-    //             'employee_id' => $employee->id,
-    //             'overtime_type' => $validatedData['overtime_type'],
-    //             'start_time' => $startTime->format('H:i:s'),
-    //             'end_time' => $endTime->format('H:i:s'),
-    //             'overtime_date' => $validatedData['overtime_date'],
-    //             'hours_worked' => $totalHours,
-    //             'reason' => $validatedData['reason'],
-    //             'status' => 'pending',
-    //             'hourly_rate' => $validatedData['hourly_rate'],
-    //             'total_amount' => $totalHours * $validatedData['hourly_rate']
-    //         ]);
-
-    //         return Redirect::back()->with('success', 'Overtime request submitted successfully!');
-
-    //     } catch (\Exception $e) {
-    //         Log::error('Overtime creation failed: ' . $e->getMessage());
-    //         return Redirect::back()->withErrors([
-    //             'error' => 'Failed to submit overtime request. Please try again.'
-    //         ]);
-    //     }
-    // }
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();

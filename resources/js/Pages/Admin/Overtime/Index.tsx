@@ -34,9 +34,19 @@ import {
     SelectTrigger,
     SelectContent,
     SelectItem,
+    SelectValue,
 } from "@/Components/UI/Select";
 import GroupButton from "@/Components/UI/GroupButton";
 import DeleteConfirmationModal from "@/Components/UI/PopupDelete";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/Components/UI/Pagination";
 
 interface Overtime {
     id: number;
@@ -64,12 +74,24 @@ interface OvertimeType {
     price: number;
 }
 
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface PaginatedData {
+    data: Overtime[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+    links: PaginationLink[];
+}
 interface OvertimePageProps extends InertiaPageProps {
-    overtimes: {
-        data: Overtime[];
-        links: any[];
-        meta?: any;
-    };
+    overtimes: PaginatedData;
     filters: {
         status?: string;
         overtime_type?: string;
@@ -83,7 +105,7 @@ interface OvertimePageProps extends InertiaPageProps {
 
 export default function OvertimeIndex() {
     const {
-        overtimes = { data: [], links: [], meta: null },
+        overtimes,
         filters = {},
         employees = [],
         overtimeTypes = [],
@@ -391,6 +413,41 @@ export default function OvertimeIndex() {
                 disableYearSelection: true,
             },
         ];
+    };
+
+    const handlePageChange = (url: string) => {
+        if (url) {
+            router.get(
+                url,
+                {},
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                }
+            );
+        }
+    };
+
+    const handlePerPageChange = (perPage: string) => {
+        const currentFilters: Record<string, string | number> = {
+            employee_name: employeeNameFilter,
+            overtime_type: overtimeTypeFilter,
+            date: dateFilter,
+            status: statusFilter,
+            per_page: perPage,
+            page: 1,
+        };
+
+        Object.keys(currentFilters).forEach((key) => {
+            if (!currentFilters[key]) {
+                delete currentFilters[key];
+            }
+        });
+
+        router.get(route("admin.overtime.index"), currentFilters, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -727,6 +784,141 @@ export default function OvertimeIndex() {
                             </Table>
                         </CardContent>
                     </Card>
+
+                    {/* Pagination - Only show if there are more than 10 applications */}
+                    {(overtimes?.data?.length || 0) > 0 && (
+                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                            <div className="text-sm text-muted-foreground">
+                                Showing {overtimes?.from || 0} to{" "}
+                                {overtimes?.to || 0} of {overtimes?.total || 0}{" "}
+                                results
+                            </div>
+
+                            {/* Center - Pagination controls (only show if more than one page) */}
+                            <div className="flex-1 flex justify-center">
+                                {(overtimes?.last_page || 1) > 1 && (
+                                    <Pagination>
+                                        <PaginationContent>
+                                            {/* Previous Button */}
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    onClick={() =>
+                                                        handlePageChange(
+                                                            overtimes
+                                                                ?.links?.[0]
+                                                                ?.url || ""
+                                                        )
+                                                    }
+                                                    className={`${
+                                                        (overtimes?.current_page ||
+                                                            1) <= 1
+                                                            ? "pointer-events-none opacity-50"
+                                                            : "cursor-pointer hover:bg-accent"
+                                                    }`}
+                                                />
+                                            </PaginationItem>
+
+                                            {/* Page Numbers */}
+                                            {(overtimes?.links || []).length >
+                                                2 &&
+                                                (overtimes?.links || [])
+                                                    .slice(1, -1)
+                                                    .map((link, index) => (
+                                                        <PaginationItem
+                                                            key={`page-${
+                                                                link.label
+                                                            }-${
+                                                                link.url ||
+                                                                index
+                                                            }`}
+                                                        >
+                                                            {link.label ===
+                                                            "..." ? (
+                                                                <PaginationEllipsis
+                                                                    key={`ellipsis-${
+                                                                        link.url ||
+                                                                        index
+                                                                    }`}
+                                                                />
+                                                            ) : (
+                                                                <PaginationLink
+                                                                    onClick={() =>
+                                                                        handlePageChange(
+                                                                            link.url ||
+                                                                                ""
+                                                                        )
+                                                                    }
+                                                                    isActive={
+                                                                        link.active
+                                                                    }
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    {link.label}
+                                                                </PaginationLink>
+                                                            )}
+                                                        </PaginationItem>
+                                                    ))}
+
+                                            {/* Next Button */}
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    onClick={() =>
+                                                        handlePageChange(
+                                                            (overtimes?.links ||
+                                                                [])[
+                                                                (
+                                                                    overtimes?.links ||
+                                                                    []
+                                                                ).length - 1
+                                                            ]?.url || ""
+                                                        )
+                                                    }
+                                                    className={`${
+                                                        (overtimes?.current_page ||
+                                                            1) >=
+                                                        (overtimes?.last_page ||
+                                                            1)
+                                                            ? "pointer-events-none opacity-50"
+                                                            : "cursor-pointer hover:bg-accent"
+                                                    }`}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                )}
+                            </div>
+
+                            {/* Right - Per page selector */}
+                            <div className="flex items-center space-x-2">
+                                <span className="text-sm text-muted-foreground">
+                                    Items per page:
+                                </span>
+                                <Select
+                                    value={(
+                                        overtimes?.per_page || 10
+                                    ).toString()}
+                                    onValueChange={(value) => {
+                                        const url = new URL(
+                                            window.location.href
+                                        );
+                                        url.searchParams.set("per_page", value);
+                                        url.searchParams.set("page", "1");
+                                        router.get(url.toString());
+                                    }}
+                                >
+                                    <SelectTrigger className="w-20">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Overtime Modal */}
                     <OvertimeModal

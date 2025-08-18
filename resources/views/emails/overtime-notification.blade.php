@@ -40,10 +40,6 @@
                 <th class="py-2 px-4 font-semibold">Overtime Type</th>
                 <td class="py-2 px-4">{{ ucfirst($overtime->overtime_type) }}</td>
             </tr>
-            <tr class="bg-gray-50">
-                <th class="py-2 px-4 font-semibold">Total Amount</th>
-                <td class="py-2 px-4">${{ number_format($overtime->total_amount, 2) }}</td>
-            </tr>
         </table>
 
         <div class="mb-6">
