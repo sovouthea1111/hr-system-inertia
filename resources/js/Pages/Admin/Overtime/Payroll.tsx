@@ -11,6 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/Components/UI/Table";
+import { MobileCard, MobileField, MobileContainer } from "@/Components/UI/MobileView";
 import { Avatar, AvatarFallback } from "@/Components/UI/Avatar";
 import { User } from "lucide-react";
 import GroupHeader from "@/Components/UI/GroupHeader";
@@ -197,8 +198,9 @@ export default function OvertimePayroll() {
                         onFieldChange={handleFilterChange}
                     />
 
-                    {/* Employee Payroll Table */}
-                    <Card>
+                    {/* Employee Payroll Table - Desktop */}
+                    <div className="hidden md:block">
+                        <Card>
                         <CardContent className="p-0">
                             <div className="overflow-x-auto">
                                 <Table>
@@ -275,7 +277,53 @@ export default function OvertimePayroll() {
                                 </Table>
                             </div>
                         </CardContent>
-                    </Card>
+                        </Card>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden">
+                        {employeePayroll.length === 0 ? (
+                            <Card>
+                                <CardContent className="text-center py-8 text-gray-500">
+                                    No payroll records found for the selected criteria.
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <MobileContainer>
+                                {employeePayroll.map((employee) => (
+                                    <MobileCard key={employee.employee.id}>
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex items-center space-x-3">
+                                                <Avatar className="w-8 h-8">
+                                                    <AvatarFallback className="bg-gray-500">
+                                                        <User className="w-4 h-4 text-white" />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="font-medium text-sm">
+                                                        {employee.employee.full_name}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {employee.employee.email}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {employee.employee.department}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <MobileField label="Total Amount">
+                                                <span className="font-bold text-green-600">
+                                                    {formatCurrency(employee.total_amount)}
+                                                </span>
+                                            </MobileField>
+                                        </div>
+                                    </MobileCard>
+                                ))}
+                            </MobileContainer>
+                        )}
+                    </div>
                 </GroupHeader>
             </div>
         </>

@@ -20,6 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/Components/UI/Table";
+import { MobileCard, MobileField, MobileContainer } from "@/Components/UI/MobileView";
 import {
     Pagination,
     PaginationContent,
@@ -424,8 +425,9 @@ export default function HRLeaveIndex() {
                         title="Filter Leave Applications"
                     />
 
-                    {/* Leave Applications Table */}
-                    <Card>
+                    {/* Leave Applications Table - Desktop */}
+                    <div className="hidden md:block">
+                        <Card>
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
@@ -576,19 +578,102 @@ export default function HRLeaveIndex() {
                                 </TableBody>
                             </Table>
                         </CardContent>
-                    </Card>
+                        </Card>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden">
+                        {leaveApplications.data.length === 0 ? (
+                            <Card>
+                                <CardContent className="text-center py-8 text-gray-500">
+                                    No leave applications found
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <MobileContainer>
+                                {leaveApplications.data.map((application) => (
+                                    <MobileCard key={application.id}>
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div>
+                                                <div className="font-medium text-foreground">
+                                                    {application.employee_name}
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {application.employee_email}
+                                                </div>
+                                            </div>
+                                            <GroupButton
+                                                canEdit={application.status === "pending"}
+                                                canDelete={canManage && application.status === "pending"}
+                                                canView={true}
+                                                onEdit={application.status === "pending" ? () => handleEdit(application) : undefined}
+                                                onDelete={canManage && application.status === "pending" ? () => handleDelete(application) : undefined}
+                                                onView={() => handleView(application)}
+                                                layout="dropdown"
+                                                itemName={application.employee_name}
+                                                size="sm"
+                                            />
+                                        </div>
+                                        <MobileField label="Leave Type">
+                                            <Badge
+                                                variant="outline"
+                                                className="bg-primary/10 text-primary border-primary/20"
+                                            >
+                                                {application.leave_type}
+                                            </Badge>
+                                        </MobileField>
+                                        <MobileField label="Start Date">
+                                            <span className="text-sm">
+                                                {formatDate(application.start_date)}
+                                            </span>
+                                        </MobileField>
+                                        <MobileField label="End Date">
+                                            <span className="text-sm">
+                                                {formatDate(application.end_date)}
+                                            </span>
+                                        </MobileField>
+                                        <MobileField label="Days Requested">
+                                            <span className="text-sm font-medium">
+                                                {application.days_requested}
+                                            </span>
+                                        </MobileField>
+                                        <MobileField label="Applied Date">
+                                            <span className="text-sm">
+                                                {formatDate(application.applied_date)}
+                                            </span>
+                                        </MobileField>
+                                        <MobileField label="Status">
+                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
+                                                {application.status === "approved" && (
+                                                    <CheckCircle className="w-4 h-4 text-success" />
+                                                )}
+                                                {application.status === "pending" && (
+                                                    <Clock className="w-4 h-4 text-warning" />
+                                                )}
+                                                {application.status === "rejected" && (
+                                                    <XCircle className="w-4 h-4 text-danger" />
+                                                )}
+                                                <div className={`${getStatusIndicatorClass(application.status)}`} />
+                                                <span>{formatStatus(application.status)}</span>
+                                            </div>
+                                        </MobileField>
+                                    </MobileCard>
+                                ))}
+                            </MobileContainer>
+                        )}
+                    </div>
 
                     {/* Pagination */}
                     {leaveApplications.total > 0 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-card border-t border-border gap-4">
                             <div className="text-sm text-muted-foreground">
                                 Showing {leaveApplications.from || 0} to{" "}
                                 {leaveApplications.to || 0} of{" "}
                                 {leaveApplications.total} results
                             </div>
 
-                            {/* Center - Pagination controls */}
-                            <div className="flex-1 flex justify-center">
+                            {/* Center - Pagination controls - Hidden on mobile */}
+                            <div className="hidden md:flex flex-1 justify-center">
                                 {leaveApplications.last_page > 1 && (
                                     <Pagination>
                                         <PaginationContent>
@@ -611,40 +696,42 @@ export default function HRLeaveIndex() {
                                                 />
                                             </PaginationItem>
 
-                                            {/* Page Numbers */}
-                                            {leaveApplications.links
-                                                .slice(1, -1)
-                                                .map((link, index) => {
-                                                    if (link.label === "...") {
+                                            {/* Page Numbers - Hidden on mobile */}
+                                            <div className="hidden sm:contents">
+                                                {leaveApplications.links
+                                                    .slice(1, -1)
+                                                    .map((link, index) => {
+                                                        if (link.label === "...") {
+                                                            return (
+                                                                <PaginationItem
+                                                                    key={`ellipsis-${index}`}
+                                                                >
+                                                                    <PaginationEllipsis />
+                                                                </PaginationItem>
+                                                            );
+                                                        }
                                                         return (
                                                             <PaginationItem
-                                                                key={`ellipsis-${index}`}
+                                                                key={`page-${index}`}
                                                             >
-                                                                <PaginationEllipsis />
+                                                                <PaginationLink
+                                                                    onClick={() =>
+                                                                        handlePageChange(
+                                                                            link.url ||
+                                                                                ""
+                                                                        )
+                                                                    }
+                                                                    isActive={
+                                                                        link.active
+                                                                    }
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    {link.label}
+                                                                </PaginationLink>
                                                             </PaginationItem>
                                                         );
-                                                    }
-                                                    return (
-                                                        <PaginationItem
-                                                            key={`page-${index}`}
-                                                        >
-                                                            <PaginationLink
-                                                                onClick={() =>
-                                                                    handlePageChange(
-                                                                        link.url ||
-                                                                            ""
-                                                                    )
-                                                                }
-                                                                isActive={
-                                                                    link.active
-                                                                }
-                                                                className="cursor-pointer"
-                                                            >
-                                                                {link.label}
-                                                            </PaginationLink>
-                                                        </PaginationItem>
-                                                    );
-                                                })}
+                                                    })}
+                                            </div>
 
                                             {/* Next Button */}
                                             <PaginationItem>
@@ -672,9 +759,9 @@ export default function HRLeaveIndex() {
                                 )}
                             </div>
 
-                            {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <span>Show:</span>
+                            {/* Right side - Per-page selector - Hidden on mobile */}
+                            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+                                <span className="hidden sm:inline">Show:</span>
                                 <Select
                                     value={leaveApplications.per_page.toString()}
                                     onValueChange={handlePerPageChange}
@@ -689,7 +776,7 @@ export default function HRLeaveIndex() {
                                         <SelectItem value="100">100</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <span>per page</span>
+                                <span className="hidden sm:inline">per page</span>
                             </div>
                         </div>
                     )}
