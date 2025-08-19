@@ -18,6 +18,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/Components/UI/Table";
+import { MobileCard, MobileField, MobileContainer } from "@/Components/UI/MobileView";
 import {
     Pagination,
     PaginationContent,
@@ -401,8 +402,8 @@ export default function UsersPage() {
                         />
                     )}
 
-                    {/* Table Section */}
-                    <Card>
+                    {/* Desktop Table View */}
+                    <Card className="hidden md:block">
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
@@ -527,15 +528,99 @@ export default function UsersPage() {
                         </CardContent>
                     </Card>
 
+                    {/* Mobile Card View */}
+                    <div className="md:hidden">
+                        {users.data.length === 0 ? (
+                            <Card>
+                                <CardContent className="text-center py-8 text-gray-500">
+                                    No users found
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <MobileContainer>
+                                {users.data.map((user) => (
+                                    <MobileCard key={user.id}>
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                {canManage && (
+                                                    <Checkbox
+                                                        checked={selectedUsers.includes(user.id)}
+                                                        onCheckedChange={(checked) =>
+                                                            handleSelectUser(user.id, checked as boolean)
+                                                        }
+                                                    />
+                                                )}
+                                                <Avatar className="items-center">
+                                                    <AvatarImage
+                                                        className="h-10 w-10 rounded-full object-cover"
+                                                        src={user.image}
+                                                        alt={user.name}
+                                                    />
+                                                    <AvatarFallback className="w-10 h-10 rounded-full bg-gray-500">
+                                                        <User className="w-5 h-5" />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <div className="font-medium">{user.name}</div>
+                                                    <div className="text-sm text-gray-500">{user.email}</div>
+                                                </div>
+                                            </div>
+                                            <GroupButton
+                                                canEdit={true}
+                                                canDelete={Boolean(canManage)}
+                                                onEdit={() => handleEdit(user)}
+                                                onDelete={() => handleDelete(user)}
+                                                layout="dropdown"
+                                                itemName={user.name}
+                                                size="sm"
+                                            />
+                                        </div>
+                                        <MobileField label="Email">
+                                            {user.email}
+                                        </MobileField>
+                                        <MobileField label="Role">
+                                            <Badge
+                                                variant={
+                                                    user.user_role === "SuperAdmin"
+                                                        ? "destructive"
+                                                        : user.user_role === "HR"
+                                                        ? "default"
+                                                        : "secondary"
+                                                }
+                                            >
+                                                {user.user_role}
+                                            </Badge>
+                                        </MobileField>
+                                        <MobileField label="Email Verified">
+                                            <Badge variant={user.email_verified_at ? "default" : "secondary"}>
+                                                {user.email_verified_at ? "Verified" : "Not Verified"}
+                                            </Badge>
+                                        </MobileField>
+                                        <MobileField label="Created Date">
+                                            {user.created_at
+                                                ? new Date(user.created_at).toLocaleDateString()
+                                                : "N/A"}
+                                        </MobileField>
+                                        <MobileField label="Updated Date">
+                                            {user.updated_at
+                                                ? new Date(user.updated_at).toLocaleDateString()
+                                                : "N/A"}
+                                        </MobileField>
+                                    </MobileCard>
+                                ))}
+                            </MobileContainer>
+                        )}
+                    </div>
+
                     {/* Pagination - Always show if there are users */}
                     {users.data.length > 0 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-card border-t border-border gap-4">
                             <div className="text-sm text-muted-foreground">
                                 Showing {users.from || 0} to {users.to || 0} of{" "}
                                 {users.total} results
                             </div>
-                            {/* Center - Pagination controls (only show if more than one page) */}
-                            <div className="flex-1 flex justify-center">
+                            {/* Center - Pagination controls (only show if more than one page) - Hidden on mobile */}
+                            <div className="hidden md:flex flex-1 justify-center">
                                 {users.last_page > 1 && (
                                     <Pagination>
                                         <PaginationContent>
@@ -615,8 +700,8 @@ export default function UsersPage() {
                                 )}
                             </div>
 
-                            {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {/* Right side - Per-page selector - Hidden on mobile */}
+                            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Show:</span>
                                 <Select
                                     value={users.per_page.toString()}

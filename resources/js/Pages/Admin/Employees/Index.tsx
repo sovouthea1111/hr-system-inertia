@@ -20,6 +20,11 @@ import {
     TableRow,
 } from "@/Components/UI/Table";
 import {
+    MobileCard,
+    MobileField,
+    MobileContainer,
+} from "@/Components/UI/MobileView";
+import {
     Pagination,
     PaginationContent,
     PaginationEllipsis,
@@ -395,164 +400,279 @@ export default function EmployeesPage() {
                         onClear={handleClearFilters}
                     />
 
-                    {/* Table Section */}
-                    <Card>
-                        <CardContent className="p-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-muted/50">
-                                        <TableHead className="w-12">
-                                            <Checkbox
-                                                checked={selectAll}
-                                                onCheckedChange={
-                                                    handleSelectAll
-                                                }
-                                                aria-label="Select all employees"
-                                            />
-                                        </TableHead>
-                                        <TableHead>Employee</TableHead>
-                                        <TableHead>Email</TableHead>
-                                        <TableHead>Phone</TableHead>
-                                        <TableHead>Department</TableHead>
-                                        <TableHead>Position</TableHead>
-                                        <TableHead>Join Date</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-center">
-                                            Actions
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {employees.data.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={9}
-                                                className="text-center py-8 text-muted-foreground"
-                                            >
-                                                No employees found
-                                            </TableCell>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block">
+                        <Card>
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-muted/50">
+                                            <TableHead className="w-12">
+                                                <Checkbox
+                                                    checked={selectAll}
+                                                    onCheckedChange={
+                                                        handleSelectAll
+                                                    }
+                                                    aria-label="Select all employees"
+                                                />
+                                            </TableHead>
+                                            <TableHead>Employee</TableHead>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead>Phone</TableHead>
+                                            <TableHead>Department</TableHead>
+                                            <TableHead>Position</TableHead>
+                                            <TableHead>Join Date</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-center">
+                                                Actions
+                                            </TableHead>
                                         </TableRow>
-                                    ) : (
-                                        employees.data.map((employee) => (
-                                            <TableRow
-                                                key={employee.id}
-                                                className="hover:bg-muted/50"
-                                            >
-                                                <TableCell>
-                                                    <Checkbox
-                                                        checked={selectedEmployees.includes(
-                                                            employee.id
-                                                        )}
-                                                        onCheckedChange={(
-                                                            checked
-                                                        ) =>
-                                                            handleSelectEmployee(
-                                                                employee.id,
-                                                                checked as boolean
-                                                            )
-                                                        }
-                                                        aria-label={`Select ${employee.full_name}`}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center space-x-3">
-                                                        <div className="flex-shrink-0">
-                                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                                <span className="text-sm font-medium text-primary">
-                                                                    {employee.full_name
-                                                                        .split(
-                                                                            " "
-                                                                        )
-                                                                        .map(
-                                                                            (
-                                                                                n
-                                                                            ) =>
-                                                                                n[0]
-                                                                        )
-                                                                        .join(
-                                                                            ""
-                                                                        )
-                                                                        .toUpperCase()}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="font-semibold text-foreground">
-                                                            {employee.full_name}
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {employee.email}
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {employee.phone || "N/A"}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="bg-primary/10 text-primary border-primary/20"
-                                                    >
-                                                        {employee.department}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {employee.position || "N/A"}
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {new Date(
-                                                        employee.joint_date
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={`font-medium ${getStatusBadgeVariant(
-                                                            employee.status
-                                                        )}`}
-                                                    >
-                                                        {formatStatus(
-                                                            employee.status
-                                                        )}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <GroupButton
-                                                        canEdit={true}
-                                                        canDelete={true}
-                                                        onEdit={() =>
-                                                            handleEdit(employee)
-                                                        }
-                                                        onDelete={() =>
-                                                            handleDelete(
-                                                                employee
-                                                            )
-                                                        }
-                                                        layout="dropdown"
-                                                        itemName={
-                                                            employee.full_name
-                                                        }
-                                                        size="sm"
-                                                    />
+                                    </TableHeader>
+                                    <TableBody>
+                                        {employees.data.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={9}
+                                                    className="text-center py-8 text-muted-foreground"
+                                                >
+                                                    No employees found
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
+                                        ) : (
+                                            employees.data.map((employee) => (
+                                                <TableRow
+                                                    key={employee.id}
+                                                    className="hover:bg-muted/50"
+                                                >
+                                                    <TableCell>
+                                                        <Checkbox
+                                                            checked={selectedEmployees.includes(
+                                                                employee.id
+                                                            )}
+                                                            onCheckedChange={(
+                                                                checked
+                                                            ) =>
+                                                                handleSelectEmployee(
+                                                                    employee.id,
+                                                                    checked as boolean
+                                                                )
+                                                            }
+                                                            aria-label={`Select ${employee.full_name}`}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="flex-shrink-0">
+                                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                    <span className="text-sm font-medium text-primary">
+                                                                        {employee.full_name
+                                                                            .split(
+                                                                                " "
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    n
+                                                                                ) =>
+                                                                                    n[0]
+                                                                            )
+                                                                            .join(
+                                                                                ""
+                                                                            )
+                                                                            .toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="font-semibold text-foreground">
+                                                                {
+                                                                    employee.full_name
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {employee.email}
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {employee.phone ||
+                                                            "N/A"}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-primary/10 text-primary border-primary/20"
+                                                        >
+                                                            {
+                                                                employee.department
+                                                            }
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {employee.position ||
+                                                            "N/A"}
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {new Date(
+                                                            employee.joint_date
+                                                        ).toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={`font-medium ${getStatusBadgeVariant(
+                                                                employee.status
+                                                            )}`}
+                                                        >
+                                                            {formatStatus(
+                                                                employee.status
+                                                            )}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <GroupButton
+                                                            canEdit={true}
+                                                            canDelete={true}
+                                                            onEdit={() =>
+                                                                handleEdit(
+                                                                    employee
+                                                                )
+                                                            }
+                                                            onDelete={() =>
+                                                                handleDelete(
+                                                                    employee
+                                                                )
+                                                            }
+                                                            layout="dropdown"
+                                                            itemName={
+                                                                employee.full_name
+                                                            }
+                                                            size="sm"
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden">
+                        <MobileContainer>
+                            {employees.data.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No employees found
+                                </div>
+                            ) : (
+                                employees.data.map((employee) => (
+                                    <MobileCard key={employee.id}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center space-x-3">
+                                                <Checkbox
+                                                    checked={selectedEmployees.includes(
+                                                        employee.id
+                                                    )}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleSelectEmployee(
+                                                            employee.id,
+                                                            checked as boolean
+                                                        )
+                                                    }
+                                                    aria-label={`Select ${employee.full_name}`}
+                                                />
+                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                    <span className="text-sm font-medium text-primary">
+                                                        {employee.full_name
+                                                            .split(" ")
+                                                            .map((n) => n[0])
+                                                            .join("")
+                                                            .toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <div className="font-semibold text-foreground">
+                                                    {employee.full_name}
+                                                </div>
+                                            </div>
+                                            <GroupButton
+                                                canEdit={true}
+                                                canDelete={true}
+                                                onEdit={() =>
+                                                    handleEdit(employee)
+                                                }
+                                                onDelete={() =>
+                                                    handleDelete(employee)
+                                                }
+                                                layout="dropdown"
+                                                itemName={employee.full_name}
+                                                size="sm"
+                                            />
+                                        </div>
+                                        <MobileField
+                                            label="Email"
+                                            children={employee.email}
+                                        />
+                                        <MobileField
+                                            label="Phone"
+                                            children={employee.phone || "N/A"}
+                                        />
+                                        <MobileField
+                                            label="Department"
+                                            children={
+                                                <Badge
+                                                    variant="outline"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {employee.department}
+                                                </Badge>
+                                            }
+                                        />
+                                        <MobileField
+                                            label="Position"
+                                            children={
+                                                employee.position || "N/A"
+                                            }
+                                        />
+                                        <MobileField
+                                            label="Join Date"
+                                            children={new Date(
+                                                employee.joint_date
+                                            ).toLocaleDateString()}
+                                        />
+                                        <MobileField
+                                            label="Status"
+                                            children={
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`font-medium ${getStatusBadgeVariant(
+                                                        employee.status
+                                                    )}`}
+                                                >
+                                                    {formatStatus(
+                                                        employee.status
+                                                    )}
+                                                </Badge>
+                                            }
+                                        />
+                                    </MobileCard>
+                                ))
+                            )}
+                        </MobileContainer>
+                    </div>
 
                     {/* Pagination - Only show if there are more than 10 employees */}
                     {employees.total > 0 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-card border-t border-border gap-4">
                             {/* Left side - Results info */}
                             <div className="text-sm text-muted-foreground">
                                 Showing {employees.from || 0} to{" "}
                                 {employees.to || 0} of {employees.total} results
                             </div>
 
-                            {/* Center - Pagination controls (only show if more than one page) */}
-                            <div className="flex-1 flex justify-center">
+                            {/* Center - Pagination controls (only show if more than one page) - Hidden on mobile */}
+                            <div className="hidden md:flex flex-1 justify-center">
                                 {employees.last_page > 1 && (
                                     <Pagination>
                                         <PaginationContent>
@@ -633,8 +753,8 @@ export default function EmployeesPage() {
                                 )}
                             </div>
 
-                            {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {/* Right side - Per-page selector - Hidden on mobile */}
+                            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Show:</span>
                                 <Select
                                     value={employees.per_page.toString()}

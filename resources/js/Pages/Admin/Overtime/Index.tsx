@@ -16,6 +16,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/Components/UI/Table";
+import { MobileCard, MobileField, MobileContainer } from "@/Components/UI/MobileView";
 import {
     Plus,
     Calendar,
@@ -497,6 +498,7 @@ export default function OvertimeIndex() {
                     {/* Overtime Table */}
                     <Card>
                         <CardContent className="p-0">
+                            {/* Desktop Table View */}
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -782,20 +784,170 @@ export default function OvertimeIndex() {
                                     )}
                                 </TableBody>
                             </Table>
+                            
+                            {/* Mobile Card Layout */}
+                            <MobileContainer className="p-4">
+                                {(overtimes?.data?.length || 0) === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        No overtime records found.
+                                    </div>
+                                ) : (
+                                    overtimes?.data?.map((overtime) => (
+                                        <MobileCard key={overtime.id}>
+                                            {/* Employee Info Header */}
+                                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                                                <div className="flex items-center space-x-3">
+                                                    {canManage && (
+                                                        <Checkbox
+                                                            checked={selectedOvertimes.includes(
+                                                                overtime.id
+                                                            )}
+                                                            onCheckedChange={(
+                                                                checked
+                                                            ) =>
+                                                                handleSelectOvertime(
+                                                                    overtime.id,
+                                                                    checked as boolean
+                                                                )
+                                                            }
+                                                        />
+                                                    )}
+                                                    <Avatar className="items-center">
+                                                        <AvatarFallback className="w-12 h-12 rounded-full bg-gray-500">
+                                                            <User className="w-6 h-6" />
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-lg font-semibold text-gray-900 truncate">
+                                                            {overtime.employee.full_name}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500 truncate">
+                                                            {overtime.employee.email}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex-shrink-0">
+                                                    {isEmployee && (
+                                                        <GroupButton
+                                                            canView={
+                                                                isEmployee &&
+                                                                overtime.status ===
+                                                                    "approved"
+                                                            }
+                                                            canEdit={
+                                                                overtime.status !==
+                                                                "approved"
+                                                            }
+                                                            canDelete={
+                                                                overtime.status !==
+                                                                "approved"
+                                                            }
+                                                            onEdit={() =>
+                                                                handleEdit(overtime)
+                                                            }
+                                                            onDelete={() =>
+                                                                handleDelete(overtime)
+                                                            }
+                                                            layout="dropdown"
+                                                            itemName={
+                                                                overtime.employee
+                                                                    .full_name
+                                                            }
+                                                            size="sm"
+                                                            disabled={
+                                                                overtime.status !==
+                                                                "pending"
+                                                            }
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Overtime Details */}
+                                            <MobileField label="Date">
+                                                {new Date(
+                                                    overtime.overtime_date
+                                                ).toLocaleDateString()}
+                                            </MobileField>
+                                            
+                                            <MobileField label="Time">
+                                                {formatTime(overtime.start_time)} -{" "}
+                                                {formatTime(overtime.end_time)}
+                                            </MobileField>
+                                            
+                                            <MobileField label="Hours">
+                                                <span className="font-semibold">
+                                                    {overtime.hours_worked}h
+                                                </span>
+                                            </MobileField>
+                                            
+                                            <MobileField label="Type">
+                                                <Badge variant="outline">
+                                                    {overtime.overtime_type}
+                                                </Badge>
+                                            </MobileField>
+                                            
+                                            {isHROrAdmin && (
+                                                <MobileField label="Rate">
+                                                    <span className="font-semibold">
+                                                        {formatCurrency(
+                                                            overtime.hourly_rate
+                                                        )}
+                                                        /hr
+                                                    </span>
+                                                </MobileField>
+                                            )}
+                                            
+                                            {isHROrAdmin && (
+                                                <MobileField label="Total">
+                                                    <span className="font-bold text-green-600">
+                                                        {formatCurrency(
+                                                            overtime.total_amount
+                                                        )}
+                                                    </span>
+                                                </MobileField>
+                                            )}
+                                            
+                                            <MobileField label="Status">
+                                                <div className="flex items-center space-x-2">
+                                                    <div
+                                                        className={`w-2 h-2 rounded-full ${
+                                                            getStatusIndicatorClass(
+                                                                overtime.status
+                                                            )
+                                                        }`}
+                                                    ></div>
+                                                    <span className="capitalize">
+                                                        {formatStatus(overtime.status)}
+                                                    </span>
+                                                </div>
+                                            </MobileField>
+                                            
+                                            <MobileField label="Reason">
+                                                <div className="text-right max-w-48">
+                                                    <p className="text-sm break-words">
+                                                        {overtime.reason}
+                                                    </p>
+                                                </div>
+                                            </MobileField>
+                                        </MobileCard>
+                                    ))
+                                )}
+                            </MobileContainer>
                         </CardContent>
                     </Card>
 
                     {/* Pagination - Only show if there are more than 10 applications */}
                     {(overtimes?.data?.length || 0) > 0 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-card border-t border-border gap-4">
                             <div className="text-sm text-muted-foreground">
                                 Showing {overtimes?.from || 0} to{" "}
                                 {overtimes?.to || 0} of {overtimes?.total || 0}{" "}
                                 results
                             </div>
 
-                            {/* Center - Pagination controls (only show if more than one page) */}
-                            <div className="flex-1 flex justify-center">
+                            {/* Center - Pagination controls (only show if more than one page) - Hidden on mobile */}
+                            <div className="hidden md:flex flex-1 justify-center">
                                 {(overtimes?.last_page || 1) > 1 && (
                                     <Pagination>
                                         <PaginationContent>
@@ -888,8 +1040,8 @@ export default function OvertimeIndex() {
                                 )}
                             </div>
 
-                            {/* Right - Per page selector */}
-                            <div className="flex items-center space-x-2">
+                            {/* Right - Per page selector - Hidden on mobile */}
+                            <div className="hidden sm:flex items-center space-x-2">
                                 <span className="text-sm text-muted-foreground">
                                     Items per page:
                                 </span>

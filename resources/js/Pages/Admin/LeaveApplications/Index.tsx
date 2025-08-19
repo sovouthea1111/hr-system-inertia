@@ -12,6 +12,7 @@ import { RequestLeaveModal } from "@/Pages/Admin/LeaveApplications/Create";
 import { EditLeaveModal } from "@/Pages/Admin/LeaveApplications/Edit";
 import { ViewLeaveModal } from "@/Pages/Admin/LeaveApplications/View";
 import { Avatar } from "@/Components/UI/Avatar";
+import { MobileContainer, MobileCard, MobileField } from "@/Components/UI/MobileView";
 import {
     Table,
     TableBody,
@@ -419,97 +420,249 @@ export default function LeaveApplicationsPage() {
                     {/* Leave Applications Table */}
                     <Card>
                         <CardContent className="p-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Employee</TableHead>
-                                        <TableHead>Leave Type</TableHead>
-                                        <TableHead>Start Date</TableHead>
-                                        <TableHead>End Date</TableHead>
-                                        <TableHead>Days</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Applied Date</TableHead>
-                                        <TableHead className="text-center">
-                                            Actions
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {leaveApplications.data.length === 0 ? (
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell
-                                                colSpan={
-                                                    isHROrSuperAdmin ? 8 : 9
-                                                }
-                                                className="text-center py-8 text-muted-foreground"
-                                            >
-                                                No leave applications found.
-                                            </TableCell>
+                                            <TableHead>Employee</TableHead>
+                                            <TableHead>Leave Type</TableHead>
+                                            <TableHead>Start Date</TableHead>
+                                            <TableHead>End Date</TableHead>
+                                            <TableHead>Days</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Applied Date</TableHead>
+                                            <TableHead className="text-center">
+                                                Actions
+                                            </TableHead>
                                         </TableRow>
-                                    ) : (
-                                        leaveApplications.data.map(
-                                            (application) => (
-                                                <TableRow key={application.id}>
-                                                    <TableCell>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {leaveApplications.data.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={8}
+                                                    className="text-center py-8 text-muted-foreground"
+                                                >
+                                                    No leave applications found.
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            leaveApplications.data.map(
+                                                (application) => (
+                                                    <TableRow key={application.id}>
+                                                        <TableCell>
+                                                            <div>
+                                                                <div className="font-medium text-foreground">
+                                                                    {application.employee_name}
+                                                                </div>
+                                                                <div className="text-sm text-muted-foreground">
+                                                                    {application.employee_email}
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="bg-primary/10 text-primary border-primary/20"
+                                                            >
+                                                                {application.leave_type}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground">
+                                                            {formatDate(application.start_date)}
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground">
+                                                            {formatDate(application.end_date)}
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground">
+                                                            {application.days_requested}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {isHROrSuperAdmin && application.status === "pending" ? (
+                                                                <Select
+                                                                    value={application.status}
+                                                                    onValueChange={(value) =>
+                                                                        handleStatusUpdate(
+                                                                            application.id,
+                                                                            value as "pending" | "approved" | "rejected"
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <SelectTrigger className="w-auto min-w-[140px] h-8 rounded-full bg-muted border-2 hover:bg-muted/80 transition-colors">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div
+                                                                                className={`w-2 h-2 rounded-full ${getStatusIndicatorClass(
+                                                                                    application.status
+                                                                                )}`}
+                                                                            />
+                                                                            <span className="text-sm font-medium">
+                                                                                {formatStatus(application.status)}
+                                                                            </span>
+                                                                        </div>
+                                                                    </SelectTrigger>
+                                                                    <SelectContent className="min-w-[160px]">
+                                                                        <SelectItem value="approved" className="cursor-pointer">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <CheckCircle className="w-4 h-4 text-success" />
+                                                                                <span>Approved</span>
+                                                                            </div>
+                                                                        </SelectItem>
+                                                                        <SelectItem value="pending" className="cursor-pointer">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Clock className="w-4 h-4 text-warning" />
+                                                                                <span>Pending</span>
+                                                                            </div>
+                                                                        </SelectItem>
+                                                                        <SelectItem value="rejected" className="cursor-pointer">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <XCircle className="w-4 h-4 text-danger" />
+                                                                                <span>Rejected</span>
+                                                                            </div>
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            ) : (
+                                                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
+                                                                    {application.status === "approved" ? (
+                                                                        <CheckCircle className="w-4 h-4 text-success" />
+                                                                    ) : (
+                                                                        <XCircle className="w-4 h-4 text-danger" />
+                                                                    )}
+                                                                    <div
+                                                                        className={getStatusIndicatorClass(application.status)}
+                                                                    />
+                                                                    <span>
+                                                                        {formatStatus(application.status)}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground">
+                                                            {formatDate(application.applied_date)}
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            <GroupButton
+                                                                canEdit={
+                                                                    (canManage && !isHROrSuperAdmin) ||
+                                                                    (isEmployee && application.status === "pending")
+                                                                }
+                                                                canDelete={
+                                                                    (canManage && !isHROrSuperAdmin) ||
+                                                                    (isEmployee && application.status === "pending")
+                                                                }
+                                                                canView={true}
+                                                                onEdit={() => handleEdit(application)}
+                                                                onDelete={() => handleDelete(application)}
+                                                                onView={() => handleView(application)}
+                                                                layout="dropdown"
+                                                                itemName={application.employee_name}
+                                                                size="sm"
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            )
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden">
+                                {leaveApplications.data.length === 0 ? (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        No leave applications found.
+                                    </div>
+                                ) : (
+                                    <MobileContainer>
+                                        {leaveApplications.data.map((application) => (
+                                            <MobileCard key={application.id}>
+                                                {/* Employee Info Header */}
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="w-10 h-10">
+                                                            <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                                                {application.employee_name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                        </Avatar>
                                                         <div>
                                                             <div className="font-medium text-foreground">
-                                                                {
-                                                                    application.employee_name
-                                                                }
+                                                                {application.employee_name}
                                                             </div>
                                                             <div className="text-sm text-muted-foreground">
-                                                                {
-                                                                    application.employee_email
-                                                                }
+                                                                {application.employee_email}
                                                             </div>
                                                         </div>
-                                                    </TableCell>
-                                                    <TableCell>
+                                                    </div>
+                                                    <GroupButton
+                                                        canEdit={
+                                                            (canManage && !isHROrSuperAdmin) ||
+                                                            (isEmployee && application.status === "pending")
+                                                        }
+                                                        canDelete={
+                                                            (canManage && !isHROrSuperAdmin) ||
+                                                            (isEmployee && application.status === "pending")
+                                                        }
+                                                        canView={true}
+                                                        onEdit={() => handleEdit(application)}
+                                                        onDelete={() => handleDelete(application)}
+                                                        onView={() => handleView(application)}
+                                                        layout="dropdown"
+                                                        itemName={application.employee_name}
+                                                        size="sm"
+                                                    />
+                                                </div>
+
+                                                {/* Leave Details */}
+                                                <div className="space-y-2">
+                                                    <MobileField label="Leave Type">
                                                         <Badge
                                                             variant="outline"
                                                             className="bg-primary/10 text-primary border-primary/20"
                                                         >
-                                                            {
-                                                                application.leave_type
-                                                            }
+                                                            {application.leave_type}
                                                         </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {formatDate(
-                                                            application.start_date
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {formatDate(
-                                                            application.end_date
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {
-                                                            application.days_requested
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {isHROrSuperAdmin &&
-                                                        application.status ===
-                                                            "pending" ? (
+                                                    </MobileField>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <MobileField label="Start Date">
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {formatDate(application.start_date)}
+                                                            </span>
+                                                        </MobileField>
+                                                        <MobileField label="End Date">
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {formatDate(application.end_date)}
+                                                            </span>
+                                                        </MobileField>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <MobileField label="Days Requested">
+                                                            <span className="text-sm font-medium">
+                                                                {application.days_requested}
+                                                            </span>
+                                                        </MobileField>
+                                                        <MobileField label="Applied Date">
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {formatDate(application.applied_date)}
+                                                            </span>
+                                                        </MobileField>
+                                                    </div>
+
+                                                    <MobileField label="Status">
+                                                        {isHROrSuperAdmin && application.status === "pending" ? (
                                                             <Select
-                                                                value={
-                                                                    application.status
-                                                                }
-                                                                onValueChange={(
-                                                                    value
-                                                                ) =>
+                                                                value={application.status}
+                                                                onValueChange={(value) =>
                                                                     handleStatusUpdate(
                                                                         application.id,
-                                                                        value as
-                                                                            | "pending"
-                                                                            | "approved"
-                                                                            | "rejected"
+                                                                        value as "pending" | "approved" | "rejected"
                                                                     )
                                                                 }
                                                             >
-                                                                <SelectTrigger className="w-auto min-w-[140px] h-8 rounded-full bg-muted border-2 hover:bg-muted/80 transition-colors">
+                                                                <SelectTrigger className="w-full h-8 rounded-full bg-muted border-2 hover:bg-muted/80 transition-colors">
                                                                     <div className="flex items-center gap-2">
                                                                         <div
                                                                             className={`w-2 h-2 rounded-full ${getStatusIndicatorClass(
@@ -517,133 +670,69 @@ export default function LeaveApplicationsPage() {
                                                                             )}`}
                                                                         />
                                                                         <span className="text-sm font-medium">
-                                                                            {formatStatus(
-                                                                                application.status
-                                                                            )}
+                                                                            {formatStatus(application.status)}
                                                                         </span>
                                                                     </div>
                                                                 </SelectTrigger>
                                                                 <SelectContent className="min-w-[160px]">
-                                                                    <SelectItem
-                                                                        value="approved"
-                                                                        className="cursor-pointer"
-                                                                    >
+                                                                    <SelectItem value="approved" className="cursor-pointer">
                                                                         <div className="flex items-center gap-2">
                                                                             <CheckCircle className="w-4 h-4 text-success" />
-                                                                            <span>
-                                                                                Approved
-                                                                            </span>
+                                                                            <span>Approved</span>
                                                                         </div>
                                                                     </SelectItem>
-                                                                    <SelectItem
-                                                                        value="pending"
-                                                                        className="cursor-pointer"
-                                                                    >
+                                                                    <SelectItem value="pending" className="cursor-pointer">
                                                                         <div className="flex items-center gap-2">
                                                                             <Clock className="w-4 h-4 text-warning" />
-                                                                            <span>
-                                                                                Pending
-                                                                            </span>
+                                                                            <span>Pending</span>
                                                                         </div>
                                                                     </SelectItem>
-                                                                    <SelectItem
-                                                                        value="rejected"
-                                                                        className="cursor-pointer"
-                                                                    >
+                                                                    <SelectItem value="rejected" className="cursor-pointer">
                                                                         <div className="flex items-center gap-2">
                                                                             <XCircle className="w-4 h-4 text-danger" />
-                                                                            <span>
-                                                                                Rejected
-                                                                            </span>
+                                                                            <span>Rejected</span>
                                                                         </div>
                                                                     </SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         ) : (
                                                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
-                                                                {application.status ===
-                                                                "approved" ? (
+                                                                {application.status === "approved" ? (
                                                                     <CheckCircle className="w-4 h-4 text-success" />
+                                                                ) : application.status === "pending" ? (
+                                                                    <Clock className="w-4 h-4 text-warning" />
                                                                 ) : (
                                                                     <XCircle className="w-4 h-4 text-danger" />
                                                                 )}
                                                                 <div
-                                                                    className={getStatusIndicatorClass(
-                                                                        application.status
-                                                                    )}
+                                                                    className={`w-2 h-2 rounded-full ${getStatusIndicatorClass(application.status)}`}
                                                                 />
                                                                 <span>
-                                                                    {formatStatus(
-                                                                        application.status
-                                                                    )}
+                                                                    {formatStatus(application.status)}
                                                                 </span>
                                                             </div>
                                                         )}
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {formatDate(
-                                                            application.applied_date
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <GroupButton
-                                                            canEdit={
-                                                                (canManage &&
-                                                                    !isHROrSuperAdmin) ||
-                                                                (isEmployee &&
-                                                                    application.status ===
-                                                                        "pending")
-                                                            }
-                                                            canDelete={
-                                                                (canManage &&
-                                                                    !isHROrSuperAdmin) ||
-                                                                (isEmployee &&
-                                                                    application.status ===
-                                                                        "pending")
-                                                            }
-                                                            canView={true}
-                                                            onEdit={() =>
-                                                                handleEdit(
-                                                                    application
-                                                                )
-                                                            }
-                                                            onDelete={() =>
-                                                                handleDelete(
-                                                                    application
-                                                                )
-                                                            }
-                                                            onView={() =>
-                                                                handleView(
-                                                                    application
-                                                                )
-                                                            }
-                                                            layout="dropdown"
-                                                            itemName={
-                                                                application.employee_name
-                                                            }
-                                                            size="sm"
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            )
-                                        )
-                                    )}
-                                </TableBody>
-                            </Table>
+                                                    </MobileField>
+                                                </div>
+                                            </MobileCard>
+                                        ))}
+                                    </MobileContainer>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
 
                     {/* Pagination - Only show if there are more than 10 applications */}
                     {leaveApplications.total > 0 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-card border-t border-border">
+                        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-card border-t border-border gap-4">
                             <div className="text-sm text-muted-foreground">
                                 Showing {leaveApplications.from || 0} to{" "}
                                 {leaveApplications.to || 0} of{" "}
                                 {leaveApplications.total} results
                             </div>
 
-                            {/* Center - Pagination controls (only show if more than one page) */}
-                            <div className="flex-1 flex justify-center">
+                            {/* Center - Pagination controls (only show if more than one page) - Hidden on mobile */}
+                            <div className="hidden md:flex flex-1 justify-center">
                                 {leaveApplications.last_page > 1 && (
                                     <Pagination>
                                         <PaginationContent>
@@ -727,8 +816,8 @@ export default function LeaveApplicationsPage() {
                                 )}
                             </div>
 
-                            {/* Right side - Per-page selector */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {/* Right side - Per-page selector - Hidden on mobile */}
+                            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Show:</span>
                                 <Select
                                     value={leaveApplications.per_page.toString()}
