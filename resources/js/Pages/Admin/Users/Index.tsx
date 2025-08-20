@@ -18,7 +18,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/Components/UI/Table";
-import { MobileCard, MobileField, MobileContainer } from "@/Components/UI/MobileView";
+import {
+    MobileCard,
+    MobileField,
+    MobileContainer,
+} from "@/Components/UI/MobileView";
 import {
     Pagination,
     PaginationContent,
@@ -393,7 +397,7 @@ export default function UsersPage() {
                     }
                 >
                     {/* Only show filters for HR and SuperAdmin */}
-                    {canManage && (
+                    {canManage && auth.user.user_role !== "Employee" && (
                         <GroupFilter
                             title="Filter Users"
                             fields={getFilterFields()}
@@ -544,9 +548,16 @@ export default function UsersPage() {
                                             <div className="flex items-center gap-3">
                                                 {canManage && (
                                                     <Checkbox
-                                                        checked={selectedUsers.includes(user.id)}
-                                                        onCheckedChange={(checked) =>
-                                                            handleSelectUser(user.id, checked as boolean)
+                                                        checked={selectedUsers.includes(
+                                                            user.id
+                                                        )}
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleSelectUser(
+                                                                user.id,
+                                                                checked as boolean
+                                                            )
                                                         }
                                                     />
                                                 )}
@@ -561,15 +572,21 @@ export default function UsersPage() {
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <div className="font-medium">{user.name}</div>
-                                                    <div className="text-sm text-gray-500">{user.email}</div>
+                                                    <div className="font-medium">
+                                                        {user.name}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        {user.email}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <GroupButton
                                                 canEdit={true}
                                                 canDelete={Boolean(canManage)}
                                                 onEdit={() => handleEdit(user)}
-                                                onDelete={() => handleDelete(user)}
+                                                onDelete={() =>
+                                                    handleDelete(user)
+                                                }
                                                 layout="dropdown"
                                                 itemName={user.name}
                                                 size="sm"
@@ -581,9 +598,11 @@ export default function UsersPage() {
                                         <MobileField label="Role">
                                             <Badge
                                                 variant={
-                                                    user.user_role === "SuperAdmin"
+                                                    user.user_role ===
+                                                    "SuperAdmin"
                                                         ? "destructive"
-                                                        : user.user_role === "HR"
+                                                        : user.user_role ===
+                                                          "HR"
                                                         ? "default"
                                                         : "secondary"
                                                 }
@@ -592,18 +611,30 @@ export default function UsersPage() {
                                             </Badge>
                                         </MobileField>
                                         <MobileField label="Email Verified">
-                                            <Badge variant={user.email_verified_at ? "default" : "secondary"}>
-                                                {user.email_verified_at ? "Verified" : "Not Verified"}
+                                            <Badge
+                                                variant={
+                                                    user.email_verified_at
+                                                        ? "default"
+                                                        : "secondary"
+                                                }
+                                            >
+                                                {user.email_verified_at
+                                                    ? "Verified"
+                                                    : "Not Verified"}
                                             </Badge>
                                         </MobileField>
                                         <MobileField label="Created Date">
                                             {user.created_at
-                                                ? new Date(user.created_at).toLocaleDateString()
+                                                ? new Date(
+                                                      user.created_at
+                                                  ).toLocaleDateString()
                                                 : "N/A"}
                                         </MobileField>
                                         <MobileField label="Updated Date">
                                             {user.updated_at
-                                                ? new Date(user.updated_at).toLocaleDateString()
+                                                ? new Date(
+                                                      user.updated_at
+                                                  ).toLocaleDateString()
                                                 : "N/A"}
                                         </MobileField>
                                     </MobileCard>

@@ -393,12 +393,14 @@ export default function EmployeesPage() {
                         </div>
                     }
                 >
-                    <GroupFilter
-                        title="Filter Employees"
-                        fields={getFilterFields()}
-                        onFieldChange={handleFilterChange}
-                        onClear={handleClearFilters}
-                    />
+                    {auth.user.user_role !== "Employee" && (
+                        <GroupFilter
+                            title="Filter Employees"
+                            fields={getFilterFields()}
+                            onFieldChange={handleFilterChange}
+                            onClear={handleClearFilters}
+                        />
+                    )}
 
                     {/* Desktop Table View */}
                     <div className="hidden md:block">
