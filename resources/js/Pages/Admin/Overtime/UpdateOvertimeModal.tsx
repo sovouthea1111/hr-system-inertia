@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import toast from "react-hot-toast";
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/Components/UI/AlertDialog";
+import { Modal } from "@/Components/UI/Modal";
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
 import { Label } from "@/Components/UI/Label";
@@ -252,10 +246,10 @@ export function UpdateOvertimeModal({
         const month = now.getMonth();
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
-        
+
         return {
             min: firstDay.toISOString().split("T")[0],
-            max: lastDay.toISOString().split("T")[0]
+            max: lastDay.toISOString().split("T")[0],
         };
     };
 
@@ -268,487 +262,452 @@ export function UpdateOvertimeModal({
     }
 
     return (
-        <AlertDialog open={isOpen} onOpenChange={onClose}>
-            <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-semibold">
-                        Update Overtime Request
-                    </AlertDialogTitle>
-                    <p className="text-sm text-gray-600">
-                        Update the overtime request below.
-                    </p>
-                </AlertDialogHeader>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Update Overtime Request"
+            className="max-w-2xl"
+            bodyClassName="max-h-[60vh] overflow-y-auto"
+            footer={
+                <div className="flex justify-end space-x-3">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="update-overtime-form"
+                        disabled={isSubmitting}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
+                        {isSubmitting ? "Updating..." : "Update Request"}
+                    </Button>
+                </div>
+            }
+        >
+            <div className="mb-4">
+                <p className="text-sm text-gray-600">
+                    Update the overtime request below.
+                </p>
+            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Employee Info Display */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="font-medium text-gray-900 mb-2">
-                            Employee Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span className="font-medium">Name:</span>{" "}
-                                {selectedOvertime.employee.full_name}
-                            </div>
-                            <div>
-                                <span className="font-medium">Email:</span>{" "}
-                                {selectedOvertime.employee.email}
-                            </div>
-                            <div>
-                                <span className="font-medium">Department:</span>{" "}
-                                {selectedOvertime.employee.department}
-                            </div>
-                            <div>
-                                <span className="font-medium">Status:</span>
-                                <span
-                                    className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                                        selectedOvertime.status === "approved"
-                                            ? "bg-green-100 text-green-800"
-                                            : selectedOvertime.status ===
-                                              "rejected"
-                                            ? "bg-red-100 text-red-800"
-                                            : "bg-yellow-100 text-yellow-800"
-                                    }`}
-                                >
-                                    {selectedOvertime.status
-                                        .charAt(0)
-                                        .toUpperCase() +
-                                        selectedOvertime.status.slice(1)}
-                                </span>
-                            </div>
+            <form
+                id="update-overtime-form"
+                onSubmit={handleSubmit}
+                className="space-y-6"
+            >
+                {/* Employee Info Display */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                        Employee Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm dark:text-gray-700">
+                        <div>
+                            <span className="font-medium dark:text-gray-700">Name:</span>{" "}
+                            {selectedOvertime.employee.full_name}
+                        </div>
+                        <div>
+                            <span className="font-medium dark:text-gray-700">Email:</span>{" "}
+                            {selectedOvertime.employee.email}
+                        </div>
+                        <div>
+                            <span className="font-medium">Department:</span>{" "}
+                            {selectedOvertime.employee.department}
+                        </div>
+                        <div>
+                            <span className="font-medium dark:text-gray-700">Status:</span>
+                            <span
+                                className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                    selectedOvertime.status === "approved"
+                                        ? "bg-green-100 text-green-800"
+                                        : selectedOvertime.status === "rejected"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-yellow-100 text-yellow-800"
+                                }`}
+                            >
+                                {selectedOvertime.status
+                                    .charAt(0)
+                                    .toUpperCase() +
+                                    selectedOvertime.status.slice(1)}
+                            </span>
                         </div>
                     </div>
+                </div>
 
-                    {/* Form Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Overtime Date */}
-                        <div className="space-y-2">
-                            <Label htmlFor="overtime_date">
-                                Overtime Date{" "}
-                                <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="overtime_date"
-                                type="date"
-                                value={formData.overtime_date}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        "overtime_date",
-                                        e.target.value
-                                    )
-                                }
-                                min={getCurrentMonthRange().min}
-                                max={getCurrentMonthRange().max}
-                                required
+                {/* Form Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Overtime Date */}
+                    <div className="space-y-2">
+                        <Label htmlFor="overtime_date" className="dark:text-gray-700">
+                            Overtime Date{" "}
+                            <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="overtime_date"
+                            type="date"
+                            value={formData.overtime_date}
+                            onChange={(e) =>
+                                handleInputChange(
+                                    "overtime_date",
+                                    e.target.value
+                                )
+                            }
+                            min={getCurrentMonthRange().min}
+                            max={getCurrentMonthRange().max}
+                            required
+                            className={
+                                errors.overtime_date ? "border-danger" : ""
+                            }
+                        />
+                        {errors.overtime_date && (
+                            <p className="text-sm text-danger">
+                                {errors.overtime_date}
+                            </p>
+                        )}
+                    </div>
+                    {/* Overtime Type */}
+                    <div className="space-y-2">
+                        <Label htmlFor="overtime_type" className="dark:text-gray-700">
+                            Overtime Type{" "}
+                            <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                            value={formData.overtime_type}
+                            onValueChange={handleOvertimeTypeChange}
+                        >
+                            <SelectTrigger
                                 className={
-                                    errors.overtime_date ? "border-danger" : ""
+                                    errors.overtime_type ? "border-red-500" : ""
                                 }
-                            />
-                            {errors.overtime_date && (
-                                <p className="text-sm text-danger">
-                                    {errors.overtime_date}
-                                </p>
-                            )}
-                        </div>
-                        {/* Overtime Type */}
-                        <div className="space-y-2">
-                            <Label htmlFor="overtime_type">
-                                Overtime Type{" "}
-                                <span className="text-red-500">*</span>
-                            </Label>
+                            >
+                                <SelectValue placeholder="Select overtime type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {overtimeTypes.map((type) => (
+                                    <SelectItem
+                                        key={type.value}
+                                        value={type.value}
+                                    >
+                                        <div className="flex justify-between items-center w-full">
+                                            <span>{type.label}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.overtime_type && (
+                            <p className="text-sm text-danger">
+                                {errors.overtime_type}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Time Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Start Time */}
+                    <div className="space-y-2">
+                        <Label htmlFor="start_time" className="dark:text-gray-700">
+                            Start Time <span className="text-danger">*</span>
+                        </Label>
+                        <div className="flex gap-2">
                             <Select
-                                value={formData.overtime_type}
-                                onValueChange={handleOvertimeTypeChange}
+                                value={formData.start_time.split(":")[0] || ""}
+                                onValueChange={(hour) => {
+                                    const currentMinute =
+                                        formData.start_time
+                                            .split(":")[1]
+                                            ?.split(" ")[0] || "00";
+                                    const currentPeriod =
+                                        formData.start_time.includes("AM")
+                                            ? "AM"
+                                            : "PM";
+                                    handleInputChange(
+                                        "start_time",
+                                        `${hour}:${currentMinute} ${currentPeriod}`
+                                    );
+                                }}
                             >
                                 <SelectTrigger
-                                    className={
-                                        errors.overtime_type
-                                            ? "border-red-500"
-                                            : ""
-                                    }
+                                    className={`w-20 ${
+                                        errors.start_time ? "border-danger" : ""
+                                    }`}
                                 >
-                                    <SelectValue placeholder="Select overtime type" />
+                                    <SelectValue placeholder="H" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {overtimeTypes.map((type) => (
+                                    {Array.from(
+                                        { length: 12 },
+                                        (_, i) => i + 1
+                                    ).map((hour) => (
                                         <SelectItem
-                                            key={type.value}
-                                            value={type.value}
+                                            key={hour}
+                                            value={hour.toString()}
                                         >
-                                            <div className="flex justify-between items-center w-full">
-                                                <span>{type.label}</span>
-                                            </div>
+                                            {hour}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.overtime_type && (
-                                <p className="text-sm text-danger">
-                                    {errors.overtime_type}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Time Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Start Time */}
-                        <div className="space-y-2">
-                            <Label htmlFor="start_time">
-                                Start Time{" "}
-                                <span className="text-danger">*</span>
-                            </Label>
-                            <div className="flex gap-2">
-                                <Select
-                                    value={
-                                        formData.start_time.split(":")[0] || ""
-                                    }
-                                    onValueChange={(hour) => {
-                                        const currentMinute =
-                                            formData.start_time
-                                                .split(":")[1]
-                                                ?.split(" ")[0] || "00";
-                                        const currentPeriod =
-                                            formData.start_time.includes("AM")
-                                                ? "AM"
-                                                : "PM";
-                                        handleInputChange(
-                                            "start_time",
-                                            `${hour}:${currentMinute} ${currentPeriod}`
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger
-                                        className={`w-20 ${
-                                            errors.start_time
-                                                ? "border-danger"
-                                                : ""
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="H" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from(
-                                            { length: 12 },
-                                            (_, i) => i + 1
-                                        ).map((hour) => (
-                                            <SelectItem
-                                                key={hour}
-                                                value={hour.toString()}
-                                            >
-                                                {hour}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <span className="flex items-center">:</span>
-                                <Select
-                                    value={
-                                        formData.start_time
-                                            .split(":")[1]
-                                            ?.split(" ")[0] || ""
-                                    }
-                                    onValueChange={(minute) => {
-                                        const currentHour =
-                                            formData.start_time.split(":")[0] ||
-                                            "1";
-                                        const currentPeriod =
-                                            formData.start_time.includes("AM")
-                                                ? "AM"
-                                                : "PM";
-                                        handleInputChange(
-                                            "start_time",
-                                            `${currentHour}:${minute} ${currentPeriod}`
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger
-                                        className={`w-20 ${
-                                            errors.start_time
-                                                ? "border-danger"
-                                                : ""
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="M" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {["00", "15", "30", "45"].map(
-                                            (minute) => (
-                                                <SelectItem
-                                                    key={minute}
-                                                    value={minute}
-                                                >
-                                                    {minute}
-                                                </SelectItem>
-                                            )
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                                <Select
-                                    value={
+                            <span className="flex items-center">:</span>
+                            <Select
+                                value={
+                                    formData.start_time
+                                        .split(":")[1]
+                                        ?.split(" ")[0] || ""
+                                }
+                                onValueChange={(minute) => {
+                                    const currentHour =
+                                        formData.start_time.split(":")[0] ||
+                                        "1";
+                                    const currentPeriod =
                                         formData.start_time.includes("AM")
                                             ? "AM"
-                                            : formData.start_time.includes("PM")
-                                            ? "PM"
-                                            : ""
-                                    }
-                                    onValueChange={(period) => {
-                                        const timePart =
-                                            formData.start_time.split(" ")[0] ||
-                                            "1:00";
-                                        handleInputChange(
-                                            "start_time",
-                                            `${timePart} ${period}`
-                                        );
-                                    }}
+                                            : "PM";
+                                    handleInputChange(
+                                        "start_time",
+                                        `${currentHour}:${minute} ${currentPeriod}`
+                                    );
+                                }}
+                            >
+                                <SelectTrigger
+                                    className={`w-20 ${
+                                        errors.start_time ? "border-danger" : ""
+                                    }`}
                                 >
-                                    <SelectTrigger
-                                        className={`w-20 ${
-                                            errors.start_time
-                                                ? "border-danger"
-                                                : ""
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="AM/PM" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="AM">AM</SelectItem>
-                                        <SelectItem value="PM">PM</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {errors.start_time && (
-                                <p className="text-sm text-danger">
-                                    {errors.start_time}
-                                </p>
-                            )}
+                                    <SelectValue placeholder="M" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {["00", "15", "30", "45"].map((minute) => (
+                                        <SelectItem key={minute} value={minute}>
+                                            {minute}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={
+                                    formData.start_time.includes("AM")
+                                        ? "AM"
+                                        : formData.start_time.includes("PM")
+                                        ? "PM"
+                                        : ""
+                                }
+                                onValueChange={(period) => {
+                                    const timePart =
+                                        formData.start_time.split(" ")[0] ||
+                                        "1:00";
+                                    handleInputChange(
+                                        "start_time",
+                                        `${timePart} ${period}`
+                                    );
+                                }}
+                            >
+                                <SelectTrigger
+                                    className={`w-20 ${
+                                        errors.start_time ? "border-danger" : ""
+                                    }`}
+                                >
+                                    <SelectValue placeholder="AM/PM" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="AM">AM</SelectItem>
+                                    <SelectItem value="PM">PM</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-
-                        {/* End Time */}
-                        <div className="space-y-2">
-                            <Label htmlFor="end_time">
-                                End Time <span className="text-danger">*</span>
-                            </Label>
-                            <div className="flex gap-2">
-                                <Select
-                                    value={
-                                        formData.end_time.split(":")[0] || ""
-                                    }
-                                    onValueChange={(hour) => {
-                                        const currentMinute =
-                                            formData.end_time
-                                                .split(":")[1]
-                                                ?.split(" ")[0] || "00";
-                                        const currentPeriod =
-                                            formData.end_time.includes("AM")
-                                                ? "AM"
-                                                : "PM";
-                                        handleInputChange(
-                                            "end_time",
-                                            `${hour}:${currentMinute} ${currentPeriod}`
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger
-                                        className={`w-20 ${
-                                            errors.end_time
-                                                ? "border-danger"
-                                                : ""
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="H" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from(
-                                            { length: 12 },
-                                            (_, i) => i + 1
-                                        ).map((hour) => (
-                                            <SelectItem
-                                                key={hour}
-                                                value={hour.toString()}
-                                            >
-                                                {hour}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <span className="flex items-center">:</span>
-                                <Select
-                                    value={
-                                        formData.end_time
-                                            .split(":")[1]
-                                            ?.split(" ")[0] || ""
-                                    }
-                                    onValueChange={(minute) => {
-                                        const currentHour =
-                                            formData.end_time.split(":")[0] ||
-                                            "1";
-                                        const currentPeriod =
-                                            formData.end_time.includes("AM")
-                                                ? "AM"
-                                                : "PM";
-                                        handleInputChange(
-                                            "end_time",
-                                            `${currentHour}:${minute} ${currentPeriod}`
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger
-                                        className={`w-20 ${
-                                            errors.end_time
-                                                ? "border-danger"
-                                                : ""
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="M" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {["00", "15", "30", "45"].map(
-                                            (minute) => (
-                                                <SelectItem
-                                                    key={minute}
-                                                    value={minute}
-                                                >
-                                                    {minute}
-                                                </SelectItem>
-                                            )
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                                <Select
-                                    value={
-                                        formData.end_time.includes("AM")
-                                            ? "AM"
-                                            : formData.end_time.includes("PM")
-                                            ? "PM"
-                                            : ""
-                                    }
-                                    onValueChange={(period) => {
-                                        const timePart =
-                                            formData.end_time.split(" ")[0] ||
-                                            "1:00";
-                                        handleInputChange(
-                                            "end_time",
-                                            `${timePart} ${period}`
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger
-                                        className={`w-20 ${
-                                            errors.end_time
-                                                ? "border-danger"
-                                                : ""
-                                        }`}
-                                    >
-                                        <SelectValue placeholder="AM/PM" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="AM">AM</SelectItem>
-                                        <SelectItem value="PM">PM</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {errors.end_time && (
-                                <p className="text-sm text-danger">
-                                    {errors.end_time}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Hourly Rate */}
-                    <div className="space-y-2">
-                        <Label htmlFor="hourly_rate">
-                            Hourly Rate <span className="text-danger">*</span>
-                        </Label>
-                        <Input
-                            id="hourly_rate"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={hourlyRate || formData.hourly_rate}
-                            disabled={true}
-                            className={`w-full ${
-                                selectedOvertimeType !== ""
-                                    ? "bg-gray-100 cursor-not-allowed"
-                                    : ""
-                            } ${errors.hourly_rate ? "border-danger" : ""}`}
-                            onChange={(e) =>
-                                handleInputChange("hourly_rate", e.target.value)
-                            }
-                            placeholder={
-                                selectedOvertimeType !== ""
-                                    ? "Rate set automatically"
-                                    : "Enter hourly rate"
-                            }
-                            required
-                        />
-                        {errors.hourly_rate && (
+                        {errors.start_time && (
                             <p className="text-sm text-danger">
-                                {errors.hourly_rate}
+                                {errors.start_time}
                             </p>
                         )}
                     </div>
 
-                    {/* Reason */}
+                    {/* End Time */}
                     <div className="space-y-2">
-                        <Label htmlFor="reason">
-                            Reason for Overtime{" "}
-                            <span className="text-danger">*</span>
+                        <Label htmlFor="end_time" className="dark:text-gray-700">
+                            End Time <span className="text-danger">*</span>
                         </Label>
-                        <Textarea
-                            id="reason"
-                            value={formData.reason}
-                            onChange={(e) =>
-                                handleInputChange("reason", e.target.value)
-                            }
-                            placeholder="Please provide a detailed reason for the overtime request..."
-                            required
-                            className={`min-h-[100px] resize-none ${
-                                errors.reason ? "border-danger" : ""
-                            }`}
-                            maxLength={1000}
-                        />
-                        <div className="flex justify-between items-center">
-                            {errors.reason && (
-                                <p className="text-sm text-danger">
-                                    {errors.reason}
-                                </p>
-                            )}
-                            <p className="text-sm text-gray-500 ml-auto">
-                                {formData.reason.length}/1000 characters
-                            </p>
+                        <div className="flex gap-2">
+                            <Select
+                                value={formData.end_time.split(":")[0] || ""}
+                                onValueChange={(hour) => {
+                                    const currentMinute =
+                                        formData.end_time
+                                            .split(":")[1]
+                                            ?.split(" ")[0] || "00";
+                                    const currentPeriod =
+                                        formData.end_time.includes("AM")
+                                            ? "AM"
+                                            : "PM";
+                                    handleInputChange(
+                                        "end_time",
+                                        `${hour}:${currentMinute} ${currentPeriod}`
+                                    );
+                                }}
+                            >
+                                <SelectTrigger
+                                    className={`w-20 ${
+                                        errors.end_time ? "border-danger" : ""
+                                    }`}
+                                >
+                                    <SelectValue placeholder="H" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from(
+                                        { length: 12 },
+                                        (_, i) => i + 1
+                                    ).map((hour) => (
+                                        <SelectItem
+                                            key={hour}
+                                            value={hour.toString()}
+                                        >
+                                            {hour}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <span className="flex items-center">:</span>
+                            <Select
+                                value={
+                                    formData.end_time
+                                        .split(":")[1]
+                                        ?.split(" ")[0] || ""
+                                }
+                                onValueChange={(minute) => {
+                                    const currentHour =
+                                        formData.end_time.split(":")[0] || "1";
+                                    const currentPeriod =
+                                        formData.end_time.includes("AM")
+                                            ? "AM"
+                                            : "PM";
+                                    handleInputChange(
+                                        "end_time",
+                                        `${currentHour}:${minute} ${currentPeriod}`
+                                    );
+                                }}
+                            >
+                                <SelectTrigger
+                                    className={`w-20 ${
+                                        errors.end_time ? "border-danger" : ""
+                                    }`}
+                                >
+                                    <SelectValue placeholder="M" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {["00", "15", "30", "45"].map((minute) => (
+                                        <SelectItem key={minute} value={minute}>
+                                            {minute}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={
+                                    formData.end_time.includes("AM")
+                                        ? "AM"
+                                        : formData.end_time.includes("PM")
+                                        ? "PM"
+                                        : ""
+                                }
+                                onValueChange={(period) => {
+                                    const timePart =
+                                        formData.end_time.split(" ")[0] ||
+                                        "1:00";
+                                    handleInputChange(
+                                        "end_time",
+                                        `${timePart} ${period}`
+                                    );
+                                }}
+                            >
+                                <SelectTrigger
+                                    className={`w-20 ${
+                                        errors.end_time ? "border-danger" : ""
+                                    }`}
+                                >
+                                    <SelectValue placeholder="AM/PM" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="AM">AM</SelectItem>
+                                    <SelectItem value="PM">PM</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
+                        {errors.end_time && (
+                            <p className="text-sm text-danger">
+                                {errors.end_time}
+                            </p>
+                        )}
                     </div>
+                </div>
 
-                    <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={onClose}
-                            disabled={isSubmitting}
-                            className="w-full sm:w-auto"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full sm:w-auto"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                    Updating...
-                                </>
-                            ) : (
-                                "Update Request"
-                            )}
-                        </Button>
-                    </AlertDialogFooter>
-                </form>
-            </AlertDialogContent>
-        </AlertDialog>
+                {/* Hourly Rate */}
+                <div className="space-y-2">
+                    <Input
+                        label="Hourly Rate"
+                        id="hourly_rate"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={hourlyRate || formData.hourly_rate}
+                        disabled={true}
+                        className={`w-full ${
+                            selectedOvertimeType !== ""
+                                ? "bg-gray-100 cursor-not-allowed"
+                                : ""
+                        } ${errors.hourly_rate ? "border-danger" : ""}`}
+                        onChange={(e) =>
+                            handleInputChange("hourly_rate", e.target.value)
+                        }
+                        placeholder={
+                            selectedOvertimeType !== ""
+                                ? "Rate set automatically"
+                                : "Enter hourly rate"
+                        }
+                        required
+                    />
+                    {errors.hourly_rate && (
+                        <p className="text-sm text-danger">
+                            {errors.hourly_rate}
+                        </p>
+                    )}
+                </div>
+
+                {/* Reason */}
+                <div className="space-y-2">
+                    <Label htmlFor="reason" className="dark:text-gray-700">
+                        Reason for Overtime{" "}
+                        <span className="text-danger">*</span>
+                    </Label>
+                    <Textarea
+                        id="reason"
+                        value={formData.reason}
+                        onChange={(e) =>
+                            handleInputChange("reason", e.target.value)
+                        }
+                        placeholder="Please provide a detailed reason for the overtime request..."
+                        required
+                        className={`min-h-[100px] resize-none bg-inputBackground dark:text-gray-700 ${
+                            errors.reason ? "border-danger " : ""
+                        }`}
+                        maxLength={1000}
+                    />
+                    <div className="flex justify-between items-center">
+                        {errors.reason && (
+                            <p className="text-sm text-danger">
+                                {errors.reason}
+                            </p>
+                        )}
+                        <p className="text-sm text-gray-500 ml-auto">
+                            {formData.reason.length}/1000 characters
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </Modal>
     );
 }
