@@ -347,7 +347,7 @@ export function EditLeaveModal({
                         onChange={(e) =>
                             handleInputChange("reason", e.target.value)
                         }
-                        className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent resize-vertical  dark:text-gray-700 bg-inputBackground"
                         placeholder="Enter reason for leave..."
                         required
                     />
