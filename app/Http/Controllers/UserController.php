@@ -4,28 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Employee;
+use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    use HasEmployee;
+
     private const ALLOWED_PER_PAGE = [10, 25, 50, 100];
     private const DEFAULT_PER_PAGE = 10;
     private const ROLES_WITH_MANAGEMENT_PERMISSIONS = ['HR', 'SuperAdmin'];
     private const AVAILABLE_ROLES = ['HR', 'Employee', 'SuperAdmin'];
     private const IMAGE_PATH = 'images';
-    private const MAX_IMAGE_SIZE = 2048; // KB
+    private const MAX_IMAGE_SIZE = 2048;
 
-    /**
-     * Display a listing of users
-     */
     public function index(Request $request): Response
     {
         $perPage = $this->getValidatedPerPageValue($request);
@@ -38,16 +38,13 @@ class UserController extends Controller
             'users' => $users,
             'filters' => $filters,
             'roles' => User::getRoles(),
-            'canManage' => $this->currentUserCanManage(),
+            'canManage' => $this->isHR(),
         ]);
     }
 
-    /**
-     * Store a newly created user
-     */
     public function store(Request $request): RedirectResponse
     {
-        if (!$this->currentUserCanManage()) {
+        if (!$this->isHR()) {
             return $this->unauthorizedResponse('You do not have permission to create user accounts.');
         }
         
@@ -74,9 +71,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Update the specified user
-     */
     public function update(Request $request, User $user): RedirectResponse
     {
         if (!$this->canEditUser($user)) {
@@ -102,12 +96,9 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Remove the specified user
-     */
     public function destroy(User $user): RedirectResponse
     {
-        if (!$this->currentUserCanManage()) {
+        if (!$this->isHR()) {
             return $this->unauthorizedResponse('You do not have permission to delete user accounts.');
         }
         if ($this->isCurrentUser($user)) {
@@ -124,12 +115,9 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Bulk delete users
-     */
     public function bulkDelete(Request $request): RedirectResponse
     {
-        if (!$this->currentUserCanManage()) {
+        if (!$this->isHR()) {
             return $this->unauthorizedResponse('You do not have permission to delete user accounts.');
         }
         $request->validate([
@@ -151,6 +139,7 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Failed to delete users: ' . $e->getMessage()]);
         }
     }
+
     private function getValidatedPerPageValue(Request $request): int
     {
         $perPage = $request->get('per_page', self::DEFAULT_PER_PAGE);
@@ -160,7 +149,7 @@ class UserController extends Controller
     private function prepareFilters(Request $request): array
     {
         $filters = $request->only(['name', 'email', 'role']);
-            if ($this->isCurrentUserEmployee()) {
+            if ($this->isEmployee()) {
             $filters['email'] = Auth::user()->email;
         }
         return $filters;
@@ -192,17 +181,13 @@ class UserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:' . self::MAX_IMAGE_SIZE,
         ];
-        if ($this->currentUserCanManage()) {
+        if ($this->isHR()) {
             $rules['user_role'] = 'required|in:' . implode(',', self::AVAILABLE_ROLES);
         }
         if ($request->filled('password')) {
             $rules['currentPassword'] = [
                 'required',
-                function ($attribute, $value, $fail) use ($user) {
-                    if (!Hash::check($value, $user->password)) {
-                        $fail('The current password is incorrect.');
-                    }
-                }
+                fn($attribute, $value, $fail) => Hash::check($value, $user->password) ? null : $fail('The current password is incorrect.')
             ];
             $rules['password'] = ['confirmed', Rules\Password::defaults()];
             $rules['password_confirmation'] = 'required';
@@ -218,16 +203,9 @@ class UserController extends Controller
         $image = $request->file('image');
         $uniqueName = 'user_' . time() . '_' . Str::random(8) . '.' . $image->getClientOriginalExtension();
         $destinationPath = public_path(self::IMAGE_PATH);
-        $this->ensureDirectoryExists($destinationPath);
+        if (!file_exists($destinationPath)) mkdir($destinationPath, 0755, true);
         $image->move($destinationPath, $uniqueName);
         return $uniqueName;
-    }
-
-    private function ensureDirectoryExists(string $path): void
-    {
-        if (!file_exists($path)) {
-            mkdir($path, 0755, true);
-        }
     }
 
     private function prepareUpdateData(Request $request, array $validatedData): array
@@ -236,68 +214,49 @@ class UserController extends Controller
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
         ];
-        if ($this->currentUserCanManage() && $request->filled('user_role')) {
+        if ($this->isHR() && $request->filled('user_role')) {
             $updateData['user_role'] = $validatedData['user_role'];
         }
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($validatedData['password']);
         }
         $imageName = $this->handleImageUpload($request);
-        if ($imageName) {
-            $updateData['image'] = $imageName;
-        }
+        if ($imageName) $updateData['image'] = $imageName;
         return $updateData;
     }
+
     private function filterValidUserIdsForDeletion(array $userIds): array
     {
-        return array_filter($userIds, fn($id) => $id != auth()->id());
+        return array_filter($userIds, fn($id) => $id != Auth::id());
     }
+
     private function isPasswordChangeInvalid(Request $request, User $user): bool
     {
-        if (!$request->filled('password') && !$request->filled('currentPassword')) {
-            return false;
-        }
-        if ($request->filled('password') && !$request->filled('currentPassword')) {
-            return true;
-        }
-        if ($request->filled('currentPassword') && !Hash::check($request->currentPassword, $user->password)) {
-            return true;
-        }
-        return false;
+        if (!$request->filled('password') && !$request->filled('currentPassword')) return false;
+        if ($request->filled('password') && !$request->filled('currentPassword')) return true;
+        return !Hash::check($request->currentPassword, $user->password);
     }
-    private function currentUserCanManage(): bool
-    {
-        $user = Auth::user();
-        return $user && in_array($user->user_role, self::ROLES_WITH_MANAGEMENT_PERMISSIONS);
-    }
-    private function isCurrentUserEmployee(): bool
-    {
-        $user = Auth::user();
-        return $user && $user->user_role === 'Employee';
-    }
+
     private function canEditUser(User $user): bool
     {
         $currentUser = Auth::user();
-        if (!$currentUser) {
-            return false;
-        }
-        if ($this->currentUserCanManage()) {
-            return true;
-        }
+        if (!$currentUser) return false;
+        if ($this->isHR()) return true;
         return $currentUser->user_role === 'Employee' && $user->id === $currentUser->id;
     }
+
     private function isCurrentUser(User $user): bool
     {
-        return $user->id === auth()->id();
+        return $user->id === Auth::id();
     }
+
     private function unauthorizedResponse(string $message): RedirectResponse
     {
         return back()->withErrors(['error' => $message]);
     }
+
     private function handleException(string $message, \Exception $e, Request $request): RedirectResponse
     {
-        return back()
-            ->withErrors(['error' => $message . ': ' . $e->getMessage()])
-            ->withInput();
+        return back()->withErrors(['error' => $message . ': ' . $e->getMessage()])->withInput();
     }
 }

@@ -51,6 +51,26 @@ class Leave extends Model
     return $this->belongsTo(Employee::class);
   }
 
+  public static function getLeaveTypes(): array
+  {
+    return [
+      ['value' => 'annual', 'label' => 'Annual Leave'],
+      ['value' => 'sick', 'label' => 'Sick Leave'],
+      ['value' => 'unpaid', 'label' => 'Unpaid Leave'],
+      ['value' => 'maternity', 'label' => 'Maternity Leave'],
+      ['value' => 'other', 'label' => 'Other Leave'],
+    ];
+  }
+
+  public static function getStatuses(): array
+  {
+    return [
+      ['value' => 'pending', 'label' => 'Pending'],
+      ['value' => 'approved', 'label' => 'Approved'],
+      ['value' => 'rejected', 'label' => 'Rejected'],
+    ];
+  }
+
   public function scopePending($query)
   {
     return $query->where("status", "pending");

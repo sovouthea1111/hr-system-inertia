@@ -42,6 +42,24 @@ class Employee extends Model
         return $query->where('status', $status);
     }
 
+    public static function getDepartments(): array
+    {
+        return [
+            ['value' => 'HR', 'label' => 'HR'],
+            ['value' => 'IT', 'label' => 'Information Technology'],
+            ['value' => 'Media', 'label' => 'Social Media'],
+            ['value' => 'ISO', 'label' => 'ISO'],
+        ];
+    }
+
+    public static function getStatuses(): array
+    {
+        return [
+            ['value' => 'active', 'label' => 'Active'],
+            ['value' => 'inactive', 'label' => 'Inactive'],
+        ];
+    }
+
     // Accessors
     public function getFormattedJointDateAttribute()
     {

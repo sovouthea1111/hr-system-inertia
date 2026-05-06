@@ -6,6 +6,7 @@ use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
 use App\Models\Overtime;
+use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
@@ -14,9 +15,8 @@ use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of employees
-     */
+    use HasEmployee;
+
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
@@ -28,7 +28,7 @@ class EmployeeController extends Controller
         $query = Employee::query();
         $user = Auth::user();
         
-        if ($user && $user->user_role === 'Employee') {
+        if ($this->isEmployee()) {
             $query->where('email', $user->email);
         } else {
             if ($request->filled('name')) {
@@ -50,26 +50,21 @@ class EmployeeController extends Controller
 
         $employees = $query
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage)  // Changed from hardcoded 10 to $perPage
+            ->paginate($perPage)
             ->withQueryString();
 
         return Inertia::render('Admin/Employees/Index', [
             'employees' => $employees,
             'filters' => $request->only(['name', 'email', 'department', 'status']),
-            'departments' => $this->getDepartments(),
-            'statuses' => $this->getStatuses(),
-            'canManage' => $user && in_array($user->user_role, ['HR', 'SuperAdmin']),
+            'departments' => Employee::getDepartments(),
+            'statuses' => Employee::getStatuses(),
+            'canManage' => $this->isHR(),
         ]);
     }
 
-    /**
-     * Store a newly created employee
-     */
     public function store(StoreEmployeeRequest $request)
     {
-        $user = Auth::user();
-        
-        if ($user && $user->user_role === 'Employee') {
+        if ($this->isEmployee()) {
             return back()->withErrors(['error' => 'You do not have permission to create employee records.']);
         }
         
@@ -87,13 +82,9 @@ class EmployeeController extends Controller
         }
     }
     
-    /**
-     * Update the specified employee
-     */
     public function update(UpdateEmployeeRequest $request, Employee $employee)
     {
-        $user = Auth::user();
-        if ($user && $user->user_role === 'Employee' && $employee->email !== $user->email) {
+        if ($this->isEmployee() && $employee->email !== Auth::user()->email) {
             return back()->withErrors(['error' => 'You can only edit your own employee record.']);
         }
 
@@ -101,28 +92,28 @@ class EmployeeController extends Controller
             $original_salary = $employee->salary;
             $employee->update($request->validated());
             $new_salary = $employee->salary;
+
             if($original_salary !== $new_salary){
                 $employee_id = $employee->id;
-            if ($employee) {
                 $monthlyOT = 26;
                 $dayOT = 8;
                 $basicOT = $employee->salary / $monthlyOT;
                 $price = $basicOT / $dayOT;
-            }
+                $overtimePrice = round($price, 2);
 
-            $overtimePrice = round($price, 2);
-                $pendingOvertimes = Overtime::with('employee:id,full_name,email,department')
-                    ->where('employee_id', $employee_id)
+                $pendingOvertimes = Overtime::where('employee_id', $employee_id)
                     ->where('status', 'pending')
                     ->get();
-                    foreach($pendingOvertimes as $overtime){
-                        $total_amount = round($overtimePrice * $overtime->hour, 2);
-                        $overtime->update([
-                            'hourly_rate' => $overtimePrice,
-                            'total_amount' => $total_amount,
-                        ]);
-                    }
+
+                foreach($pendingOvertimes as $overtime){
+                    $total_amount = round($overtimePrice * $overtime->hour, 2);
+                    $overtime->update([
+                        'hourly_rate' => $overtimePrice,
+                        'total_amount' => $total_amount,
+                    ]);
+                }
             }    
+
             return back()->with([
                 'success' => 'Employee updated successfully.',
                 'employee' => $employee->fresh()
@@ -134,9 +125,6 @@ class EmployeeController extends Controller
         }
     }
 
-    /**
-     * Display the specified employee
-     */
     public function show(Employee $employee): JsonResponse
     {
         return response()->json([
@@ -145,14 +133,9 @@ class EmployeeController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified employee
-     */
     public function destroy(Employee $employee) 
     {
-        $user = Auth::user();
-        
-        if ($user && $user->user_role === 'Employee') {
+        if ($this->isEmployee()) {
             return back()->withErrors(['error' => 'You do not have permission to delete employee records.']);
         }
         
@@ -168,37 +151,9 @@ class EmployeeController extends Controller
         }
     }
 
-    /**
-     * Get available departments
-     */
-    private function getDepartments(): array
-    {
-        return [
-            ['value' => 'HR', 'label' => 'HR'],
-            ['value' => 'IT', 'label' => 'Information Technology'],
-            ['value' => 'Media', 'label' => 'Social Media'],
-            ['value' => 'ISO', 'label' => 'ISO'],
-        ];
-    }
-
-    /**
-     * Get available statuses
-     */
-    private function getStatuses(): array
-    {
-        return [
-            ['value' => 'active', 'label' => 'Active'],
-            ['value' => 'inactive', 'label' => 'Inactive'],
-        ];
-    }
-
-    /**
-     * Bulk delete employees
-     */
     public function bulkDelete(Request $request)
     {
-        $user = Auth::user();
-        if ($user && $user->user_role === 'Employee') {
+        if ($this->isEmployee()) {
             return back()->withErrors(['error' => 'You do not have permission to delete employee records.']);
         }
         
