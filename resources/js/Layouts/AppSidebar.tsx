@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePage } from "@inertiajs/react";
+import { usePage, Link } from "@inertiajs/react";
 import {
     LayoutDashboardIcon,
     CalendarCheckIcon,
@@ -267,7 +267,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                 : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground"
                                         }`}
                                     >
-                                        <a
+                                        <Link
                                             href={item.url}
                                             className="flex items-center gap-2 min-w-0"
                                         >
@@ -275,7 +275,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             <span className="font-medium text-xs truncate">
                                                 {item.title}
                                             </span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}

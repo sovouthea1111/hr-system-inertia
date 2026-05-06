@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Leave;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
@@ -43,15 +44,18 @@ class LeaveController extends Controller
                     break;
                     
                 case 'HR':
-                    $employee = Employee::whereNot('email', $user->email)->first();
-                    if ($employee) {
-                        $filters['employee_id'] = $employee->id;
+                    $employeeIds = Employee::whereIn(
+                        'email',
+                        User::where('user_role', 'Employee')->pluck('email')
+                    )->pluck('id');
+
+                    if ($employeeIds->isNotEmpty()) {
+                        $filters['employee_id'] = $employeeIds->toArray();
                     } else {
                         $leaves = Leave::where('id', -1)->paginate($perPage);
                         $leaves->getCollection()->transform(function ($leave) {
                             return $this->transformLeaveData($leave);
                         });
-                        
                         return $this->renderIndexView($leaves, $filters);
                     }
                     break;
@@ -123,8 +127,12 @@ class LeaveController extends Controller
         // Find the employee record that matches the authenticated user's email
         $employee = Employee::where('email', $user->email)->first();
         if (!$employee) {
+            if ($user->user_role === 'SuperAdmin') {
+                return redirect()->route('admin.leaves.index')
+                    ->with('error', 'SuperAdmin does not have an employee record for "My Leaves". Please use Leave Management instead.');
+            }
             return redirect()->route('admin.dashboard')
-                ->with('error', 'Employee record not found for your account.');
+                ->with('error', 'Employee record not found for your account. You need an employee record with email ' . $user->email . ' to use "My Leaves".');
         }
         
         $perPage = $request->get('per_page', 10);
@@ -140,7 +148,6 @@ class LeaveController extends Controller
             $leaves->getCollection()->transform(function ($leave) {
                 return $this->transformLeaveData($leave);
             });
-            
             return Inertia::render('Admin/LeaveApplications/HRIndex', [
                 'leaveApplications' => $leaves,
                 'filters' => $filters,

@@ -38,7 +38,7 @@ class EmployeeDashboardController extends Controller
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
             ->where('status', 'approved')
             ->whereYear('start_date', $currentYear)
-            ->selectRaw('SUM(DATEDIFF(end_date, start_date) + 1) as total_days')
+            ->selectRaw('SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1) as total_days')
             ->value('total_days') ?? 0;
             
         $pendingRequests = Leave::where('employee_id', $employee->id)

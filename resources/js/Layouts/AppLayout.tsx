@@ -21,6 +21,18 @@ import { SettingsIcon } from "lucide-react";
 import { NotificationDropdown } from "@/Components/UI/NotificationDropdown";
 import { usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
+import { Toaster } from "@/Components/UI/Toaster";
+import toast from "react-hot-toast";
+
+interface FlashProps {
+    message?: string;
+    success?: string;
+    error?: string;
+}
+
+interface ExtendedPageProps extends PageProps {
+    flash?: FlashProps;
+}
 
 interface LeaveRequest {
     id: string;
@@ -63,11 +75,23 @@ export function AppLayout({
     headerActions,
     userRole = "Employee",
 }: AppLayoutProps) {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, flash } = usePage<ExtendedPageProps>().props;
     const authenticatedUserRole = auth?.user?.user_role || "Employee";
     const [notifications, setNotifications] = React.useState<Notification[]>(
         []
     );
+
+    React.useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+        if (flash?.message) {
+            toast(flash.message);
+        }
+    }, [flash]);
     const [unreadCount, setUnreadCount] = React.useState<number>(0);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
@@ -274,6 +298,7 @@ export function AppLayout({
                     <div className="flex-1 p-6">{children}</div>
                 </div>
             </SidebarInset>
+            <Toaster />
         </SidebarProvider>
     );
 }
