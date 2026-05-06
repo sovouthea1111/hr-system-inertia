@@ -44,8 +44,8 @@ return new class extends Migration
             $table->index('overtime_date');
             $table->index('overtime_type');
             $table->index('status');
-            $table->index(['status', 'hr_notification_read'], 'idx_status_hr_notification');
-            $table->index(['employee_id', 'employee_notification_read'], 'idx_employee_notification');
+            $table->index(['status', 'hr_notification_read'], 'idx_overtimes_status_hr_notification');
+            $table->index(['employee_id', 'employee_notification_read'], 'idx_overtimes_employee_notification');
         });
     }
 
