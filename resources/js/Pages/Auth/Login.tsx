@@ -4,7 +4,7 @@ import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, useForm } from "@inertiajs/react";
-import { FormEventHandler } from "react";
+import { FormEventHandler, useState } from "react";
 import {
     Users,
     Mail,
@@ -15,6 +15,8 @@ import {
     Loader2,
     FileText,
     TrendingUp,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 
 export default function Login({
@@ -29,6 +31,8 @@ export default function Login({
         password: "",
         remember: false as boolean,
     });
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -211,10 +215,10 @@ export default function Login({
                                     <div className="relative">
                                         <TextInput
                                             id="password"
-                                            type="password"
+                                            type={showPassword ? "text" : "password"}
                                             name="password"
                                             value={data.password}
-                                            className="block w-full px-4 py-4 pl-12 border dark:text-gray-700 border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                                            className="block w-full px-4 py-4 pl-12 pr-12 border dark:text-gray-700 border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                                             placeholder="Enter your password"
                                             autoComplete="current-password"
                                             onChange={(e) =>
@@ -227,6 +231,17 @@ export default function Login({
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <Lock className="h-5 w-5 text-gray-400" />
                                         </div>
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-5 w-5" />
+                                            ) : (
+                                                <Eye className="h-5 w-5" />
+                                            )}
+                                        </button>
                                     </div>
                                     <InputError
                                         message={errors.password}
