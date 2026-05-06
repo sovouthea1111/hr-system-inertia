@@ -4,20 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Leave;
-use Illuminate\Http\Request;
+use App\Traits\HasEmployee;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class EmployeeDashboardController extends Controller
 {
+    use HasEmployee;
+
     public function index(): Response
     {
-        $user = Auth::user();
-        
-        // Get employee record
-        $employee = Employee::where('email', $user->email)->first();
+        $employee = $this->getCurrentEmployee();
         
         if (!$employee) {
             return Inertia::render('Employee/Dashboard', [
@@ -25,16 +23,9 @@ class EmployeeDashboardController extends Controller
             ]);
         }
 
-        // Calculate leave statistics
-        $currentYear = Carbon::now()->year;
-        $totalLeaveDays = 25; // Or fetch from employee record/policy
+        $currentYear = now()->year;
+        $totalLeaveDays = 25;
         
-        // Fix: Calculate used leave days by getting the leaves and summing the accessor
-        $approvedLeaves = Leave::where('employee_id', $employee->id)
-            ->where('status', 'approved')
-            ->whereYear('start_date', $currentYear)
-            ->get();
-            
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
             ->where('status', 'approved')
             ->whereYear('start_date', $currentYear)
@@ -52,16 +43,14 @@ class EmployeeDashboardController extends Controller
             'pending_requests' => $pendingRequests,
         ];
 
-        // Recent leave requests
         $recentLeaves = Leave::where('employee_id', $employee->id)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
-        // Upcoming approved leaves
         $upcomingLeaves = Leave::where('employee_id', $employee->id)
             ->where('status', 'approved')
-            ->where('start_date', '>', Carbon::now())
+            ->where('start_date', '>', now())
             ->orderBy('start_date', 'asc')
             ->take(3)
             ->get();
