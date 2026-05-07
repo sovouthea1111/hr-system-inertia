@@ -10,7 +10,11 @@ trait HasEmployee
     protected function getCurrentEmployee(): ?Employee
     {
         $user = Auth::user();
-        return $user ? Employee::where('email', $user->email)->first() : null;
+        if (!$user) {
+            return null;
+        }
+        
+        return $user->employee ?? Employee::where('email', $user->email)->first();
     }
 
     protected function isEmployee(): bool

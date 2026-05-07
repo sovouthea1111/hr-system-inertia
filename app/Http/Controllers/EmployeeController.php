@@ -12,6 +12,11 @@ use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+
 
 class EmployeeController extends Controller
 {
@@ -29,7 +34,7 @@ class EmployeeController extends Controller
         $user = Auth::user();
         
         if ($this->isEmployee()) {
-            $query->where('email', $user->email);
+            $query->where('user_id', $user->id);
         } else {
             if ($request->filled('name')) {
                 $query->where('full_name', 'like', '%' . $request->name . '%');
@@ -69,10 +74,28 @@ class EmployeeController extends Controller
         }
         
         try {
-            $employee = Employee::create($request->validated());
+            $employee = null;
+            DB::transaction(function () use ($request, &$employee) {
+                $data = $request->validated();
+                
+                $user = User::where('email', $data['email'])->first();
+                
+                if (!$user) {
+                    $user = User::create([
+                        'name' => $data['full_name'],
+                        'email' => $data['email'],
+                        'password' => Hash::make('K7!bP9zQ#2vR@mN512bfhgrwu'),
+                        'user_role' => 'Employee',
+                        'email_verified_at' => now(),
+                    ]);
+                }
+
+                $data['user_id'] = $user->id;
+                $employee = Employee::create($data);
+            });
 
             return back()->with([
-                'success' => 'Employee created successfully.',
+                'success' => 'Employee and User account created successfully.',
                 'employee' => $employee
             ]);
         } catch (\Exception $e) {
@@ -90,7 +113,19 @@ class EmployeeController extends Controller
 
         try {
             $original_salary = $employee->salary;
-            $employee->update($request->validated());
+            
+            DB::transaction(function () use ($request, $employee) {
+                $data = $request->validated();
+                $employee->update($data);
+                
+                if ($employee->user) {
+                    $employee->user->update([
+                        'name' => $data['full_name'],
+                        'email' => $data['email'],
+                    ]);
+                }
+            });
+
             $new_salary = $employee->salary;
 
             if($original_salary !== $new_salary){

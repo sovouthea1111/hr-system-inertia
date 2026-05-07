@@ -62,6 +62,11 @@ class UserController extends Controller
                 'email_verified_at' => now(),
             ]);
 
+            $employee = Employee::where('email', $user->email)->first();
+            if ($employee) {
+                $employee->update(['user_id' => $user->id]);
+            }
+
             return back()->with([
                 'success' => 'User created successfully.',
                 'user' => $user
@@ -85,7 +90,17 @@ class UserController extends Controller
         
         try {
             $updateData = $this->prepareUpdateData($request, $validatedData);
-            $user->update($updateData);
+            
+            DB::transaction(function () use ($user, $updateData) {
+                $user->update($updateData);
+
+                if ($user->employee) {
+                    $user->employee->update([
+                        'full_name' => $updateData['name'],
+                        'email' => $updateData['email'],
+                    ]);
+                }
+            });
 
             return back()->with([
                 'success' => 'User updated successfully.',
@@ -106,7 +121,9 @@ class UserController extends Controller
         }
         try {
             DB::transaction(function () use ($user) {
-                Employee::where('email', $user->email)->delete();
+                if ($user->employee) {
+                    $user->employee->delete();
+                }
                 $user->delete();
             });
             return back()->with('success', 'User and associated employee record deleted successfully.');
@@ -130,8 +147,7 @@ class UserController extends Controller
                 return back()->withErrors(['error' => 'No valid users selected for deletion.']);
             }
             $deletedCount = DB::transaction(function() use ($validUserIds) {
-                $userEmails = User::whereIn('id', $validUserIds)->pluck('email')->toArray();
-                Employee::whereIn('email', $userEmails)->delete();
+                Employee::whereIn('user_id', $validUserIds)->delete();
                 return User::whereIn('id', $validUserIds)->delete();
             });
             return back()->with('success', "Successfully deleted {$deletedCount} user(s) and associated employee records.");
