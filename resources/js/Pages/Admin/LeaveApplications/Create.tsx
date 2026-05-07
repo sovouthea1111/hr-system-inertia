@@ -133,10 +133,6 @@ export function RequestLeaveModal({
 
         post(route("admin.leaves.store"), {
             onSuccess: () => {
-                toast.success("Leave request submitted successfully!", {
-                    duration: 4000,
-                    position: "top-right",
-                });
                 onLeaveCreated();
                 handleClose();
             },
@@ -144,7 +140,6 @@ export function RequestLeaveModal({
                 toast.error(
                     "Failed to submit leave request. Please check the form."
                 );
-                console.error("Form errors:", errors);
             },
         });
     };

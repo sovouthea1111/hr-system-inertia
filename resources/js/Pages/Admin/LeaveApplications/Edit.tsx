@@ -144,9 +144,9 @@ export function EditLeaveModal({
             formData.append("remove_image", "1");
         }
 
+        setIsSubmitting(true);
         router.post(route("admin.leaves.update", leave.id), formData, {
             onSuccess: () => {
-                toast.success("Leave application updated successfully!");
                 onLeaveUpdated();
                 handleClose();
             },
@@ -154,7 +154,9 @@ export function EditLeaveModal({
                 toast.error(
                     "Failed to update leave application. Please check the form."
                 );
-                console.error("Update errors:", errors);
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
             },
         });
     };
@@ -177,6 +179,8 @@ export function EditLeaveModal({
     };
 
     const isSickLeave = data.leave_type === "sick";
+
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     const handleImageChange = (file: File | null) => {
         setData("image", file);
@@ -464,11 +468,11 @@ export function EditLeaveModal({
                     <Button
                         type="submit"
                         variant="primary"
-                        disabled={processing || !data.employee_id}
+                        disabled={processing || isSubmitting || !data.employee_id}
                         className="flex items-center gap-2"
                     >
                         <Save className="w-4 h-4" />
-                        {processing ? "Updating..." : "Update Leave"}
+                        {processing || isSubmitting ? "Updating..." : "Update Leave"}
                     </Button>
                 </div>
             </form>
