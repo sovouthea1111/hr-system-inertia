@@ -85,14 +85,6 @@ export function EditUserModal({
         // Use post() for file uploads, even with PUT method
         post(route("admin.users.update", user.id), {
             onSuccess: () => {
-                toast.success(
-                    `User "${data.name}" has been updated successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 onUserUpdated();
                 clearFormData();
                 onClose();

@@ -249,14 +249,6 @@ export default function UsersPage() {
         router.delete(route("admin.users.destroy", userToDelete.id), {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    `User "${userToDelete.name}" has been deleted successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 setSelectedUsers((prev) =>
                     prev.filter((id) => id !== userToDelete.id)
                 );
@@ -284,16 +276,6 @@ export default function UsersPage() {
             data: { user_ids: selectedUsers },
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    `${selectedUsers.length} user${
-                        selectedUsers.length > 1 ? "s" : ""
-                    } deleted successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 setSelectedUsers([]);
                 setSelectAll(false);
                 setIsBulkDeleteDialogOpen(false);
