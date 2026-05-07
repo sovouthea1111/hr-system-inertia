@@ -11,6 +11,7 @@ class Employee extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'full_name',
         'phone',
         'department',
@@ -89,5 +90,10 @@ class Employee extends Model
     public function leaves(): HasMany
     {
         return $this->hasMany(Leave::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
 use App\Models\Leave;
 use App\Traits\HasEmployee;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeDashboardController extends Controller
 {
@@ -26,10 +25,15 @@ class EmployeeDashboardController extends Controller
         $currentYear = now()->year;
         $totalLeaveDays = 25;
         
+        $driver = DB::getDriverName();
+        $sql = $driver === 'sqlite' 
+            ? 'SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1)'
+            : 'SUM(DATEDIFF(end_date, start_date) + 1)';
+
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
             ->where('status', 'approved')
             ->whereYear('start_date', $currentYear)
-            ->selectRaw('SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1) as total_days')
+            ->selectRaw($sql . ' as total_days')
             ->value('total_days') ?? 0;
             
         $pendingRequests = Leave::where('employee_id', $employee->id)

@@ -115,7 +115,12 @@ class User extends Authenticatable
     }
 
     public function reviewedOvertimes()
-{
-    return $this->hasMany(Overtime::class, 'reviewed_by');
-}
+    {
+        return $this->hasMany(Overtime::class, 'reviewed_by');
+    }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
 }
