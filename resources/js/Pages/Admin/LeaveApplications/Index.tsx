@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
-import { GroupFilter } from "@/Components/UI/GroupFilter";
+import { GroupFilter, FilterField } from "@/Components/UI/GroupFilter";
 import { Button } from "@/Components/UI/Button";
 import { Badge } from "@/Components/UI/Badge";
 import GroupHeader from "@/Components/UI/GroupHeader";
@@ -37,7 +37,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/UI/Select";
-import { Plus, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Plus, CheckCircle, Clock, XCircle, FileText } from "lucide-react";
 import { PageProps as InertiaPageProps } from "@/types";
 import toast from "react-hot-toast";
 
@@ -139,6 +139,18 @@ export default function LeaveApplicationsPage() {
         startDateFilter,
         endDateFilter,
     ]);
+
+    const handleExportPDF = () => {
+        const filterData: Record<string, string> = {};
+        if (employeeNameFilter) filterData.employee_name = employeeNameFilter;
+        if (leaveTypeFilter) filterData.leave_type = leaveTypeFilter;
+        if (statusFilter) filterData.status = statusFilter;
+        if (startDateFilter) filterData.start_date = startDateFilter;
+        if (endDateFilter) filterData.end_date = endDateFilter;
+
+        const queryString = new URLSearchParams(filterData).toString();
+        window.location.href = `${route("admin.leaves.export-pdf")}?${queryString}`;
+    };
 
     const applyFilters = () => {
         const filterData: Record<string, string> = {};
@@ -321,15 +333,18 @@ export default function LeaveApplicationsPage() {
         { label: "Leave Applications" },
     ];
 
-    // Filter options for GroupFilter component
-    const filterOptions = [
-        {
-            id: "employee_name",
-            label: "Employee Name",
-            type: "input" as const,
-            value: employeeNameFilter,
-            placeholder: "Search by employee name...",
-        },
+    const filterOptions: FilterField[] = [
+        ...(isHROrSuperAdmin
+            ? [
+                  {
+                      id: "employee_name",
+                      label: "Employee Name",
+                      type: "input" as const,
+                      value: employeeNameFilter,
+                      placeholder: "Search by employee name...",
+                  },
+              ]
+            : []),
         {
             id: "leave_type",
             label: "Leave Type",
@@ -387,6 +402,10 @@ export default function LeaveApplicationsPage() {
         }
     };
 
+    const hasApprovedLeaves = leaveApplications.data.some(
+        (app) => app.status === "approved"
+    );
+
     return (
         <>
             <Head title="Leave Applications" />
@@ -396,6 +415,15 @@ export default function LeaveApplicationsPage() {
                     breadcrumbs={breadcrumbs}
                     headerActions={
                         <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleExportPDF}
+                                disabled={!hasApprovedLeaves}
+                            >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Export PDF
+                            </Button>
                             {!isHROrSuperAdmin && (
                                 <Button
                                     variant="primary"
