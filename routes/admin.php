@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('leaves', LeaveController::class);
     Route::get('hr-leaves',[LeaveController::class,'hrLeave'])->name('hr-leaves');
     Route::put('leaves-status/{leave}', [LeaveController::class, 'updateStatus'])->name('leaves-status.update');
+    Route::get('leaves-export-pdf', [LeaveController::class, 'exportPDF'])->name('leaves.export-pdf');
     
     // Add a new route for viewing a leave application
     Route::get('leaves/{leave}/view', [LeaveController::class, 'view'])->name('leaves.view');
@@ -58,4 +59,5 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('overtime-reports', [OvertimeController::class, 'reports'])->name('overtime.reports');
     Route::delete('overtimes-bulk-delete', [OvertimeController::class, 'bulkDelete'])->name('overtimes.bulk-delete');
     Route::get('overtime-payroll', [OvertimeController::class, 'payroll'])->name('overtime-payroll');
+    Route::get('overtime-export-pdf', [OvertimeController::class, 'exportPDF'])->name('overtime.export-pdf');
 });
