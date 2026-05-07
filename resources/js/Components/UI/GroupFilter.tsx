@@ -172,25 +172,24 @@ function Calendar({
     };
 
     const years = Array.from(
-        { length: 20 },
-        (_, i) => new Date().getFullYear() - 10 + i
+        { length: 30 },
+        (_, i) => new Date().getFullYear() - 15 + i
     );
 
     return (
-        <div className="p-3">
+        <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-100">
             {/* Month and Year selectors */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-4 bg-gray-50/50 p-2 rounded-md">
                 <select
                     value={viewDate.getMonth()}
                     onChange={(e) =>
                         handleMonthChange(parseInt(e.target.value))
                     }
                     disabled={disableMonthSelection}
-                    className={`flex-1 text-sm border border-gray-300 rounded px-2 py-1 ${
-                        disableMonthSelection 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : ''
-                    }`}
+                    className={cn(
+                        "flex-1 text-sm bg-white border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer appearance-none",
+                        disableMonthSelection && "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                    )}
                 >
                     {months.map((month, index) => (
                         <option key={month} value={index}>
@@ -203,11 +202,10 @@ function Calendar({
                     value={viewDate.getFullYear()}
                     onChange={(e) => handleYearChange(parseInt(e.target.value))}
                     disabled={disableYearSelection}
-                    className={`flex-1 text-sm border border-gray-300 rounded px-2 py-1 ${
-                        disableYearSelection 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : ''
-                    }`}
+                    className={cn(
+                        "flex-1 text-sm bg-white border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer appearance-none",
+                        disableYearSelection && "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                    )}
                 >
                     {years.map((year) => (
                         <option key={year} value={year}>
@@ -242,7 +240,7 @@ interface SelectOption {
     label: string;
 }
 
-interface FilterField {
+export interface FilterField {
     id: string;
     label: string;
     placeholder: string;
