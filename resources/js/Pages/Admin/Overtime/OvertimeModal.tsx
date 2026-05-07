@@ -159,9 +159,6 @@ export function OvertimeModal({
 
         router.post(route("admin.overtime.store"), formData, {
             onSuccess: () => {
-                toast.success(
-                    "Overtime request submitted successfully! HR will be notified via email."
-                );
                 onClose();
                 setFormData({
                     overtime_date: "",

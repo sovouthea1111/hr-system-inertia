@@ -329,16 +329,6 @@ export default function OvertimeIndex() {
             data: { ids: selectedOvertimes },
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    `${selectedOvertimes.length} overtime record${
-                        selectedOvertimes.length > 1 ? "s" : ""
-                    } deleted successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 setSelectedOvertimes([]);
                 setSelectAll(false);
                 setIsBulkDeleteDialogOpen(false);
@@ -381,7 +371,6 @@ export default function OvertimeIndex() {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
-                toast.success("Overtime record deleted successfully");
                 setIsDeleteDialogOpen(false);
                 setApplicationToDelete(null);
                 setIsDeleting(false);

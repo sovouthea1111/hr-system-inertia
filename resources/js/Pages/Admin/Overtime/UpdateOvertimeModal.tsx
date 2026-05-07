@@ -215,12 +215,9 @@ export function UpdateOvertimeModal({
 
             router.put(`/admin/overtime/${selectedOvertime.id}`, submitData, {
                 onSuccess: () => {
-                    toast.success("Overtime request updated successfully!");
                     onClose();
                 },
                 onError: (errors) => {
-                    console.error("Update failed:", errors);
-
                     if (typeof errors === "object" && errors !== null) {
                         setErrors(errors as Partial<FormData>);
                     }
@@ -234,7 +231,6 @@ export function UpdateOvertimeModal({
                 },
             });
         } catch (error) {
-            console.error("Unexpected error:", error);
             toast.error("An unexpected error occurred. Please try again.");
             setIsSubmitting(false);
         }
