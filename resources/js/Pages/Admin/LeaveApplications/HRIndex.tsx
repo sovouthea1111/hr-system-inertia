@@ -283,18 +283,15 @@ export default function HRLeaveIndex() {
                 route("admin.leaves.destroy", applicationToDelete.id),
                 {
                     onSuccess: () => {
-                        toast.success("Leave application deleted successfully");
                         setIsDeleteDialogOpen(false);
                         setApplicationToDelete(null);
                     },
                     onError: (errors) => {
-                        console.error("Delete errors:", errors);
                         toast.error("Failed to delete leave application");
                     },
                 }
             );
         } catch (error) {
-            console.error("Delete exception:", error);
             toast.error("An error occurred while deleting");
         } finally {
             setIsDeleting(false);
@@ -307,7 +304,6 @@ export default function HRLeaveIndex() {
             { status: newStatus },
             {
                 onSuccess: (response) => {
-                    toast.success("Leave status updated successfully!");
                     router.reload({ only: ["leaveApplications", "stats"] });
                 },
                 onError: (errors) => {

@@ -276,18 +276,17 @@ export default function LeaveApplicationsPage() {
                 route("admin.leaves.destroy", applicationToDelete.id),
                 {
                     onSuccess: () => {
-                        toast.success("Leave application deleted successfully");
                         setIsDeleteDialogOpen(false);
                         setApplicationToDelete(null);
                     },
                     onError: (errors) => {
-                        console.error("Delete errors:", errors);
-                        toast.error("Failed to delete leave application");
                     },
+                    onFinish: () => {
+                        setIsDeleting(false);
+                    }
                 }
             );
         } catch (error) {
-            console.error("Delete exception:", error);
             toast.error("An error occurred while deleting");
         } finally {
             setIsDeleting(false);
@@ -300,7 +299,6 @@ export default function LeaveApplicationsPage() {
             { status: newStatus },
             {
                 onSuccess: (response) => {
-                    toast.success("Leave status updated successfully!");
                     router.reload({ only: ["leaveApplications"] });
                 },
                 onError: (errors) => {
@@ -913,6 +911,7 @@ export default function LeaveApplicationsPage() {
                     itemName={applicationToDelete?.employee_name}
                     isDeleting={isDeleting}
                     type="single"
+                    itemType="Leave Application"
                 />
             </div>
         </>

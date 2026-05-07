@@ -9,8 +9,10 @@ use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use App\Mail\LeaveApplicationNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -214,29 +216,113 @@ class LeaveController extends Controller
         ]);
     }
 
+    public function update(Request $request, Leave $leaf)
+    {
+        $validated = $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'leave_type' => 'required|string',
+            'reason' => 'required|string',
+            'status' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'remove_image' => 'nullable|string', // Comes as "1" from FormData
+        ]);
+
+        try {
+            if ($request->hasFile('image')) {
+                if ($leaf->image && file_exists(public_path(self::IMAGE_PATH . '/' . $leaf->image))) {
+                    @unlink(public_path(self::IMAGE_PATH . '/' . $leaf->image));
+                }
+                
+                $image = $request->file('image');
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path(self::IMAGE_PATH), $imageName);
+                $validated['image'] = $imageName;
+            } elseif ($request->input('remove_image') === '1') {
+                if ($leaf->image && file_exists(public_path(self::IMAGE_PATH . '/' . $leaf->image))) {
+                    @unlink(public_path(self::IMAGE_PATH . '/' . $leaf->image));
+                }
+                $validated['image'] = null;
+            }
+
+            $leaf->update($validated);
+
+            return back()->with('success', 'Leave application updated successfully!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update leave application. Please try again.']);
+        }
+    }
+
+    public function destroy(Leave $leaf)
+    {
+        try {
+            if ($leaf->image && file_exists(public_path(self::IMAGE_PATH . '/' . $leaf->image))) {
+                @unlink(public_path(self::IMAGE_PATH . '/' . $leaf->image));
+            }
+            $leaf->delete();
+            return back()->with('success', 'Leave application deleted successfully!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to delete leave application.']);
+        }
+    }
+
+    public function updateStatus(Request $request, Leave $leave)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        try {
+            $leave->update([
+                'status' => $validated['status'],
+                'approved_by' => Auth::id(),
+            ]);
+
+            return back()->with('success', 'Leave status updated successfully!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update leave status.']);
+        }
+    }
+
     private function transformLeaveData($leave): array
     {
         return [
             'id' => $leave->id,
             'employee_id' => $leave->employee_id,
-            'employee_name' => $leave->employee->full_name,
-            'employee_email' => $leave->employee->email,
+            'employee_name' => $leave->employee ? $leave->employee->full_name : 'N/A',
+            'employee_email' => $leave->employee ? $leave->employee->email : 'N/A',
             'leave_type' => $leave->leave_type,
-            'start_date' => $leave->start_date->format('Y-m-d'),
-            'end_date' => $leave->end_date->format('Y-m-d'),
+            'start_date' => $leave->start_date ? $leave->start_date->format('Y-m-d') : '',
+            'end_date' => $leave->end_date ? $leave->end_date->format('Y-m-d') : '',
             'days_requested' => $leave->days_requested,
             'reason' => $leave->reason,
             'status' => $leave->status,
             'image' => $leave->image ? asset('images/' . $leave->image) : null,
-            'applied_date' => $leave->created_at->format('Y-m-d'),
+            'applied_date' => $leave->created_at ? $leave->created_at->format('Y-m-d') : '',
         ];
     }
 
     private function renderEmptyIndex($perPage, $filters): Response
     {
         $leaves = Leave::where('id', -1)->paginate($perPage);
-        $leaves->getCollection()->transform(fn($leave) => $this->transformLeaveData($leave));
-        return $this->renderIndexView($leaves, $filters);
+        $transformed = collect($leaves->items())->map(fn($leave) => $this->transformLeaveData($leave))->toArray();
+        
+        return Inertia::render('Admin/LeaveApplications/Index', [
+            'leaveApplications' => $leaves,
+            'filters' => $filters,
+            'leaveTypes' => Leave::getLeaveTypes(),
+            'statuses' => Leave::getStatuses(),
+            'canManage' => $this->isHR(),
+            'employees' => Employee::select('id', 'full_name', 'email')->get(),
+            'stats' => [
+                'total' => 0,
+                'pending' => 0,
+                'approved' => 0,
+                'rejected' => 0,
+                'by_type' => [],
+            ],
+        ]);
     }
 
     private function renderIndexView($leaves, $filters): Response
