@@ -275,15 +275,6 @@ export default function EmployeesPage() {
         router.delete(route("admin.employees.destroy", employeeToDelete.id), {
             preserveScroll: true,
             onSuccess: () => {
-                // Show success message
-                toast.success(
-                    `Employee "${employeeToDelete.full_name}" has been deleted successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 setSelectedEmployees((prev) =>
                     prev.filter((id) => id !== employeeToDelete.id)
                 );
@@ -311,16 +302,6 @@ export default function EmployeesPage() {
             data: { ids: selectedEmployees },
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    `${selectedEmployees.length} employee${
-                        selectedEmployees.length > 1 ? "s" : ""
-                    } deleted successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 setSelectedEmployees([]);
                 setSelectAll(false);
                 setIsBulkDeleteDialogOpen(false);

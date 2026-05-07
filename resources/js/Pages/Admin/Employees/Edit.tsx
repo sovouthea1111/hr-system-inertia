@@ -94,16 +94,7 @@ export function EditEmployeeModal({
 
         put(route("admin.employees.update", employee.id), {
             onSuccess: () => {
-                toast.success(
-                    `Employee "${data.full_name}" has been updated successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 onEmployeeUpdated();
-                clearFormData();
                 onClose();
             },
 
