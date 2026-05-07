@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
-import { GroupFilter } from "@/Components/UI/GroupFilter";
+import { GroupFilter, FilterField } from "@/Components/UI/GroupFilter";
 import { Button } from "@/Components/UI/Button";
 import { Badge } from "@/Components/UI/Badge";
 import GroupHeader from "@/Components/UI/GroupHeader";
@@ -25,6 +25,7 @@ import {
     XCircle,
     CheckCircle,
     Trash2,
+    FileText,
 } from "lucide-react";
 import { PageProps as InertiaPageProps } from "@/types";
 import toast from "react-hot-toast";
@@ -134,7 +135,10 @@ export default function OvertimeIndex() {
     const [employeeNameFilter, setEmployeeNameFilter] = useState(
         filters?.employee_name || ""
     );
-    const [dateFilter, setDateFilter] = useState(filters?.start_date || "");
+    const [startDateFilter, setStartDateFilter] = useState(
+        filters?.start_date || ""
+    );
+    const [endDateFilter, setEndDateFilter] = useState(filters?.end_date || "");
     const [applicationToDelete, setApplicationToDelete] =
         useState<Overtime | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -142,12 +146,25 @@ export default function OvertimeIndex() {
     const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    const handleExportPDF = () => {
+        const filterData: any = {};
+        if (statusFilter) filterData.status = statusFilter;
+        if (overtimeTypeFilter) filterData.overtime_type = overtimeTypeFilter;
+        if (employeeNameFilter) filterData.employee_name = employeeNameFilter;
+        if (startDateFilter) filterData.start_date = startDateFilter;
+        if (endDateFilter) filterData.end_date = endDateFilter;
+
+        const queryString = new URLSearchParams(filterData).toString();
+        window.location.href = `${route("admin.overtime.export-pdf")}?${queryString}`;
+    };
+
     const applyFilters = () => {
         const filterData: any = {};
         if (statusFilter) filterData.status = statusFilter;
         if (overtimeTypeFilter) filterData.overtime_type = overtimeTypeFilter;
         if (employeeNameFilter) filterData.employee_name = employeeNameFilter;
-        if (dateFilter) filterData.date = dateFilter;
+        if (startDateFilter) filterData.start_date = startDateFilter;
+        if (endDateFilter) filterData.end_date = endDateFilter;
 
         router.get(route("admin.overtime.index"), filterData, {
             preserveState: true,
@@ -161,7 +178,13 @@ export default function OvertimeIndex() {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [statusFilter, overtimeTypeFilter, employeeNameFilter, dateFilter]);
+    }, [
+        statusFilter,
+        overtimeTypeFilter,
+        employeeNameFilter,
+        startDateFilter,
+        endDateFilter,
+    ]);
 
     // Add these helper functions at the top of the component
     const getCurrentMonthRange = () => {
@@ -184,13 +207,13 @@ export default function OvertimeIndex() {
         value: string,
         dateValue?: Date
     ) => {
-        // Validate date restrictions for date field
-        if (field === "date" && dateValue) {
+        // Validate date restrictions for date fields
+        if ((field === "start_date" || field === "end_date") && dateValue) {
             if (!isDateInCurrentMonth(dateValue)) {
                 toast.error(
                     "Please select a date within the current month only."
                 );
-                return; // Don't update the filter if date is outside current month
+                return;
             }
         }
 
@@ -204,8 +227,11 @@ export default function OvertimeIndex() {
             case "employee_name":
                 setEmployeeNameFilter(value);
                 break;
-            case "date":
-                setDateFilter(value);
+            case "start_date":
+                setStartDateFilter(value);
+                break;
+            case "end_date":
+                setEndDateFilter(value);
                 break;
         }
     };
@@ -214,7 +240,8 @@ export default function OvertimeIndex() {
         setStatusFilter("");
         setOvertimeTypeFilter("");
         setEmployeeNameFilter("");
-        setDateFilter("");
+        setStartDateFilter("");
+        setEndDateFilter("");
 
         router.get(
             route("admin.overtime.index"),
@@ -371,7 +398,7 @@ export default function OvertimeIndex() {
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-        return [
+        const fields: FilterField[] = [
             {
                 id: "status",
                 label: "Status",
@@ -396,24 +423,40 @@ export default function OvertimeIndex() {
                         label: type.label,
                     })) || [],
             },
-            {
+        ];
+
+        if (isHROrAdmin) {
+            fields.push({
                 id: "employee_name",
                 label: "Employee Name",
                 placeholder: "Search by employee name...",
                 value: employeeNameFilter,
                 type: "input" as const,
+            });
+        }
+
+        fields.push(
+            {
+                id: "start_date",
+                label: "Start Date",
+                placeholder: "Select start date",
+                value: startDateFilter,
+                type: "datetime" as const,
+                dateValue: startDateFilter
+                    ? new Date(startDateFilter)
+                    : undefined,
             },
             {
-                id: "date",
-                label: "Date (Current Month Only)",
-                placeholder: `Select date (${firstDay.toLocaleDateString()} - ${lastDay.toLocaleDateString()})`,
-                value: dateFilter,
+                id: "end_date",
+                label: "End Date",
+                placeholder: "Select end date",
+                value: endDateFilter,
                 type: "datetime" as const,
-                dateValue: dateFilter ? new Date(dateFilter) : undefined,
-                disableMonthSelection: true,
-                disableYearSelection: true,
-            },
-        ];
+                dateValue: endDateFilter ? new Date(endDateFilter) : undefined,
+            }
+        );
+
+        return fields;
     };
 
     const handlePageChange = (url: string) => {
@@ -433,7 +476,8 @@ export default function OvertimeIndex() {
         const currentFilters: Record<string, string | number> = {
             employee_name: employeeNameFilter,
             overtime_type: overtimeTypeFilter,
-            date: dateFilter,
+            start_date: startDateFilter,
+            end_date: endDateFilter,
             status: statusFilter,
             per_page: perPage,
             page: 1,
@@ -451,6 +495,10 @@ export default function OvertimeIndex() {
         });
     };
 
+    const hasApprovedOvertimes = overtimes.data.some(
+        (ot) => ot.status === "approved"
+    );
+
     return (
         <>
             <Head title="Overtime Management" />
@@ -461,6 +509,15 @@ export default function OvertimeIndex() {
                     managementHref="/admin/overtime"
                     headerActions={
                         <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleExportPDF}
+                                disabled={!hasApprovedOvertimes}
+                            >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Export PDF
+                            </Button>
                             {selectedOvertimes.length > 0 && (
                                 <Button
                                     variant="destructive"
