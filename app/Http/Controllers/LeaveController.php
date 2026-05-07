@@ -9,10 +9,8 @@ use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rule;
 use App\Mail\LeaveApplicationNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -43,8 +41,8 @@ class LeaveController extends Controller
                     
                 case 'HR':
                     $employeeIds = Employee::whereIn(
-                        'email',
-                        User::where('user_role', 'Employee')->pluck('email')
+                        'user_id',
+                        User::where('user_role', 'Employee')->pluck('id')
                     )->pluck('id');
 
                     if ($employeeIds->isNotEmpty()) {
@@ -131,9 +129,6 @@ class LeaveController extends Controller
                 $filters['employee_id'] = $employee->id;
             }
         } elseif ($user->user_role === 'HR') {
-            // If it's "My Leaves" for HR, we should use their employee ID
-            // If it's the general Leave Management, we should show all.
-            // For now, let's assume this is for the current view's data.
             if ($request->has('my_leaves')) {
                 $employee = $this->getCurrentEmployee();
                 if ($employee) {
@@ -226,7 +221,7 @@ class LeaveController extends Controller
             'reason' => 'required|string',
             'status' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'remove_image' => 'nullable|string', // Comes as "1" from FormData
+            'remove_image' => 'nullable|string',
         ]);
 
         try {

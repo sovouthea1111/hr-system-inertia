@@ -157,12 +157,15 @@ class Leave extends Model
     $year = $year ?? now()->year;
 
     // Get approved leaves with more efficient query
+    $driver = \Illuminate\Support\Facades\DB::getDriverName();
+    $sql = $driver === 'sqlite' 
+        ? "SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1)"
+        : "SUM(DATEDIFF(end_date, start_date) + 1)";
+
     $approvedLeaves = static::where("employee_id", $employeeId)
       ->where("status", "approved")
       ->whereYear("start_date", $year)
-      ->selectRaw(
-        "leave_type, SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1) as total_days"
-      )
+      ->selectRaw("leave_type, $sql as total_days")
       ->groupBy("leave_type")
       ->pluck("total_days", "leave_type");
 
@@ -200,12 +203,15 @@ class Leave extends Model
   {
     $year = $year ?? now()->year;
 
+    $driver = \Illuminate\Support\Facades\DB::getDriverName();
+    $sql = $driver === 'sqlite' 
+        ? "SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1)"
+        : "SUM(DATEDIFF(end_date, start_date) + 1)";
+
     return static::where("employee_id", $employeeId)
       ->where("status", "approved")
       ->whereYear("start_date", $year)
-      ->selectRaw(
-        "leave_type, SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1) as total_days"
-      )
+      ->selectRaw("leave_type, $sql as total_days")
       ->groupBy("leave_type")
       ->pluck("total_days", "leave_type");
   }
