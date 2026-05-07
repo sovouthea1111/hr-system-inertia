@@ -85,22 +85,12 @@ export function CreateEmployeeModal({
                     status: data.status,
                 };
 
-                // Show success message
-                toast.success(
-                    `Employee "${data.full_name}" has been created successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 onEmployeeCreated(employee);
                 clearFormData();
                 onClose();
             },
 
             onError: (errors) => {
-                console.error("Validation errors:", errors);
                 toast.error(
                     "Failed to create employee. Please check the form and try again.",
                     {
