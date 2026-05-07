@@ -234,7 +234,6 @@ export function NotificationDropdown({
                 toast.error(`Failed to ${action} leave request`);
             }
         } catch (error) {
-            console.error(`Failed to ${action} leave request:`, error);
             toast.error(`Failed to ${action} leave request`);
         } finally {
             setIsProcessing(null);
@@ -277,7 +276,7 @@ export function NotificationDropdown({
                 }
             }
         } catch (error) {
-            console.error("Failed to mark notification as read:", error);
+            toast.error("Failed to mark notification as read");
         } finally {
             setIsMarkingRead(null);
         }

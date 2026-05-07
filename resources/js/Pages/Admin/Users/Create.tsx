@@ -67,14 +67,6 @@ export function CreateUserModal({
                     user_role: data.user_role,
                 };
 
-                toast.success(
-                    `User "${data.name}" has been created successfully!`,
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                    }
-                );
-
                 onUserCreated(user);
                 clearFormData();
                 onClose();

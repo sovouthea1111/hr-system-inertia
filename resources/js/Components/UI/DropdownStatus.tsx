@@ -98,7 +98,6 @@ export function DropdownStatus({
                     );
                 }
             } catch (error) {
-                console.error("Error updating status:", error);
                 toast.error("An error occurred while updating status.");
             } finally {
                 setIsUpdating(false);

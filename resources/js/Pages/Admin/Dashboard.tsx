@@ -113,23 +113,13 @@ export default function AdminDashboard() {
             });
 
             if (response.ok) {
-                const responseData = await response.json();
-
-                // Display success toast
-                toast.success(
-                    responseData.message ||
-                        "Leave request approved successfully"
-                );
-
-                // Refresh the page to get updated data
+                // Success handled by global listener
                 window.location.reload();
             } else {
-                console.error("Failed to approve leave request");
-                toast.error("Failed to approve leave request");
+                // Error handled by global listener
             }
         } catch (error) {
-            console.error("Failed to approve leave request:", error);
-            toast.error("Failed to approve leave request");
+            // Error handled by global listener
         } finally {
             setIsProcessing(null);
         }
@@ -160,23 +150,13 @@ export default function AdminDashboard() {
             });
 
             if (response.ok) {
-                const responseData = await response.json();
-
-                // Display success toast
-                toast.success(
-                    responseData.message ||
-                        "Leave request rejected successfully"
-                );
-
-                // Refresh the page to get updated data
+                // Success handled by global listener
                 window.location.reload();
             } else {
-                console.error("Failed to reject leave request");
-                toast.error("Failed to reject leave request");
+                // Error handled by global listener
             }
         } catch (error) {
-            console.error("Failed to reject leave request:", error);
-            toast.error("Failed to reject leave request");
+            // Error handled by global listener
         } finally {
             setIsProcessing(null);
         }
