@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { usePage, Link } from "@inertiajs/react";
 import {
@@ -10,7 +8,7 @@ import {
     UsersIcon,
     User,
     UserIcon,
-    ClockIcon, // Add this import for overtime icon
+    ClockIcon,
 } from "lucide-react";
 import { router } from "@inertiajs/react";
 
@@ -73,9 +71,8 @@ interface ExtendedPageProps extends Omit<PageProps, "auth"> {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { theme, toggleTheme } = useTheme();
-    const { url } = usePage();
-    const { auth } = usePage<ExtendedPageProps>().props;
-    const user = auth?.user;
+    const { url, props: pageProps } = usePage<ExtendedPageProps>();
+    const user = pageProps.auth?.user;
     const userData: UserData = {
         name: user?.name || defaultUserData.name,
         role: user?.user_role || defaultUserData.role,
@@ -84,11 +81,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         id: user?.id?.toString(),
     };
 
-    const isHR =
-        userData.role?.toUpperCase().includes("HR") ||
-        userData.role?.toUpperCase() === "HUMAN RESOURCES";
-
-    const getNavigation = () => {
+    const navigationItems = React.useMemo(() => {
         if (userData.role === "SuperAdmin") {
             return [
                 {
@@ -207,9 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 isActive: url.startsWith("/admin/users"),
             },
         ];
-    };
-
-    // Remove the separate getEmployeeNavigation function and use getNavigation() instead
+    }, [userData.role, url]);
 
     const handleLogout = () => {
         router.post(route("logout"));
@@ -255,10 +246,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu className="space-y-1">
-                            {getNavigation().map((item) => (
+                            {navigationItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton
                                         asChild
+                                        isActive={item.isActive}
                                         className={`w-full justify-start h-9 px-2 rounded-lg transition-colors ${
                                             item.isActive
                                                 ? theme === "dark"
