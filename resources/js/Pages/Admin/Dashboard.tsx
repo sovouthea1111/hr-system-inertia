@@ -1,5 +1,5 @@
 import { AppLayout } from "@/Layouts/AppLayout";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, usePage, router } from "@inertiajs/react";
 import {
     Card,
     CardContent,
@@ -14,7 +14,6 @@ import {
     ClockIcon,
     TrendingUpIcon,
 } from "lucide-react";
-import toast from "react-hot-toast";
 import { useState } from "react";
 
 interface DepartmentStat {
@@ -114,7 +113,7 @@ export default function AdminDashboard() {
 
             if (response.ok) {
                 // Success handled by global listener
-                window.location.reload();
+                router.reload();
             } else {
                 // Error handled by global listener
             }
@@ -151,7 +150,7 @@ export default function AdminDashboard() {
 
             if (response.ok) {
                 // Success handled by global listener
-                window.location.reload();
+                router.reload();
             } else {
                 // Error handled by global listener
             }

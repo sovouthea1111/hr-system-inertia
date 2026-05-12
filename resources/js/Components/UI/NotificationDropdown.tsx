@@ -229,7 +229,7 @@ export function NotificationDropdown({
                 setCommentModal(null);
                 setComment("");
 
-                window.location.reload();
+                router.reload();
             } else {
                 toast.error(`Failed to ${action} leave request`);
             }
