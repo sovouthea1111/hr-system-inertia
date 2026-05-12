@@ -4,6 +4,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
+import { Link } from "@inertiajs/react";
 
 import { useIsMobile } from "@/Hook/UseMobile";
 import { cn } from "../../../../lib/utils";
@@ -732,17 +733,17 @@ SidebarMenuSubItem.displayName = "SidebarMenuSubItem";
 
 const SidebarMenuSubButton = React.forwardRef<
     HTMLAnchorElement,
-    React.ComponentProps<"a"> & {
+    React.ComponentProps<typeof Link> & {
         asChild?: boolean;
         size?: "sm" | "md";
         isActive?: boolean;
     }
 >(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {
-    const Comp = asChild ? Slot : "a";
+    const Comp = asChild ? Slot : Link;
 
     return (
         <Comp
-            ref={ref}
+            ref={ref as any}
             data-sidebar="menu-sub-button"
             data-size={size}
             data-active={isActive}
@@ -754,7 +755,7 @@ const SidebarMenuSubButton = React.forwardRef<
                 "group-data-[collapsible=icon]:hidden",
                 className
             )}
-            {...props}
+            {...(props as any)}
         />
     );
 });
