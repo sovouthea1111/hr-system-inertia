@@ -103,10 +103,7 @@ class DashboardController extends Controller
         $currentYear = now()->year;
         $totalLeaveDays = 7;
         
-        $driver = DB::getDriverName();
-        $sql = $driver === 'sqlite' 
-            ? 'SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1)'
-            : 'SUM(DATEDIFF(end_date, start_date) + 1)';
+        $sql = 'SUM(DATEDIFF(end_date, start_date) + 1)';
 
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
             ->where('status', 'approved')
