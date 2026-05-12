@@ -1,10 +1,9 @@
 import Checkbox from "@/Components/Checkbox";
-import InputError from "@/Components/InputError";
-import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
-import TextInput from "@/Components/TextInput";
 import { Head, useForm } from "@inertiajs/react";
 import { FormEventHandler, useState } from "react";
+import { FloatingInput } from "@/Components/UI/FloatingInput";
+import toast from "react-hot-toast";
 import {
     Users,
     Mail,
@@ -24,7 +23,7 @@ export default function Login({
     canResetPassword,
 }: {
     status?: string;
-    canResetPassword: boolean;
+    canResetPassword?: boolean;
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
@@ -33,12 +32,29 @@ export default function Login({
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [step, setStep] = useState<"email" | "password">("email");
+
+    const handleNext = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (data.email) {
+            setStep("password");
+        }
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         post(route("login"), {
             onFinish: () => reset("password"),
+            onError: (errors) => {
+                if (errors.email) {
+                    toast.error(errors.email);
+                } else if (errors.password) {
+                    toast.error(errors.password);
+                } else {
+                    toast.error("Login failed. Please check your credentials.");
+                }
+            },
         });
     };
 
@@ -160,6 +176,9 @@ export default function Login({
                                 <h2 className="text-3xl font-bold text-gray-900 mb-3">
                                     Sign In
                                 </h2>
+                                <p className="text-gray-500 font-medium">
+                                    Enter your email to continue
+                                </p>
                             </div>
 
                             {status && (
@@ -173,134 +192,131 @@ export default function Login({
                                 </div>
                             )}
 
-                            <form onSubmit={submit} className="space-y-6">
-                                {/* Email field */}
-                                <div>
-                                    <InputLabel
-                                        htmlFor="email"
-                                        value="Email Address"
-                                        className="text-gray-700 font-semibold mb-2"
-                                    />
-                                    <div className="relative">
-                                        <TextInput
-                                            id="email"
-                                            type="email"
-                                            name="email"
-                                            value={data.email}
-                                            className="block w-full px-4 py-4 pl-12 border dark:text-gray-700 border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                                            placeholder="Enter your work email"
-                                            autoComplete="username"
-                                            isFocused={true}
-                                            onChange={(e) =>
-                                                setData("email", e.target.value)
-                                            }
-                                        />
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <Mail className="h-5 w-5 text-gray-400" />
+                            <form onSubmit={step === "email" ? handleNext : submit} className="space-y-6">
+                                {step === "email" ? (
+                                    <>
+                                        {/* Step 1: Email Address */}
+                                        <div className="space-y-4">
+                                            <FloatingInput
+                                                id="email"
+                                                type="email"
+                                                label="Email"
+                                                value={data.email}
+                                                icon={<Mail className="h-5 w-5" />}
+                                                error={errors.email}
+                                                autoComplete="username"
+                                                isFocused={true}
+                                                onChange={(e) =>
+                                                    setData("email", e.target.value)
+                                                }
+                                            />
                                         </div>
-                                    </div>
-                                    <InputError
-                                        message={errors.email}
-                                        className="mt-2"
-                                    />
-                                </div>
 
-                                {/* Password field */}
-                                <div>
-                                    <InputLabel
-                                        htmlFor="password"
-                                        value="Password"
-                                        className="text-gray-700 font-semibold mb-2"
-                                    />
-                                    <div className="relative">
-                                        <TextInput
-                                            id="password"
-                                            type={showPassword ? "text" : "password"}
-                                            name="password"
-                                            value={data.password}
-                                            className="block w-full px-4 py-4 pl-12 pr-12 border dark:text-gray-700 border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                                            placeholder="Enter your password"
-                                            autoComplete="current-password"
-                                            onChange={(e) =>
-                                                setData(
-                                                    "password",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <Lock className="h-5 w-5 text-gray-400" />
+                                        <div className="pt-2">
+                                            <PrimaryButton
+                                                className="w-full justify-center py-4 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 transition-all duration-200 active:transform active:scale-[0.98]"
+                                                type="submit"
+                                            >
+                                                Next
+                                            </PrimaryButton>
                                         </div>
-                                        <button
-                                            type="button"
-                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                        >
-                                            {showPassword ? (
-                                                <EyeOff className="h-5 w-5" />
-                                            ) : (
-                                                <Eye className="h-5 w-5" />
-                                            )}
-                                        </button>
-                                    </div>
-                                    <InputError
-                                        message={errors.password}
-                                        className="mt-2"
-                                    />
-                                </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Step 2: Password */}
+                                        <div className="mb-6 flex items-center justify-between px-4 py-4 bg-gray-50 rounded-2xl border-2 border-gray-100">
+                                            <div className="flex items-center space-x-3 overflow-hidden">
+                                                <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                                                <div className="w-[1px] h-6 bg-gray-200" />
+                                                <span className="text-base font-medium text-gray-500 truncate">
+                                                    {data.email}
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setStep("email")}
+                                                className="text-sm font-bold text-cyan-500 hover:text-cyan-600 transition-colors px-2"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
 
-                                {/* Remember me & Forgot password */}
-                                <div className="flex items-center justify-between pt-2">
-                                    <label className="flex items-center group cursor-pointer">
-                                        <Checkbox
-                                            name="remember"
-                                            checked={data.remember}
-                                            onChange={(e) =>
-                                                setData(
-                                                    "remember",
-                                                    (e.target.checked ||
-                                                        false) as false
-                                                )
-                                            }
-                                            className="rounded-md border-gray-300 text-primary shadow-sm focus:ring-primary transition-colors"
-                                        />
-                                        <span className="ml-3 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
-                                            Keep me signed in
-                                        </span>
-                                    </label>
-                                </div>
+                                        <div className="space-y-4">
+                                            <div className="relative">
+                                                <FloatingInput
+                                                    id="password"
+                                                    type={showPassword ? "text" : "password"}
+                                                    label="Password"
+                                                    value={data.password}
+                                                    icon={<Lock className="h-5 w-5" />}
+                                                    error={errors.password}
+                                                    autoComplete="current-password"
+                                                    isFocused={true}
+                                                    onChange={(e) =>
+                                                        setData("password", e.target.value)
+                                                    }
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-4 top-5 text-gray-400 hover:text-gray-600 transition-colors"
+                                                >
+                                                    {showPassword ? (
+                                                        <EyeOff className="h-5 w-5" />
+                                                    ) : (
+                                                        <Eye className="h-5 w-5" />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                {/* Submit button */}
-                                <div className="pt-4">
-                                    <PrimaryButton
-                                        className="w-full justify-center py-4 px-6 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                                        disabled={processing}
-                                    >
-                                        {processing ? (
-                                            <>
-                                                <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                                                Signing you in...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <LogIn className="w-5 h-5 mr-2" />
-                                                Access Dashboard
-                                            </>
-                                        )}
-                                    </PrimaryButton>
-                                </div>
+                                        <div className="flex items-center">
+                                            <Checkbox
+                                                name="remember"
+                                                checked={data.remember}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "remember",
+                                                        e.target.checked
+                                                    )
+                                                }
+                                                className="rounded border-gray-300 text-primary shadow-sm focus:ring-primary"
+                                            />
+                                            <span className="ml-2 text-sm text-gray-600 font-medium">
+                                                Keep me signed in
+                                            </span>
+                                        </div>
+
+                                        <div className="pt-2">
+                                            <PrimaryButton
+                                                className="w-full justify-center py-4 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 transition-all duration-200 active:transform active:scale-[0.98] disabled:opacity-70"
+                                                disabled={processing}
+                                                type="submit"
+                                            >
+                                                {processing ? (
+                                                    <>
+                                                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                                        Logging in...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <LogIn className="w-5 h-5 mr-2" />
+                                                        Sign In
+                                                    </>
+                                                )}
+                                            </PrimaryButton>
+                                        </div>
+                                    </>
+                                )}
                             </form>
+                        </div>
 
-                            {/* Security notice */}
-                            <div className="mt-8 pt-6 border-t border-gray-100">
-                                <div className="flex items-center justify-center text-xs text-gray-500">
-                                    <Shield className="w-4 h-4 mr-2" />
-                                    <span>
-                                        Your data is protected with
-                                        enterprise-grade security
-                                    </span>
-                                </div>
-                            </div>
+                        {/* Security trust badge */}
+                        <div className="mt-8 flex items-center justify-center space-x-2 text-gray-400">
+                            <Shield className="w-4 h-4" />
+                            <span className="text-xs font-semibold uppercase tracking-wider">
+                                Secure Enterprise Authentication
+                            </span>
                         </div>
                     </div>
                 </div>
