@@ -156,11 +156,7 @@ class Leave extends Model
   {
     $year = $year ?? now()->year;
 
-    // Get approved leaves with more efficient query
-    $driver = \Illuminate\Support\Facades\DB::getDriverName();
-    $sql = $driver === 'sqlite' 
-        ? "SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1)"
-        : "SUM(DATEDIFF(end_date, start_date) + 1)";
+    $sql = "SUM(DATEDIFF(end_date, start_date) + 1)";
 
     $approvedLeaves = static::where("employee_id", $employeeId)
       ->where("status", "approved")
@@ -203,10 +199,7 @@ class Leave extends Model
   {
     $year = $year ?? now()->year;
 
-    $driver = \Illuminate\Support\Facades\DB::getDriverName();
-    $sql = $driver === 'sqlite' 
-        ? "SUM(CAST((julianday(end_date) - julianday(start_date)) AS INTEGER) + 1)"
-        : "SUM(DATEDIFF(end_date, start_date) + 1)";
+    $sql = "SUM(DATEDIFF(end_date, start_date) + 1)";
 
     return static::where("employee_id", $employeeId)
       ->where("status", "approved")
