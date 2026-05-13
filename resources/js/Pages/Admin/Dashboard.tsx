@@ -195,7 +195,7 @@ export default function AdminDashboard() {
                                         <div className="flex items-center gap-2">
                                             <IconComponent className="h-4 w-4 text-muted-foreground" />
                                             {/* Add trend indicator */}
-                                            <span className="text-xs text-success">
+                                            <span className="text-sm text-success">
                                                 +5%
                                             </span>
                                         </div>
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
                                         <div className="text-2xl font-bold">
                                             {stat.value}
                                         </div>
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-sm text-muted-foreground">
                                             {stat.description}
                                         </p>
                                         {/* Add mini chart or progress bar */}
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
                                                             <span className="text-sm font-medium">
                                                                 {dept.total}
                                                             </span>
-                                                            <span className="text-xs text-muted-foreground ml-2">
+                                                            <span className="text-sm text-muted-foreground ml-2">
                                                                 ({dept.active}{" "}
                                                                 active,{" "}
                                                                 {dept.on_leave}{" "}

@@ -216,7 +216,7 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                             <p className="text-sm font-medium text-gray-700 mb-1">
                                 {placeholder}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-gray-500">
                                 {accept.replace("image/", "").toUpperCase()} up
                                 to {maxSize}MB
                             </p>
@@ -271,7 +271,7 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                                         {value ? value.name : "Current image"}
                                     </p>
                                     {value && (
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-sm text-gray-500">
                                             {formatFileSize(value.size)}
                                         </p>
                                     )}
@@ -286,7 +286,7 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
 
                 {/* Helper Text */}
                 {!error && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-500">
                         Supported formats: JPG, PNG, GIF, WebP. Maximum size:{" "}
                         {maxSize}MB
                         {imagePreview && " • Hover to replace"}

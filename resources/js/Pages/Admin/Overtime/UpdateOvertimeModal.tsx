@@ -317,7 +317,7 @@ export function UpdateOvertimeModal({
                         <div>
                             <span className="font-medium dark:text-gray-700">Status:</span>
                             <span
-                                className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                className={`ml-2 px-2 py-1 rounded-full text-sm font-medium ${
                                     selectedOvertime.status === "approved"
                                         ? "bg-green-100 text-green-800"
                                         : selectedOvertime.status === "rejected"

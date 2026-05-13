@@ -76,8 +76,10 @@ function run_server_commands() {
         $cpanel_php_path artisan migrate &&
         $cpanel_php_path artisan cache:clear &&
         $cpanel_php_path artisan auth:clear-resets &&
-        $cpanel_php_path artisan optimize:clear &&
-        $cpanel_php_path /opt/cpanel/composer/bin/composer install --ignore-platform-req=ext-sodium
+        $cpanel_php_path artisan optimize:clear &&  
+        $cpanel_php_path /opt/cpanel/composer/bin/composer install --ignore-platform-req=ext-sodium &&
+        $cpanel_php_path /opt/cpanel/composer/bin/composer dump-autoload
+        
     "
 }
 

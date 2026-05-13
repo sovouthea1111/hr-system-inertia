@@ -210,12 +210,12 @@ export function RequestLeaveModal({
                         </p>
                     )}
                     {(isEmployee || isHR) && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                             You can only create leave requests for yourself.
                         </p>
                     )}
                     {isAdmin && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                             You can create leave requests for any employee.
                         </p>
                     )}

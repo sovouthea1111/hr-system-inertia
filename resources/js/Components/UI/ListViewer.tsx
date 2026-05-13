@@ -69,7 +69,7 @@ const ListViewer = React.forwardRef<HTMLDivElement, ListViewerProps>(
                         <div className="flex items-center justify-between">
                             <Button
                                 variant="link"
-                                className="text-danger font-medium p-0 h-auto text-xs sm:text-sm"
+                                className="text-danger font-medium p-0 h-auto text-sm"
                                 onClick={onViewAll}
                             >
                                 {viewAllText}{" "}
@@ -79,7 +79,7 @@ const ListViewer = React.forwardRef<HTMLDivElement, ListViewerProps>(
                             {onCreateMore && showCreateMoreButton && (
                                 <Button
                                     variant="link"
-                                    className="text-danger font-medium p-0 h-auto text-xs sm:text-sm flex items-center"
+                                    className="text-danger font-medium p-0 h-auto text-sm flex items-center"
                                     onClick={onCreateMore}
                                 >
                                     {createMoreText}{" "}

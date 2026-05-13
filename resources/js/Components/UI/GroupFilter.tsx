@@ -222,7 +222,7 @@ function Calendar({
                         key={day}
                         className="h-8 flex items-center justify-center"
                     >
-                        <span className="text-xs font-medium text-gray-500">
+                        <span className="text-sm font-medium text-gray-500">
                             {day}
                         </span>
                     </div>
@@ -314,7 +314,7 @@ export function GroupFilter({
                         {hasValues && (
                             <div className="flex items-center gap-1 mt-1">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-xs text-green-600 font-medium">
+                                <span className="text-sm text-green-600 font-medium">
                                     Active filters
                                 </span>
                             </div>

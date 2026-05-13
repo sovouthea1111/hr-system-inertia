@@ -203,11 +203,10 @@ class LeaveController extends Controller
         }
     }
 
-    public function view(Leave $leave)
+    public function view(Leave $leave): Response
     {
-        return response()->json([
-            'success' => true,
-            'data' => $this->transformLeaveData($leave->load('employee'))
+        return Inertia::render('Admin/LeaveApplications/ViewPage', [
+            'leave' => $this->transformLeaveData($leave->load('employee')),
         ]);
     }
 

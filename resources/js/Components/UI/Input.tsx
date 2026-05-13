@@ -32,7 +32,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             placeholder,
             ...props
         },
-        ref
+        ref,
     ) => {
         const [showPassword, setShowPassword] = React.useState(false);
         const [inputType, setInputType] = React.useState(type);
@@ -59,7 +59,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                             "text-sm font-medium text-gray-700",
                             required &&
                                 "after:content-['*'] after:text-danger after:ml-1",
-                            disabled && "text-gray-400"
+                            disabled && "text-gray-400",
                         )}
                     >
                         {label}
@@ -70,14 +70,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         id={inputId}
                         type={inputType}
                         className={cn(
-                            "flex h-10 dark:text-gray-700 w-full rounded-md border border-input bg-inputBackground px-3 py-2 text-base ring-offset-inputBackground file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                            "flex h-10 dark:text-gray-700 w-full rounded-md border border-input bg-inputBackground px-3 py-2 text-base ring-offset-inputBackground file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                             error &&
                                 "border-danger focus:border-danger focus:ring-danger",
                             disabled && "opacity-50 cursor-not-allowed",
                             showPasswordToggle &&
                                 type === "password" &&
                                 "pr-10",
-                            className
+                            className,
                         )}
                         ref={ref}
                         disabled={disabled}
@@ -107,7 +107,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 {error && <p className="text-sm text-danger">{error}</p>}
             </div>
         );
-    }
+    },
 );
 
 Input.displayName = "Input";

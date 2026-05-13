@@ -242,44 +242,38 @@ export function NotificationDropdown({
 
     const handleMarkAsRead = async (notification: Notification) => {
         setIsMarkingRead(notification.id);
-        try {
-            const xsrfToken = document.cookie
-                .split("; ")
-                .find((row) => row.startsWith("XSRF-TOKEN="))
-                ?.split("=")[1];
-            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
 
-            const response = await fetch("/api/notifications/mark-as-read", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-XSRF-TOKEN": decodedToken,
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({
-                    leave_id: notification.id,
-                }),
-            });
+        const updatedNotifications = notifications.map((n) =>
+            n.id === notification.id ? { ...n, read: true } : n
+        );
+        const newUnreadCount = Math.max(0, unreadCount - 1);
+        onNotificationUpdate(updatedNotifications, newUnreadCount);
 
-            if (response.ok) {
-                const updatedNotifications = notifications.map((n) =>
-                    n.id === notification.id ? { ...n, read: true } : n
-                );
-                const newUnreadCount = Math.max(0, unreadCount - 1);
-                onNotificationUpdate(updatedNotifications, newUnreadCount);
+        fetch("/api/notifications/mark-as-read", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-XSRF-TOKEN": decodeURIComponent(
+                    document.cookie
+                        .split("; ")
+                        .find((row) => row.startsWith("XSRF-TOKEN="))
+                        ?.split("=")[1] || ""
+                ),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+                leave_id: notification.id,
+            }),
+        }).catch(() => {});
 
-                if (notification.leaveRequest?.id) {
-                    router.visit(
-                        route("admin.leaves.view", notification.leaveRequest.id)
-                    );
-                }
-            }
-        } catch (error) {
-            toast.error("Failed to mark notification as read");
-        } finally {
-            setIsMarkingRead(null);
+        if (notification.leaveRequest?.id) {
+            router.visit(
+                route("admin.leaves.view", notification.leaveRequest.id)
+            );
         }
+
+        setIsMarkingRead(null);
     };
 
     const handleTabChange = (newTab: string) => {
@@ -366,7 +360,7 @@ export function NotificationDropdown({
                                                 <Button
                                                     size="sm"
                                                     variant="danger"
-                                                    className="h-8 px-3 text-xs"
+                                                    className="h-8 px-3 text-sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleActionClick(
@@ -384,7 +378,7 @@ export function NotificationDropdown({
                                                 <Button
                                                     size="sm"
                                                     variant="primary"
-                                                    className="h-8 px-3 text-xs"
+                                                    className="h-8 px-3 text-sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleActionClick(
@@ -402,7 +396,7 @@ export function NotificationDropdown({
                                             </div>
                                         )}
 
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="text-sm text-gray-500 mt-1">
                                             {notification.timestamp}
                                         </p>
                                     </div>

@@ -215,7 +215,7 @@ export default function EmployeeDashboard() {
                                     <div className="text-2xl font-bold">
                                         {stat.value}
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-sm text-muted-foreground">
                                         {stat.description}
                                     </p>
                                 </CardContent>
