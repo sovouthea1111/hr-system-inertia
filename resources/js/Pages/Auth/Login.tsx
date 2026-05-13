@@ -314,7 +314,7 @@ export default function Login({
                         {/* Security trust badge */}
                         <div className="mt-8 flex items-center justify-center space-x-2 text-gray-400">
                             <Shield className="w-4 h-4" />
-                            <span className="text-xs font-semibold uppercase tracking-wider">
+                            <span className="text-sm font-semibold uppercase tracking-wider">
                                 Secure Enterprise Authentication
                             </span>
                         </div>

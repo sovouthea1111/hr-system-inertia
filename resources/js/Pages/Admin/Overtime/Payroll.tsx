@@ -236,14 +236,14 @@ export default function OvertimePayroll() {
                                                                             .full_name
                                                                     }
                                                                 </div>
-                                                                <div className="text-xs text-gray-500">
+                                                                <div className="text-sm text-gray-500">
                                                                     {
                                                                         employee
                                                                             .employee
                                                                             .email
                                                                     }
                                                                 </div>
-                                                                <div className="text-xs text-gray-400">
+                                                                <div className="text-sm text-gray-400">
                                                                     {
                                                                         employee
                                                                             .employee
@@ -303,10 +303,10 @@ export default function OvertimePayroll() {
                                                     <div className="font-medium text-sm">
                                                         {employee.employee.full_name}
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
+                                                    <div className="text-sm text-muted-foreground">
                                                         {employee.employee.email}
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
+                                                    <div className="text-sm text-muted-foreground">
                                                         {employee.employee.department}
                                                     </div>
                                                 </div>

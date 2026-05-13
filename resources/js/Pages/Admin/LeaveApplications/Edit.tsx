@@ -252,7 +252,7 @@ export function EditLeaveModal({
                         </p>
                     )}
                     {shouldDisableEmployeeSelect && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                             You can only edit your own leave applications.
                         </p>
                     )}
@@ -417,7 +417,7 @@ export function EditLeaveModal({
                                 {data.status}
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                             {isHR && isOwnLeave
                                 ? "You cannot change the status of your own leave request."
                                 : "You cannot change the status of your leave request."}
@@ -448,7 +448,7 @@ export function EditLeaveModal({
                                 {errors.image}
                             </p>
                         )}
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                             Medical certificate is required for sick leave
                             requests.
                         </p>
