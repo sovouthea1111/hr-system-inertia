@@ -3,7 +3,7 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 
 /** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: 'class', // Add this line to enable class-based dark mode
+    darkMode: "class", // Add this line to enable class-based dark mode
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
@@ -14,8 +14,13 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+                sans: ["Plus Jakarta Sans", ...fontFamily.sans],
                 mono: ["var(--font-geist-mono)", ...fontFamily.mono],
+            },
+            fontSize: {
+                xs: ["0.75rem", { lineHeight: "1rem" }],
+                sm: ["0.875rem", { lineHeight: "1.375rem" }],
+                base: ["0.9375rem", { lineHeight: "1.5rem" }],
             },
             colors: {
                 border: "hsl(var(--border))",
@@ -93,7 +98,7 @@ export default {
                 sm: "calc(var(--radius) - 4px)",
             },
             borderWidth: {
-                'card': 'var(--border-card)',
+                card: "var(--border-card)",
             },
             keyframes: {
                 "accordion-down": {
