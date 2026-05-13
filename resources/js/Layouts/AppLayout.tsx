@@ -7,7 +7,7 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/Components/UI/Sidebar";
-import { Separator } from "@/Components/UI/Separator";
+
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -78,7 +78,7 @@ export function AppLayout({
     const { auth, flash } = usePage<ExtendedPageProps>().props;
     const authenticatedUserRole = auth?.user?.user_role || "Employee";
     const [notifications, setNotifications] = React.useState<Notification[]>(
-        []
+        [],
     );
 
     React.useEffect(() => {
@@ -108,7 +108,7 @@ export function AppLayout({
                             "X-Requested-With": "XMLHttpRequest",
                         },
                         credentials: "same-origin",
-                    }
+                    },
                 );
 
                 if (!response.ok) {
@@ -141,7 +141,7 @@ export function AppLayout({
                             type: backendNotification.type,
                             message: backendNotification.message,
                             timestamp: new Date(
-                                backendNotification.created_at
+                                backendNotification.created_at,
                             ).toLocaleString(),
                             read: backendNotification.read,
                             title: backendNotification.title,
@@ -151,7 +151,7 @@ export function AppLayout({
                                     backendNotification.data.employee_name || // Looking in data object
                                     "Unknown Employee", // Falls back to this
                                 type: getLeaveTypeDisplay(
-                                    backendNotification.data.leave_type
+                                    backendNotification.data.leave_type,
                                 ),
                                 startDate: backendNotification.data.start_date,
                                 endDate: backendNotification.data.end_date,
@@ -159,7 +159,7 @@ export function AppLayout({
                                 status: backendNotification.data.status,
                             },
                         };
-                    }
+                    },
                 );
 
                 setNotifications(transformedNotifications);
@@ -171,7 +171,7 @@ export function AppLayout({
                 setIsLoading(false);
             }
         },
-        []
+        [],
     );
 
     React.useEffect(() => {
@@ -187,7 +187,7 @@ export function AppLayout({
 
     const handleNotificationUpdate = (
         updatedNotifications: Notification[],
-        newUnreadCount: number
+        newUnreadCount: number,
     ) => {
         setNotifications(updatedNotifications);
         setUnreadCount(newUnreadCount);
@@ -200,15 +200,11 @@ export function AppLayout({
                 {/* Sticky Header Container */}
                 <div className="sticky top-0 z-50 bg-background border-border">
                     {showHeader && (
-                        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b bg-background">
-                            <div className="flex items-center gap-2 px-4">
-                                <SidebarTrigger className="-ml-1" />
-                                <Separator
-                                    orientation="vertical"
-                                    className="mr-2 h-4"
-                                />
+                        <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear">
+                            <div className="flex items-center px-4">
+                                <SidebarTrigger className="-ml-1 h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" />
                             </div>
-                            
+
                             {/* Header Actions */}
                             <div className="ml-auto flex items-center gap-2 px-4">
                                 <NotificationDropdown
@@ -279,7 +275,7 @@ export function AppLayout({
                                                             <BreadcrumbSeparator />
                                                         )}
                                                     </React.Fragment>
-                                                )
+                                                ),
                                             )}
                                         </BreadcrumbList>
                                     </Breadcrumb>

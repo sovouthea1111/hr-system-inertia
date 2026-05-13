@@ -1,5 +1,5 @@
 import * as React from "react";
-import { usePage, Link } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import {
     LayoutDashboardIcon,
     CalendarCheckIcon,
@@ -10,7 +10,6 @@ import {
     UserIcon,
     ClockIcon,
 } from "lucide-react";
-import { router } from "@inertiajs/react";
 
 import {
     Sidebar,
@@ -38,11 +37,11 @@ import {
 } from "@/Components/UI/AlertDialog";
 import { PageProps } from "@/types";
 import { useTheme } from "@/Contexts/ThemeContext";
+import { cn } from "../../../lib/utils";
 
 const defaultUserData = {
     name: "SOVOUTHEA",
     role: "EMPLOYEE",
-    avatar: "/placeholder-user.jpg",
 };
 
 interface UserData {
@@ -50,7 +49,6 @@ interface UserData {
     role: string;
     avatar?: string;
     email?: string;
-    id?: string;
 }
 interface ExtendedUser {
     id: number;
@@ -69,17 +67,33 @@ interface ExtendedPageProps extends Omit<PageProps, "auth"> {
     };
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+    className,
+    ...props
+}: React.ComponentProps<typeof Sidebar>) {
     const { theme, toggleTheme } = useTheme();
     const { url, props: pageProps } = usePage<ExtendedPageProps>();
     const user = pageProps.auth?.user;
     const userData: UserData = {
         name: user?.name || defaultUserData.name,
         role: user?.user_role || defaultUserData.role,
-        avatar: user?.image || defaultUserData.avatar,
+        avatar: user?.image,
         email: user?.email,
-        id: user?.id?.toString(),
     };
+
+    const userInitials = React.useMemo(() => {
+        return userData.name
+            .split(" ")
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((name) => name.charAt(0))
+            .join("")
+            .toUpperCase();
+    }, [userData.name]);
+
+    const avatarSrc = userData.avatar
+        ? `/images/${userData.avatar}`
+        : undefined;
 
     const navigationItems = React.useMemo(() => {
         if (userData.role === "SuperAdmin") {
@@ -208,63 +222,49 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     return (
         <Sidebar
-            collapsible="offcanvas"
-            className="bg-sidebar border-r border-sidebar-border w-64 min-w-64 shadow-md"
+            collapsible="icon"
+            className={cn(
+                "border-sidebar-border bg-sidebar shadow-none",
+                className,
+            )}
             {...props}
         >
-            <SidebarHeader className="p-3">
-                {/* User Profile Section */}
-                <div className="flex items-center gap-2 mb-3">
-                    <Avatar className="h-8 w-8 items-center">
-                        <AvatarImage
-                            className="object-cover"
-                            src={`/images/${userData.avatar}`}
-                            alt={userData.name}
-                        />
-                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs">
-                            {userData.name.charAt(0)}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                        <div className="text-xs text-sidebar-foreground/70 font-medium truncate">
-                            {userData.role}
-                        </div>
-                        <div className="text-sm font-semibold text-sidebar-foreground truncate">
-                            {userData.name}
-                        </div>
-                        {userData.email && (
-                            <div className="text-xs text-sidebar-foreground/60 truncate">
-                                {userData.email}
-                            </div>
-                        )}
+            <SidebarHeader className="h-14 justify-center border-b border-sidebar-border/70 px-4 py-0 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+                <div className="flex items-center gap-2.5 group-data-[collapsible=icon]:justify-center">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-sm">
+                        HR
+                    </div>
+                    <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+                        <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
+                            HR System
+                        </p>
                     </div>
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="px-3">
-                {/* Main Navigation */}
-                <SidebarGroup>
+            <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-2">
+                <SidebarGroup className="p-0">
                     <SidebarGroupContent>
-                        <SidebarMenu className="space-y-1">
+                        <SidebarMenu className="gap-1.5">
                             {navigationItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton
                                         asChild
                                         isActive={item.isActive}
-                                        className={`w-full justify-start h-9 px-2 rounded-lg transition-colors ${
-                                            item.isActive
-                                                ? theme === "dark"
-                                                    ? "bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-foreground font-medium"
-                                                    : "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground font-medium"
-                                                : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground"
-                                        }`}
+                                        tooltip={item.title}
+                                        className={cn(
+                                            "h-10 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/70 transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                            "group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+                                            item.isActive &&
+                                                "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
+                                        )}
                                     >
                                         <Link
                                             href={item.url}
-                                            className="flex items-center gap-2 min-w-0"
+                                            className="flex min-w-0 items-center gap-3"
                                         >
-                                            <item.icon className="h-4 w-4 flex-shrink-0" />
-                                            <span className="font-medium text-xs truncate">
+                                            <item.icon className="size-4 shrink-0" />
+                                            <span className="truncate group-data-[collapsible=icon]:hidden">
                                                 {item.title}
                                             </span>
                                         </Link>
@@ -276,64 +276,93 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="p-3 mt-auto">
-                {/* Secondary Navigation */}
-                <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu className="space-y-1 mb-3">
-                            <SidebarMenuItem>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <SidebarMenuButton className="w-full justify-start h-9 px-2 rounded-lg hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <LogOutIcon className="h-4 w-4 text-sidebar-foreground/70 flex-shrink-0" />
-                                                <span className="font-medium text-sidebar-foreground text-xs truncate">
-                                                    LOG OUT
-                                                </span>
-                                            </div>
-                                        </SidebarMenuButton>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="w-full max-w-sm mx-auto">
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Confirm Logout
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure to logout?
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter className="flex flex-row justify-center items-center space-x-2">
-                                            <AlertDialogCancel>
-                                                Cancel
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                                className="bg-primary text-primary-foreground hover:bg-danger"
-                                                onClick={handleLogout}
-                                            >
-                                                Logout
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-
-                {/* Night Mode Toggle */}
-                <div className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <MoonIcon className="h-4 w-4 text-sidebar-foreground/70 flex-shrink-0" />
-                        <span className="font-medium text-sidebar-foreground text-xs truncate">
-                            NIGHTMODE
-                        </span>
+            <SidebarFooter className="border-t border-sidebar-border/70 p-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+                <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/50 p-3 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
+                    <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+                        <Avatar className="size-9 border border-sidebar-border">
+                            {avatarSrc && (
+                                <AvatarImage
+                                    className="object-cover"
+                                    src={avatarSrc}
+                                    alt={userData.name}
+                                />
+                            )}
+                            <AvatarFallback className="bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground">
+                                {userInitials || "U"}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                            <p className="truncate text-sm font-semibold text-sidebar-foreground">
+                                {userData.name}
+                            </p>
+                            <p className="truncate text-xs text-sidebar-foreground/55">
+                                {userData.role}
+                            </p>
+                        </div>
                     </div>
-                    <Switch
-                        checked={theme === "dark"}
-                        onCheckedChange={toggleTheme}
-                        className="data-[state=checked]:bg-primary flex-shrink-0 scale-75"
-                    />
+                    {userData.email && (
+                        <p className="mt-2 truncate text-xs text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden">
+                            {userData.email}
+                        </p>
+                    )}
                 </div>
+
+                <SidebarMenu className="mt-2 gap-1 group-data-[collapsible=icon]:items-center">
+                    <SidebarMenuItem>
+                        <div className="flex h-10 items-center justify-between rounded-xl px-3 text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <MoonIcon className="size-4 shrink-0" />
+                                <span className="truncate text-sm font-medium">
+                                    Dark mode
+                                </span>
+                            </div>
+                            <Switch
+                                checked={theme === "dark"}
+                                onCheckedChange={toggleTheme}
+                                className="scale-75 data-[state=checked]:bg-sidebar-primary"
+                            />
+                        </div>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                        <AlertDialog>
+                            <SidebarMenuButton
+                                asChild
+                                tooltip="Log out"
+                                className="h-10 rounded-xl px-3 text-sidebar-foreground/70 transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                            >
+                                <AlertDialogTrigger>
+                                    <LogOutIcon className="size-4 shrink-0" />
+                                    <span className="truncate text-sm font-medium group-data-[collapsible=icon]:hidden">
+                                        Log out
+                                    </span>
+                                </AlertDialogTrigger>
+                            </SidebarMenuButton>
+                            <AlertDialogContent className="mx-auto w-full max-w-sm">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Confirm logout
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to sign out of
+                                        your account?
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex flex-row items-center justify-center gap-2 space-x-0">
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        className="bg-primary text-primary-foreground hover:bg-danger"
+                                        onClick={handleLogout}
+                                    >
+                                        Logout
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarFooter>
         </Sidebar>
     );
