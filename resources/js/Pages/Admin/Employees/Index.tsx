@@ -55,6 +55,7 @@ interface Employee {
     salary: number | null;
     joint_date: string;
     status: "active" | "inactive";
+    deleted_at: string | null;
 }
 
 interface PaginationLink {
@@ -82,6 +83,7 @@ interface PageProps
             email?: string;
             department?: string;
             status?: string;
+            trashed?: boolean;
         };
         departments: Array<{ value: string; label: string }>;
         statuses: Array<{ value: string; label: string }>;
@@ -111,6 +113,7 @@ export default function EmployeesPage() {
         filters.department || ""
     );
     const [statusFilter, setStatusFilter] = useState(filters.status || "");
+    const [trashedFilter, setTrashedFilter] = useState(filters.trashed || false);
 
     // Selection states
     const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
@@ -159,6 +162,7 @@ export default function EmployeesPage() {
         if (statusFilter) filterData.status = statusFilter;
         filterData.per_page = employees.per_page;
         filterData.page = 1;
+        if (trashedFilter) filterData.trashed = trashedFilter;
 
         router.get(route("admin.employees.index"), filterData, {
             preserveState: true,
@@ -173,13 +177,14 @@ export default function EmployeesPage() {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [nameFilter, emailFilter, departmentFilter, statusFilter]);
+    }, [nameFilter, emailFilter, departmentFilter, statusFilter, trashedFilter]);
 
     const handleClearFilters = () => {
         setNameFilter("");
         setEmailFilter("");
         setDepartmentFilter("");
         setStatusFilter("");
+        setTrashedFilter(false);
 
         router.get(
             route("admin.employees.index"),
@@ -227,13 +232,24 @@ export default function EmployeesPage() {
             },
             {
                 id: "status",
-                label: "Status",
-                placeholder: "Select status",
+                label: "Employment Status",
+                placeholder: "All Statuses",
                 value: statusFilter,
                 type: "select" as const,
                 options: statuses || [
                     { value: "active", label: "Active" },
                     { value: "inactive", label: "Inactive" },
+                ],
+            },
+            {
+                id: "trashed",
+                label: "Employee Visibility",
+                placeholder: "Filter records",
+                value: trashedFilter ? "true" : "false",
+                type: "select" as const,
+                options: [
+                    { value: "false", label: "Current Employees" },
+                    { value: "true", label: "Former Employees" },
                 ],
             },
         ];
@@ -252,6 +268,9 @@ export default function EmployeesPage() {
                 break;
             case "status":
                 setStatusFilter(value);
+                break;
+            case "trashed":
+                setTrashedFilter(value === "true");
                 break;
         }
     };
@@ -360,9 +379,26 @@ export default function EmployeesPage() {
         });
     };
 
+    const handleRestore = (id: number) => {
+        router.post(route("admin.employees.restore", id), {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const handlePermanentDelete = (id: number) => {
+        if (confirm("Are you sure you want to permanently delete this employee? This cannot be undone.")) {
+            router.delete(route("admin.employees.force-delete", id), {
+                preserveScroll: true,
+            });
+        }
+    };
+
     // Update status badge function
-    const getStatusBadgeVariant = (status: string) => {
-        switch (status) {
+    const getStatusBadgeVariant = (employee: Employee) => {
+        if (employee.deleted_at) {
+            return "bg-destructive/10 text-destructive border-destructive/20";
+        }
+        switch (employee.status) {
             case "active":
                 return "bg-success/10 text-success border-success/20";
             case "inactive":
@@ -372,8 +408,9 @@ export default function EmployeesPage() {
         }
     };
 
-    const formatStatus = (status: string) => {
-        return status.charAt(0).toUpperCase() + status.slice(1);
+    const formatStatus = (employee: Employee) => {
+        if (employee.deleted_at) return "Former";
+        return employee.status.charAt(0).toUpperCase() + employee.status.slice(1);
     };
 
     return (
@@ -537,34 +574,55 @@ export default function EmployeesPage() {
                                                         <Badge
                                                             variant="outline"
                                                             className={`font-medium ${getStatusBadgeVariant(
-                                                                employee.status
+                                                                employee
                                                             )}`}
                                                         >
                                                             {formatStatus(
-                                                                employee.status
+                                                                employee
                                                             )}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        <GroupButton
-                                                            canEdit={true}
-                                                            canDelete={true}
-                                                            onEdit={() =>
-                                                                handleEdit(
-                                                                    employee
-                                                                )
-                                                            }
-                                                            onDelete={() =>
-                                                                handleDelete(
-                                                                    employee
-                                                                )
-                                                            }
-                                                            layout="dropdown"
-                                                            itemName={
-                                                                employee.full_name
-                                                            }
-                                                            size="sm"
-                                                        />
+                                                        {employee.deleted_at ? (
+                                                            <div className="flex justify-center gap-2">
+                                                                <Button 
+                                                                    variant="outline" 
+                                                                    size="sm" 
+                                                                    className="h-8 px-2 text-success hover:text-success"
+                                                                    onClick={() => handleRestore(employee.id)}
+                                                                >
+                                                                    Restore
+                                                                </Button>
+                                                                <Button 
+                                                                    variant="outline" 
+                                                                    size="sm" 
+                                                                    className="h-8 px-2 text-destructive hover:text-destructive"
+                                                                    onClick={() => handlePermanentDelete(employee.id)}
+                                                                >
+                                                                    Delete
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <GroupButton
+                                                                canEdit={true}
+                                                                canDelete={true}
+                                                                onEdit={() =>
+                                                                    handleEdit(
+                                                                        employee
+                                                                    )
+                                                                }
+                                                                onDelete={() =>
+                                                                    handleDelete(
+                                                                        employee
+                                                                    )
+                                                                }
+                                                                layout="dropdown"
+                                                                itemName={
+                                                                    employee.full_name
+                                                                }
+                                                                size="sm"
+                                                            />
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))
@@ -665,11 +723,11 @@ export default function EmployeesPage() {
                                                 <Badge
                                                     variant="outline"
                                                     className={`font-medium ${getStatusBadgeVariant(
-                                                        employee.status
+                                                        employee
                                                     )}`}
                                                 >
                                                     {formatStatus(
-                                                        employee.status
+                                                        employee
                                                     )}
                                                 </Badge>
                                             }

@@ -36,6 +36,10 @@ class EmployeeController extends Controller
         if ($this->isEmployee()) {
             $query->where('user_id', $user->id);
         } else {
+            if ($request->boolean('trashed')) {
+                $query->onlyTrashed();
+            }
+
             if ($request->filled('name')) {
                 $query->where('full_name', 'like', '%' . $request->name . '%');
             }
@@ -178,11 +182,47 @@ class EmployeeController extends Controller
             $employee->delete();
 
             return back()->with([
-                'success' => 'Employee deleted successfully.'
+                'success' => 'Employee moved to trash successfully.'
             ]);
         } catch (\Exception $e) {
             return back()
                 ->withErrors(['error' => 'Failed to delete employee: ' . $e->getMessage()]);
+        }
+    }
+
+    public function restore($id)
+    {
+        if ($this->isEmployee()) {
+            return back()->withErrors(['error' => 'You do not have permission to restore employee records.']);
+        }
+
+        try {
+            $employee = Employee::withTrashed()->findOrFail($id);
+            $employee->restore();
+
+            return back()->with([
+                'success' => 'Employee restored successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to restore employee: ' . $e->getMessage()]);
+        }
+    }
+
+    public function forceDelete($id)
+    {
+        if ($this->isEmployee()) {
+            return back()->withErrors(['error' => 'You do not have permission to permanently delete employee records.']);
+        }
+
+        try {
+            $employee = Employee::withTrashed()->findOrFail($id);
+            $employee->forceDelete();
+
+            return back()->with([
+                'success' => 'Employee permanently deleted.'
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to permanently delete employee: ' . $e->getMessage()]);
         }
     }
 
