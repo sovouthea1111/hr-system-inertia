@@ -55,6 +55,15 @@ interface PageProps
         leaveStats: LeaveStats;
         recentLeaves: LeaveRequest[];
         upcomingLeaves: LeaveRequest[];
+        onLeaveSummary?: Array<{
+            id: number;
+            name: string;
+            department: string;
+            leave_type: string;
+            start_date: string;
+            end_date: string;
+            is_current: boolean;
+        }>;
         employeeData: Array<{ id: number; full_name: string; email: string }>;
         leaveTypes: Array<{ value: string; label: string }>;
         error?: string;
@@ -66,11 +75,14 @@ export default function EmployeeDashboard() {
         leaveStats,
         recentLeaves,
         upcomingLeaves,
+        onLeaveSummary,
         error,
         auth,
         employeeData,
         leaveTypes,
     } = usePage<PageProps>().props;
+
+    const safeOnLeaveSummary = onLeaveSummary || [];
 
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -313,6 +325,66 @@ export default function EmployeeDashboard() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* On Leave Summary Section */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Team On Leave Summary</CardTitle>
+                        <CardDescription>
+                            Colleagues currently away or scheduled for leave this week
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {safeOnLeaveSummary.length > 0 ? (
+                                safeOnLeaveSummary.map((leave) => (
+                                    <div
+                                        key={leave.id}
+                                        className={`p-4 border rounded-lg flex flex-col gap-2 ${
+                                            leave.is_current
+                                                ? "bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
+                                                : "bg-gray-50/50 border-gray-100 dark:bg-gray-800/10 dark:border-gray-800/30"
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold text-sm">
+                                                    {leave.name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {leave.department}
+                                                </p>
+                                            </div>
+                                            <span
+                                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                                    leave.is_current
+                                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                                                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                                }`}
+                                            >
+                                                {leave.is_current
+                                                    ? "Current"
+                                                    : "Upcoming"}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <p className="text-xs font-medium">
+                                                {leave.leave_type}
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {leave.start_date} to {leave.end_date}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
+                                    No team members currently on leave or scheduled for this week.
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );
