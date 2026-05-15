@@ -20,6 +20,7 @@ interface Employee {
     id: number;
     full_name: string;
     email: string;
+    joint_date?: string;
 }
 
 interface RequestLeaveModalProps {
@@ -68,6 +69,25 @@ export function RequestLeaveModal({
     const shouldDisableEmployeeSelect = isEmployee || isHR;
 
     const isSickLeave = data.leave_type === "sick";
+
+    // Probation logic
+    const selectedEmployee = employees.find(
+        (emp) => emp.id.toString() === data.employee_id
+    );
+
+    const checkProbation = (employee?: Employee) => {
+        if (!employee || !employee.joint_date) return false;
+        const jointDate = new Date(employee.joint_date);
+        const probationEndDate = new Date(jointDate);
+        probationEndDate.setMonth(probationEndDate.getMonth() + 3);
+        return new Date() < probationEndDate;
+    };
+
+    const isInProbation = checkProbation(selectedEmployee);
+
+    const filteredLeaveTypes = isInProbation
+        ? leaveTypes.filter((type) => type.value === "unpaid")
+        : leaveTypes;
 
     const handleImageChange = (file: File | null) => {
         setData("image", file);
@@ -281,13 +301,19 @@ export function RequestLeaveModal({
                             <SelectValue placeholder="Select leave type" />
                         </SelectTrigger>
                         <SelectContent>
-                            {leaveTypes.map((type) => (
+                            {filteredLeaveTypes.map((type) => (
                                 <SelectItem key={type.value} value={type.value}>
                                     {type.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
+                    {isInProbation && (
+                        <p className="text-sm text-amber-600 font-medium">
+                            Note: During the 3-month probation period, only
+                            Unpaid Leave is available.
+                        </p>
+                    )}
                     {errors.leave_type && (
                         <p className="text-sm text-danger">
                             {errors.leave_type}
