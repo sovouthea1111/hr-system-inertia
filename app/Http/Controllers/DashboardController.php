@@ -85,15 +85,8 @@ class DashboardController extends Controller
 
         $onLeaveSummary = Leave::with('employee')
             ->where('status', 'approved')
-            ->where(function($query) {
-                $query->where(function($q) {
-                    $q->where('start_date', '<=', now())
-                      ->where('end_date', '>=', now());
-                })->orWhere(function($q) {
-                    $q->where('start_date', '>', now())
-                      ->where('start_date', '<=', now()->addDays(7));
-                });
-            })
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
             ->orderBy('start_date', 'asc')
             ->get()
             ->map(fn($leave) => [
@@ -103,7 +96,6 @@ class DashboardController extends Controller
                 'leave_type' => ucfirst($leave->leave_type),
                 'start_date' => $leave->start_date->format('Y-m-d'),
                 'end_date' => $leave->end_date->format('Y-m-d'),
-                'is_current' => $leave->start_date <= now() && $leave->end_date >= now(),
             ]);
     
         return Inertia::render('Admin/Dashboard', [
@@ -176,15 +168,8 @@ class DashboardController extends Controller
 
         $onLeaveSummary = Leave::with('employee')
             ->where('status', 'approved')
-            ->where(function($query) {
-                $query->where(function($q) {
-                    $q->where('start_date', '<=', now())
-                      ->where('end_date', '>=', now());
-                })->orWhere(function($q) {
-                    $q->where('start_date', '>', now())
-                      ->where('start_date', '<=', now()->addDays(7));
-                });
-            })
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
             ->orderBy('start_date', 'asc')
             ->get()
             ->map(fn($leave) => [
@@ -194,7 +179,6 @@ class DashboardController extends Controller
                 'leave_type' => ucfirst($leave->leave_type),
                 'start_date' => $leave->start_date->format('Y-m-d'),
                 'end_date' => $leave->end_date->format('Y-m-d'),
-                'is_current' => $leave->start_date <= now() && $leave->end_date >= now(),
             ]);
 
         return Inertia::render('Employee/Dashboard', [

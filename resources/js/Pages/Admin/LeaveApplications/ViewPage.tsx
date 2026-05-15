@@ -64,7 +64,6 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
             { status: newStatus },
             {
                 onSuccess: () => {
-                    toast.success("Leave status updated successfully!");
                     router.reload();
                 },
                 onError: () => {
