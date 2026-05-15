@@ -23,6 +23,16 @@ interface DepartmentStat {
     on_leave: number;
 }
 
+interface OnLeaveSummary {
+    id: number;
+    name: string;
+    department: string;
+    leave_type: string;
+    start_date: string;
+    end_date: string;
+    is_current: boolean;
+}
+
 interface PageProps {
     stats?: {
         total_employees: number;
@@ -33,6 +43,7 @@ interface PageProps {
     };
     recentLeaveRequests?: LeaveRequest[];
     departmentStats?: DepartmentStat[];
+    onLeaveSummary?: OnLeaveSummary[];
     [key: string]: any;
 }
 
@@ -45,7 +56,7 @@ interface LeaveRequest {
 
 export default function AdminDashboard() {
     const pageProps = usePage<PageProps & { auth: any }>().props;
-    const { stats, recentLeaveRequests, departmentStats } = pageProps;
+    const { stats, recentLeaveRequests, departmentStats, onLeaveSummary } = pageProps;
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
@@ -58,6 +69,7 @@ export default function AdminDashboard() {
     };
 
     const safeDepartmentStats = departmentStats || [];
+    const safeOnLeaveSummary = onLeaveSummary || [];
 
     const safeRecentLeaveRequests = recentLeaveRequests || [];
     const statsData = [
@@ -367,6 +379,66 @@ export default function AdminDashboard() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* On Leave Summary Section */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>On Leave Summary</CardTitle>
+                            <CardDescription>
+                                Employees currently away or scheduled for leave this week
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {safeOnLeaveSummary.length > 0 ? (
+                                    safeOnLeaveSummary.map((leave) => (
+                                        <div
+                                            key={leave.id}
+                                            className={`p-4 border rounded-lg flex flex-col gap-2 ${
+                                                leave.is_current
+                                                    ? "bg-blue-50/50 border-blue-100"
+                                                    : "bg-gray-50/50 border-gray-100"
+                                            }`}
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-semibold text-sm">
+                                                        {leave.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {leave.department}
+                                                    </p>
+                                                </div>
+                                                <span
+                                                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                                        leave.is_current
+                                                            ? "bg-blue-100 text-blue-700"
+                                                            : "bg-gray-100 text-gray-700"
+                                                    }`}
+                                                >
+                                                    {leave.is_current
+                                                        ? "Current"
+                                                        : "Upcoming"}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <p className="text-xs font-medium">
+                                                    {leave.leave_type}
+                                                </p>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    {leave.start_date} to {leave.end_date}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
+                                        No employees currently on leave or scheduled for this week.
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </AppLayout>
         </>

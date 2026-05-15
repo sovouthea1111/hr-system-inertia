@@ -82,11 +82,35 @@ class DashboardController extends Controller
                     'on_leave' => $onLeaveCount,
                 ];
             });
+
+        $onLeaveSummary = Leave::with('employee')
+            ->where('status', 'approved')
+            ->where(function($query) {
+                $query->where(function($q) {
+                    $q->where('start_date', '<=', now())
+                      ->where('end_date', '>=', now());
+                })->orWhere(function($q) {
+                    $q->where('start_date', '>', now())
+                      ->where('start_date', '<=', now()->addDays(7));
+                });
+            })
+            ->orderBy('start_date', 'asc')
+            ->get()
+            ->map(fn($leave) => [
+                'id' => $leave->id,
+                'name' => $leave->employee?->full_name ?? 'Unknown Employee',
+                'department' => $leave->employee?->department ?? 'N/A',
+                'leave_type' => ucfirst($leave->leave_type),
+                'start_date' => $leave->start_date->format('Y-m-d'),
+                'end_date' => $leave->end_date->format('Y-m-d'),
+                'is_current' => $leave->start_date <= now() && $leave->end_date >= now(),
+            ]);
     
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
             'recentLeaveRequests' => $recentLeaveRequests,
             'departmentStats' => $departmentStats,
+            'onLeaveSummary' => $onLeaveSummary,
         ]);
     }
     
@@ -103,7 +127,7 @@ class DashboardController extends Controller
         $currentYear = now()->year;
         $totalLeaveDays = 7;
         
-        $sql = 'SUM(DATEDIFF(end_date, start_date) + 1)';
+        $sql = 'SUM(' . Leave::getDateDiffSql() . ')';
 
         $usedLeaveDays = Leave::where('employee_id', $employee->id)
             ->where('status', 'approved')
@@ -150,6 +174,29 @@ class DashboardController extends Controller
                 'days_requested' => $leave->days_requested,
             ]);
 
+        $onLeaveSummary = Leave::with('employee')
+            ->where('status', 'approved')
+            ->where(function($query) {
+                $query->where(function($q) {
+                    $q->where('start_date', '<=', now())
+                      ->where('end_date', '>=', now());
+                })->orWhere(function($q) {
+                    $q->where('start_date', '>', now())
+                      ->where('start_date', '<=', now()->addDays(7));
+                });
+            })
+            ->orderBy('start_date', 'asc')
+            ->get()
+            ->map(fn($leave) => [
+                'id' => $leave->id,
+                'name' => $leave->employee?->full_name ?? 'Unknown Employee',
+                'department' => $leave->employee?->department ?? 'N/A',
+                'leave_type' => ucfirst($leave->leave_type),
+                'start_date' => $leave->start_date->format('Y-m-d'),
+                'end_date' => $leave->end_date->format('Y-m-d'),
+                'is_current' => $leave->start_date <= now() && $leave->end_date >= now(),
+            ]);
+
         return Inertia::render('Employee/Dashboard', [
             'employee' => $employee,
             'employeeData' => Employee::select('id', 'full_name', 'email')->get(),
@@ -157,6 +204,7 @@ class DashboardController extends Controller
             'leaveStats' => $leaveStats,
             'recentLeaves' => $recentLeaves,
             'upcomingLeaves' => $upcomingLeaves,
+            'onLeaveSummary' => $onLeaveSummary,
         ]);
     }
 }
