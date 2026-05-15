@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LeaveApplicationNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class LeaveController extends Controller
 {
@@ -87,6 +88,27 @@ class LeaveController extends Controller
         ]);
 
         try {
+            $employee = Employee::find($validated['employee_id']);
+            $probationMonths = 3;
+            $isProbation = now()->lt($employee->joint_date->addMonths($probationMonths));
+
+            if ($isProbation && $validated['leave_type'] !== 'unpaid') {
+                return back()->withErrors([
+                    'leave_type' => 'During probation period (first 3 months), only Unpaid Leave is allowed.'
+                ]);
+            }
+
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+            $daysRequested = $startDate->diffInDays($endDate) + 1;
+
+            if (!Leave::canTakeLeave($validated['employee_id'], $validated['leave_type'], $daysRequested, $startDate->year)) {
+                $balance = Leave::getRemainingBalance($validated['employee_id'], $validated['leave_type'], $startDate->year);
+                return back()->withErrors([
+                    'leave_type' => "Insufficient leave balance for {$validated['leave_type']} leave. Remaining: {$balance} days."
+                ]);
+            }
+
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
                 $imageName = time() . '.' . $image->getClientOriginalExtension();
@@ -194,7 +216,7 @@ class LeaveController extends Controller
                 'leaveTypes' => Leave::getLeaveTypes(),
                 'statuses' => Leave::getStatuses(),
                 'canManage' => true,
-                'employees' => Employee::select('id', 'full_name', 'email')->where('id', $employee->id)->get(),
+                'employees' => Employee::select('id', 'full_name', 'email', 'joint_date')->where('id', $employee->id)->get(),
                 'stats' => Leave::getLeaveStats($filters),
                 'currentEmployee' => $employee,
             ]);
@@ -308,7 +330,7 @@ class LeaveController extends Controller
             'leaveTypes' => Leave::getLeaveTypes(),
             'statuses' => Leave::getStatuses(),
             'canManage' => $this->isHR(),
-            'employees' => Employee::select('id', 'full_name', 'email')->get(),
+            'employees' => Employee::select('id', 'full_name', 'email', 'joint_date')->get(),
             'stats' => [
                 'total' => 0,
                 'pending' => 0,
@@ -327,7 +349,7 @@ class LeaveController extends Controller
             'leaveTypes' => Leave::getLeaveTypes(),
             'statuses' => Leave::getStatuses(),
             'canManage' => $this->isHR(),
-            'employees' => Employee::select('id', 'full_name', 'email')->get(),
+            'employees' => Employee::select('id', 'full_name', 'email', 'joint_date')->get(),
             'stats' => Leave::getLeaveStats($filters),
         ]);
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class Leave extends Model
 {
@@ -54,20 +55,20 @@ class Leave extends Model
   public static function getLeaveTypes(): array
   {
     return [
-      ['value' => 'annual', 'label' => 'Annual Leave'],
-      ['value' => 'sick', 'label' => 'Sick Leave'],
-      ['value' => 'unpaid', 'label' => 'Unpaid Leave'],
-      ['value' => 'maternity', 'label' => 'Maternity Leave'],
-      ['value' => 'other', 'label' => 'Other Leave'],
+      ["value" => "annual", "label" => "Annual Leave"],
+      ["value" => "sick", "label" => "Sick Leave"],
+      ["value" => "unpaid", "label" => "Unpaid Leave"],
+      ["value" => "maternity", "label" => "Maternity Leave"],
+      ["value" => "other", "label" => "Other Leave"],
     ];
   }
 
   public static function getStatuses(): array
   {
     return [
-      ['value' => 'pending', 'label' => 'Pending'],
-      ['value' => 'approved', 'label' => 'Approved'],
-      ['value' => 'rejected', 'label' => 'Rejected'],
+      ["value" => "pending", "label" => "Pending"],
+      ["value" => "approved", "label" => "Approved"],
+      ["value" => "rejected", "label" => "Rejected"],
     ];
   }
 
@@ -156,16 +157,19 @@ class Leave extends Model
   {
     $year = $year ?? now()->year;
 
-    $sql = "SUM(DATEDIFF(end_date, start_date) + 1)";
-
     $approvedLeaves = static::where("employee_id", $employeeId)
       ->where("status", "approved")
       ->whereYear("start_date", $year)
-      ->selectRaw("leave_type, $sql as total_days")
+      ->get(["leave_type", "start_date", "end_date"])
       ->groupBy("leave_type")
-      ->pluck("total_days", "leave_type");
+      ->map(
+        fn($leaves) => $leaves->sum(
+          fn($leave) => Carbon::parse($leave->start_date)->diffInDays(
+            Carbon::parse($leave->end_date)
+          ) + 1
+        )
+      );
 
-    // Define default leave entitlements (consider moving to config)
     $leaveEntitlements = [
       "annual" => 7,
       "sick" => 4,
@@ -174,12 +178,21 @@ class Leave extends Model
       "other" => null,
     ];
 
-    // Calculate balance for each leave type
-    $leaveBalance = collect($leaveEntitlements)->map(function (
+    return collect($leaveEntitlements)->map(function (
       $entitlement,
       $leaveType
     ) use ($approvedLeaves) {
       $used = $approvedLeaves->get($leaveType, 0);
+
+      if (is_null($entitlement)) {
+        return [
+          "entitlement" => "Unlimited",
+          "used" => $used,
+          "remaining" => "Unlimited",
+          "percentage_used" => 0,
+        ];
+      }
+
       return [
         "entitlement" => $entitlement,
         "used" => $used,
@@ -188,8 +201,6 @@ class Leave extends Model
           $entitlement > 0 ? round(($used / $entitlement) * 100, 2) : 0,
       ];
     });
-
-    return $leaveBalance;
   }
 
   /**
@@ -199,7 +210,11 @@ class Leave extends Model
   {
     $year = $year ?? now()->year;
 
-    $sql = "SUM(DATEDIFF(end_date, start_date) + 1)";
+    $driver = config("database.default");
+    $sql =
+      $driver === "sqlite"
+        ? "SUM(strftime('%J', end_date) - strftime('%J', start_date) + 1)"
+        : "SUM(DATEDIFF(end_date, start_date) + 1)";
 
     return static::where("employee_id", $employeeId)
       ->where("status", "approved")
@@ -345,6 +360,9 @@ class Leave extends Model
     $daysRequested,
     $year = null
   ) {
+    if ($leaveType === "unpaid") {
+      return true;
+    }
     $remaining = static::getRemainingBalance($employeeId, $leaveType, $year);
     return $remaining >= $daysRequested;
   }
