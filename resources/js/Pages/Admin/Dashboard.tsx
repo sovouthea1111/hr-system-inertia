@@ -15,6 +15,19 @@ import {
     TrendingUpIcon,
 } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/UI/AlertDialog";
+import { Label } from "@/Components/UI/Label";
+import { Textarea } from "@/Components/UI/Textarea";
 
 interface DepartmentStat {
     name: string;
@@ -55,8 +68,14 @@ interface LeaveRequest {
 
 export default function AdminDashboard() {
     const pageProps = usePage<PageProps & { auth: any }>().props;
-    const { stats, recentLeaveRequests, departmentStats, onLeaveSummary } = pageProps;
+    const { stats, recentLeaveRequests, departmentStats, onLeaveSummary } =
+        pageProps;
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
+    const [commentModal, setCommentModal] = useState<{
+        request: LeaveRequest;
+        action: "approve" | "reject";
+    } | null>(null);
+    const [comment, setComment] = useState<string>("");
 
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
 
@@ -98,7 +117,20 @@ export default function AdminDashboard() {
         },
     ];
 
-    const handleApprove = async (request: LeaveRequest) => {
+    const handleApprove = (request: LeaveRequest) => {
+        setCommentModal({ request, action: "approve" });
+        setComment("");
+    };
+
+    const handleReject = (request: LeaveRequest) => {
+        setCommentModal({ request, action: "reject" });
+        setComment("");
+    };
+
+    const handleActionConfirm = async () => {
+        if (!commentModal) return;
+
+        const { request, action } = commentModal;
         setIsProcessing(request.id);
         try {
             // Get CSRF token from cookie
@@ -118,55 +150,25 @@ export default function AdminDashboard() {
                 credentials: "same-origin",
                 body: JSON.stringify({
                     leave_id: request.id,
-                    action: "approve",
+                    action: action,
+                    comment: comment.trim() || null,
                 }),
             });
 
             if (response.ok) {
-                // Success handled by global listener
+                toast.success(
+                    `Leave request for ${request.name} ${action}d successfully`
+                );
+                setCommentModal(null);
+                setComment("");
                 router.reload();
             } else {
-                // Error handled by global listener
+                toast.error(`Failed to ${action} leave request`);
             }
         } catch (error) {
-            // Error handled by global listener
-        } finally {
-            setIsProcessing(null);
-        }
-    };
-
-    const handleReject = async (request: LeaveRequest) => {
-        setIsProcessing(request.id);
-        try {
-            const xsrfToken = document.cookie
-                .split("; ")
-                .find((row) => row.startsWith("XSRF-TOKEN="))
-                ?.split("=")[1];
-
-            const decodedToken = xsrfToken ? decodeURIComponent(xsrfToken) : "";
-
-            const response = await fetch("/api/notifications", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-XSRF-TOKEN": decodedToken,
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({
-                    leave_id: request.id,
-                    action: "reject",
-                }),
-            });
-
-            if (response.ok) {
-                // Success handled by global listener
-                router.reload();
-            } else {
-                // Error handled by global listener
-            }
-        } catch (error) {
-            // Error handled by global listener
+            toast.error(
+                `An error occurred while ${action}ing the leave request`
+            );
         } finally {
             setIsProcessing(null);
         }
@@ -422,6 +424,94 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Comment Alert Dialog */}
+                <AlertDialog
+                    open={!!commentModal}
+                    onOpenChange={() => setCommentModal(null)}
+                >
+                    <AlertDialogContent className="sm:max-w-md">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                {commentModal?.action === "approve"
+                                    ? "Approve"
+                                    : "Reject"}{" "}
+                                Leave Request
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {commentModal?.action === "approve"
+                                    ? "You are about to approve this leave request."
+                                    : "You are about to reject this leave request."}{" "}
+                                You can optionally add a comment for the
+                                employee.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+
+                        <div className="space-y-4 py-4">
+                            {commentModal && (
+                                <div className="bg-gray-50 p-3 rounded-md">
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {commentModal.request.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        {commentModal.request.leaveType} -{" "}
+                                        {commentModal.request.duration}
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="space-y-2">
+                                <Label htmlFor="comment">
+                                    Comment{" "}
+                                    {commentModal?.action === "reject"
+                                        ? "(recommended)"
+                                        : "(optional)"}
+                                </Label>
+                                <Textarea
+                                    id="comment"
+                                    placeholder={
+                                        commentModal?.action === "approve"
+                                            ? "Add an optional comment for the employee..."
+                                            : "Please provide a reason for rejection..."
+                                    }
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    rows={3}
+                                    className="resize-none"
+                                />
+                            </div>
+                        </div>
+
+                        <AlertDialogFooter>
+                            <AlertDialogCancel
+                                disabled={isProcessing !== null}
+                            >
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                className={
+                                    commentModal?.action === "reject"
+                                        ? "bg-danger hover:bg-red-700 focus:ring-danger text-white"
+                                        : "bg-primary hover:bg-primary-hover focus:ring-primary text-white"
+                                }
+                                onClick={handleActionConfirm}
+                                disabled={isProcessing !== null}
+                            >
+                                {isProcessing !== null
+                                    ? `${
+                                          commentModal?.action === "approve"
+                                              ? "Approving"
+                                              : "Rejecting"
+                                      }...`
+                                    : `${
+                                          commentModal?.action === "approve"
+                                              ? "Approve"
+                                              : "Reject"
+                                      } Request`}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </AppLayout>
         </>
     );
