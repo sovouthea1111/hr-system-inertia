@@ -117,24 +117,22 @@ class DashboardController extends Controller
         }
 
         $currentYear = now()->year;
-        $totalLeaveDays = 7;
+        $leaveBalance = Leave::getEmployeeLeaveBalance($employee->id, $currentYear);
         
-        $sql = 'SUM(' . Leave::getDateDiffSql() . ')';
-
-        $usedLeaveDays = Leave::where('employee_id', $employee->id)
-            ->where('status', 'approved')
-            ->whereYear('start_date', $currentYear)
-            ->selectRaw($sql . ' as total_days')
-            ->value('total_days') ?? 0;
+        $annualBalance = $leaveBalance->get('annual', [
+            'entitlement' => 0,
+            'used' => 0,
+            'remaining' => 0
+        ]);
             
         $pendingRequests = Leave::where('employee_id', $employee->id)
             ->where('status', 'pending')
             ->count();
 
         $leaveStats = [
-            'total_leave_days' => $totalLeaveDays,
-            'used_leave_days' => $usedLeaveDays,
-            'remaining_leave_days' => $totalLeaveDays - $usedLeaveDays,
+            'total_leave_days' => $annualBalance['entitlement'],
+            'used_leave_days' => $annualBalance['used'],
+            'remaining_leave_days' => $annualBalance['remaining'],
             'pending_requests' => $pendingRequests,
         ];
 
@@ -156,7 +154,7 @@ class DashboardController extends Controller
             ->where('status', 'approved')
             ->where('start_date', '>', now())
             ->orderBy('start_date', 'asc')
-            ->take(3)
+            ->take(4)
             ->get()
             ->map(fn($leave) => [
                 'id' => $leave->id,
@@ -183,9 +181,10 @@ class DashboardController extends Controller
 
         return Inertia::render('Employee/Dashboard', [
             'employee' => $employee,
-            'employeeData' => Employee::select('id', 'full_name', 'email')->get(),
+            'employeeData' => Employee::select('id', 'full_name', 'email', 'joint_date')->get(),
             'leaveTypes' => Leave::getLeaveTypes(),
             'leaveStats' => $leaveStats,
+            'leaveBalance' => $leaveBalance,
             'recentLeaves' => $recentLeaves,
             'upcomingLeaves' => $upcomingLeaves,
             'onLeaveSummary' => $onLeaveSummary,

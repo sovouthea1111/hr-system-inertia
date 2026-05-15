@@ -17,8 +17,9 @@ import {
     XCircleIcon,
     Plus,
     UserIcon,
+    Infinity,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { router } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@/types";
 
@@ -65,6 +66,15 @@ interface PageProps
         }>;
         employeeData: Array<{ id: number; full_name: string; email: string }>;
         leaveTypes: Array<{ value: string; label: string }>;
+        leaveBalance: Record<
+            string,
+            {
+                entitlement: number | string;
+                used: number;
+                remaining: number | string;
+                percentage_used: number;
+            }
+        >;
         error?: string;
     }> {}
 
@@ -79,12 +89,23 @@ export default function EmployeeDashboard() {
         auth,
         employeeData,
         leaveTypes,
+        leaveBalance,
     } = usePage<PageProps>().props;
 
     const safeOnLeaveSummary = onLeaveSummary || [];
 
     const breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }];
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+    const checkProbation = (date?: string) => {
+        if (!date) return false;
+        const jointDate = new Date(date);
+        const probationEndDate = new Date(jointDate);
+        probationEndDate.setMonth(probationEndDate.getMonth() + 3);
+        return new Date() < probationEndDate;
+    };
+
+    const isInProbation = checkProbation(employee.joint_date);
 
     if (error) {
         return (
@@ -234,6 +255,104 @@ export default function EmployeeDashboard() {
                         );
                     })}
                 </div>
+
+                {/* Leave Type Summary */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Leave type summary</CardTitle>
+                        <CardDescription>
+                            Allocation overview for this year
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="divide-y divide-border">
+                            {/* Annual Leave */}
+                            <div className="flex items-center justify-between p-4">
+                                <span className="font-medium">Annual leave</span>
+                                <div className="flex items-center gap-4">
+                                    {isInProbation ? (
+                                        <>
+                                            <span className="text-sm text-muted-foreground">
+                                                Available after 3 months
+                                            </span>
+                                            <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-none">
+                                                Locked
+                                            </Badge>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text-sm text-muted-foreground">
+                                                {leaveBalance.annual?.entitlement} days
+                                                allocated • {leaveBalance.annual?.used}{" "}
+                                                used
+                                            </span>
+                                            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none">
+                                                {leaveBalance.annual?.remaining}{" "}
+                                                remaining
+                                            </Badge>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Sick Leave */}
+                            <div className="flex items-center justify-between p-4">
+                                <span className="font-medium">Sick leave</span>
+                                <div className="flex items-center gap-4">
+                                    {isInProbation ? (
+                                        <>
+                                            <span className="text-sm text-muted-foreground">
+                                                Available after 3 months
+                                            </span>
+                                            <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-none">
+                                                Locked
+                                            </Badge>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text-sm text-muted-foreground">
+                                                {leaveBalance.sick?.entitlement} days
+                                                allocated • {leaveBalance.sick?.used}{" "}
+                                                used
+                                            </span>
+                                            <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none">
+                                                {leaveBalance.sick?.remaining} remaining
+                                            </Badge>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Unpaid Leave */}
+                            <div className="flex items-center justify-between p-4">
+                                <span className="font-medium">Unpaid leave</span>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm text-muted-foreground">
+                                        No limit
+                                    </span>
+                                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none flex items-center gap-1">
+                                        <Infinity className="h-3 w-3" /> Unlimited
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            {/* Maternity / Paternity */}
+                            <div className="flex items-center justify-between p-4">
+                                <span className="font-medium">
+                                    Maternity / Paternity
+                                </span>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm text-muted-foreground">
+                                        Per company policy
+                                    </span>
+                                    <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100 border-none">
+                                        Refer to HR
+                                    </Badge>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Recent Leave Requests */}
