@@ -157,6 +157,8 @@ export default function EmployeesPage() {
         if (emailFilter) filterData.email = emailFilter;
         if (departmentFilter) filterData.department = departmentFilter;
         if (statusFilter) filterData.status = statusFilter;
+        filterData.per_page = employees.per_page;
+        filterData.page = 1;
 
         router.get(route("admin.employees.index"), filterData, {
             preserveState: true,
@@ -181,7 +183,10 @@ export default function EmployeesPage() {
 
         router.get(
             route("admin.employees.index"),
-            {},
+            {
+                per_page: employees.per_page,
+                page: 1,
+            },
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -323,6 +328,36 @@ export default function EmployeesPage() {
 
     const handleEmployeeCreated = () => {
         router.reload({ only: ["employees"] });
+    };
+
+    const handlePageChange = (url: string | null) => {
+        if (!url) return;
+
+        router.get(
+            url,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const handlePerPageChange = (perPage: string) => {
+        const filterData: any = {
+            per_page: perPage,
+            page: 1,
+        };
+
+        if (nameFilter) filterData.name = nameFilter;
+        if (emailFilter) filterData.email = emailFilter;
+        if (departmentFilter) filterData.department = departmentFilter;
+        if (statusFilter) filterData.status = statusFilter;
+
+        router.get(route("admin.employees.index"), filterData, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     // Update status badge function
@@ -645,7 +680,7 @@ export default function EmployeesPage() {
                         </MobileContainer>
                     </div>
 
-                    {/* Pagination - Only show if there are more than 10 employees */}
+                    {/* Pagination - Show summary when results exist */}
                     {employees.total > 0 && (
                         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-card border-t border-border gap-4">
                             {/* Left side - Results info */}
@@ -653,6 +688,43 @@ export default function EmployeesPage() {
                                 Showing {employees.from || 0} to{" "}
                                 {employees.to || 0} of {employees.total} results
                             </div>
+
+                            {/* Mobile pagination controls */}
+                            {employees.last_page > 1 && (
+                                <div className="flex md:hidden w-full items-center justify-between gap-2">
+                                    <PaginationPrevious
+                                        onClick={() =>
+                                            handlePageChange(
+                                                employees.links[0]?.url
+                                            )
+                                        }
+                                        className={
+                                            employees.current_page === 1
+                                                ? "pointer-events-none opacity-50"
+                                                : "cursor-pointer"
+                                        }
+                                    />
+                                    <span className="text-sm text-muted-foreground">
+                                        Page {employees.current_page} of{" "}
+                                        {employees.last_page}
+                                    </span>
+                                    <PaginationNext
+                                        onClick={() =>
+                                            handlePageChange(
+                                                employees.links[
+                                                    employees.links.length - 1
+                                                ]?.url
+                                            )
+                                        }
+                                        className={
+                                            employees.current_page ===
+                                            employees.last_page
+                                                ? "pointer-events-none opacity-50"
+                                                : "cursor-pointer"
+                                        }
+                                    />
+                                </div>
+                            )}
 
                             {/* Center - Pagination controls (only show if more than one page) - Hidden on mobile */}
                             <div className="hidden md:flex flex-1 justify-center">
@@ -663,9 +735,9 @@ export default function EmployeesPage() {
                                             <PaginationItem>
                                                 <PaginationPrevious
                                                     onClick={() =>
-                                                        router.get(
+                                                        handlePageChange(
                                                             employees.links[0]
-                                                                ?.url || ""
+                                                                ?.url
                                                         )
                                                     }
                                                     className={
@@ -696,9 +768,8 @@ export default function EmployeesPage() {
                                                         >
                                                             <PaginationLink
                                                                 onClick={() =>
-                                                                    router.get(
-                                                                        link.url ||
-                                                                            ""
+                                                                    handlePageChange(
+                                                                        link.url
                                                                     )
                                                                 }
                                                                 isActive={
@@ -716,11 +787,11 @@ export default function EmployeesPage() {
                                             <PaginationItem>
                                                 <PaginationNext
                                                     onClick={() =>
-                                                        router.get(
+                                                        handlePageChange(
                                                             employees.links[
                                                                 employees.links
                                                                     .length - 1
-                                                            ]?.url || ""
+                                                            ]?.url
                                                         )
                                                     }
                                                     className={
@@ -741,16 +812,7 @@ export default function EmployeesPage() {
                                 <span>Show:</span>
                                 <Select
                                     value={employees.per_page.toString()}
-                                    onValueChange={(value) => {
-                                        router.get(
-                                            route("admin.employees.index"),
-                                            { per_page: value },
-                                            {
-                                                preserveState: true,
-                                                preserveScroll: true,
-                                            }
-                                        );
-                                    }}
+                                    onValueChange={handlePerPageChange}
                                 >
                                     <SelectTrigger className="w-20 h-8">
                                         <SelectValue />
