@@ -62,7 +62,6 @@ interface PageProps
             leave_type: string;
             start_date: string;
             end_date: string;
-            is_current: boolean;
         }>;
         employeeData: Array<{ id: number; full_name: string; email: string }>;
         leaveTypes: Array<{ value: string; label: string }>;
@@ -329,9 +328,9 @@ export default function EmployeeDashboard() {
                 {/* On Leave Summary Section */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Team On Leave Summary</CardTitle>
+                        <CardTitle>Team On Leave Today</CardTitle>
                         <CardDescription>
-                            Colleagues currently away or scheduled for leave this week
+                            Colleagues currently away for task coordination
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -340,11 +339,7 @@ export default function EmployeeDashboard() {
                                 safeOnLeaveSummary.map((leave) => (
                                     <div
                                         key={leave.id}
-                                        className={`p-4 border rounded-lg flex flex-col gap-2 ${
-                                            leave.is_current
-                                                ? "bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
-                                                : "bg-gray-50/50 border-gray-100 dark:bg-gray-800/10 dark:border-gray-800/30"
-                                        }`}
+                                        className="p-4 border rounded-lg flex flex-col gap-1 bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -355,31 +350,18 @@ export default function EmployeeDashboard() {
                                                     {leave.department}
                                                 </p>
                                             </div>
-                                            <span
-                                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                                    leave.is_current
-                                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                                                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                                                }`}
-                                            >
-                                                {leave.is_current
-                                                    ? "Current"
-                                                    : "Upcoming"}
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                                On Leave
                                             </span>
                                         </div>
-                                        <div className="flex flex-col gap-1">
-                                            <p className="text-xs font-medium">
-                                                {leave.leave_type}
-                                            </p>
-                                            <p className="text-[11px] text-muted-foreground">
-                                                {leave.start_date} to {leave.end_date}
-                                            </p>
-                                        </div>
+                                        <p className="text-xs font-medium text-muted-foreground mt-1">
+                                            {leave.leave_type}
+                                        </p>
                                     </div>
                                 ))
                             ) : (
                                 <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
-                                    No team members currently on leave or scheduled for this week.
+                                    No team members currently on leave today.
                                 </div>
                             )}
                         </div>

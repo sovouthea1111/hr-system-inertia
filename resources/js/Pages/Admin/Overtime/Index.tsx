@@ -260,9 +260,6 @@ export default function OvertimeIndex() {
             {
                 preserveState: true,
                 preserveScroll: true,
-                onSuccess: () => {
-                    toast.success(`Overtime ${newStatus} successfully`);
-                },
                 onError: () => {
                     toast.error("Failed to update overtime status");
                 },

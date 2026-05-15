@@ -30,7 +30,6 @@ interface OnLeaveSummary {
     leave_type: string;
     start_date: string;
     end_date: string;
-    is_current: boolean;
 }
 
 interface PageProps {
@@ -383,9 +382,9 @@ export default function AdminDashboard() {
                     {/* On Leave Summary Section */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>On Leave Summary</CardTitle>
+                            <CardTitle>On Leave Today</CardTitle>
                             <CardDescription>
-                                Employees currently away or scheduled for leave this week
+                                Employees currently away for task coordination
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -394,11 +393,7 @@ export default function AdminDashboard() {
                                     safeOnLeaveSummary.map((leave) => (
                                         <div
                                             key={leave.id}
-                                            className={`p-4 border rounded-lg flex flex-col gap-2 ${
-                                                leave.is_current
-                                                    ? "bg-blue-50/50 border-blue-100"
-                                                    : "bg-gray-50/50 border-gray-100"
-                                            }`}
+                                            className="p-4 border rounded-lg flex flex-col gap-1 bg-blue-50/50 border-blue-100"
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div>
@@ -409,31 +404,18 @@ export default function AdminDashboard() {
                                                         {leave.department}
                                                     </p>
                                                 </div>
-                                                <span
-                                                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                                        leave.is_current
-                                                            ? "bg-blue-100 text-blue-700"
-                                                            : "bg-gray-100 text-gray-700"
-                                                    }`}
-                                                >
-                                                    {leave.is_current
-                                                        ? "Current"
-                                                        : "Upcoming"}
+                                                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
+                                                    On Leave
                                                 </span>
                                             </div>
-                                            <div className="flex flex-col gap-1">
-                                                <p className="text-xs font-medium">
-                                                    {leave.leave_type}
-                                                </p>
-                                                <p className="text-[11px] text-muted-foreground">
-                                                    {leave.start_date} to {leave.end_date}
-                                                </p>
-                                            </div>
+                                            <p className="text-xs font-medium text-muted-foreground mt-1">
+                                                {leave.leave_type}
+                                            </p>
                                         </div>
                                     ))
                                 ) : (
                                     <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
-                                        No employees currently on leave or scheduled for this week.
+                                        No employees currently on leave today.
                                     </div>
                                 )}
                             </div>
