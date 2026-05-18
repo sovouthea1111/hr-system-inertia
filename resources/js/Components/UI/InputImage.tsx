@@ -158,7 +158,6 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                 {label && (
                     <Label
                         htmlFor={id}
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         {label}
                         {required && (
@@ -170,13 +169,13 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                 {/* Upload Area */}
                 <div
                     className={`
-                        relative border-2 border-dashed rounded-lg transition-colors
+                        relative border-2 border-border-card rounded-lg transition-colors
                         ${
                             isDragOver
-                                ? "border-blue-400 bg-blue-50"
+                                ? "border-primary bg-primary/10"
                                 : error
-                                ? "border-red-300 bg-red-50"
-                                : "border-gray-300 bg-gray-50 hover:bg-gray-100"
+                                ? "border-danger bg-danger/10"
+                                : "border-border bg-muted/30 hover:bg-muted/50"
                         }
                         ${
                             disabled
@@ -210,13 +209,13 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                     {/* Upload Content */}
                     {!imagePreview ? (
                         <div className="flex flex-col items-center justify-center py-8 px-4">
-                            <div className="flex items-center justify-center w-12 h-12 bg-gray-200 rounded-full mb-3">
-                                <Upload className="w-6 h-6 text-gray-500" />
+                            <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mb-3">
+                                <Upload className="w-6 h-6 text-muted-foreground" />
                             </div>
-                            <p className="text-sm font-medium text-gray-700 mb-1">
+                            <p className="text-sm font-medium text-foreground mb-1">
                                 {placeholder}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                                 {accept.replace("image/", "").toUpperCase()} up
                                 to {maxSize}MB
                             </p>
@@ -231,7 +230,7 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
 
                             {/* Replace Actions Overlay - Only shows Replace button now */}
                             {showEditActions && (
-                                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                                     <div className="flex gap-2">
                                         <Button
                                             type="button"
@@ -241,7 +240,7 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                                                 e.stopPropagation();
                                                 handleReplace();
                                             }}
-                                            className="bg-white text-gray-800 hover:bg-gray-100"
+                                            className="bg-background text-foreground hover:bg-muted"
                                         >
                                             <Upload className="w-4 h-4 mr-1" />
                                             Replace
@@ -259,7 +258,7 @@ export const InputImage = forwardRef<HTMLInputElement, InputImageProps>(
                                     e.stopPropagation();
                                     handleRemove();
                                 }}
-                                className="absolute top-2 right-2 bg-white shadow-md hover:bg-gray-50 z-10"
+                                className="absolute top-2 border-border-card right-2 shadow-md z-10"
                             >
                                 <X className="w-4 h-4" />
                             </Button>

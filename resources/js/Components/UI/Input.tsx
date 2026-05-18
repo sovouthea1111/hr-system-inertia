@@ -56,10 +56,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     <Label
                         htmlFor={inputId}
                         className={cn(
-                            "text-sm font-medium text-gray-700",
+                            "text-sm font-medium text-foreground",
                             required &&
                                 "after:content-['*'] after:text-danger after:ml-1",
-                            disabled && "text-gray-400",
+                            disabled && "text-muted-foreground",
                         )}
                     >
                         {label}
@@ -70,7 +70,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         id={inputId}
                         type={inputType}
                         className={cn(
-                            "flex h-10 dark:text-gray-700 w-full rounded-md border border-input bg-inputBackground px-3 py-2 text-base ring-offset-inputBackground file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                            "flex h-10 w-full rounded-md border border-border-card bg-inputBackground px-3 py-2 text-base ring-offset-inputBackground file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                             error &&
                                 "border-danger focus:border-danger focus:ring-danger",
                             disabled && "opacity-50 cursor-not-allowed",
@@ -94,15 +94,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                             disabled={disabled}
                         >
                             {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-gray-400" />
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
                             ) : (
-                                <Eye className="h-4 w-4 text-gray-400" />
+                                <Eye className="h-4 w-4 text-muted-foreground" />
                             )}
                         </Button>
                     )}
                 </div>
                 {helperText && !error && (
-                    <p className="text-sm text-gray-500">{helperText}</p>
+                    <p className="text-sm text-muted-foreground">{helperText}</p>
                 )}
                 {error && <p className="text-sm text-danger">{error}</p>}
             </div>
