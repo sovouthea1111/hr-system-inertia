@@ -63,7 +63,7 @@ export default function Login({
             <Head title="Log in" />
             <div className="min-h-screen flex">
                 {/* Left side - HR Branding */}
-                <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-purple-600 to-primary relative overflow-hidden">
+                <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary to-primary relative overflow-hidden">
                     {/* Animated background elements */}
                     <div className="absolute inset-0">
                         <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
@@ -122,13 +122,13 @@ export default function Login({
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-center space-x-2 text-sm">
-                                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                            <div className="w-2 h-2 bg-primary rounded-full"></div>
                                             <span className="text-white opacity-90">
                                                 Leave Tracking
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-center space-x-2 text-sm">
-                                            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                                            <div className="w-2 h-2 bg-primary rounded-full"></div>
                                             <span className="text-white opacity-90">
                                                 Performance Reviews
                                             </span>
@@ -235,7 +235,7 @@ export default function Login({
                                             <button
                                                 type="button"
                                                 onClick={() => setStep("email")}
-                                                className="text-sm font-bold text-cyan-500 hover:text-cyan-600 transition-colors px-2"
+                                                className="text-sm font-bold text-primary hover:text-primary transition-colors px-2"
                                             >
                                                 Edit
                                             </button>
