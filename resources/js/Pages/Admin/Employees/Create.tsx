@@ -214,7 +214,7 @@ export function CreateEmployeeModal({
                     <div>
                         <Label
                             htmlFor="department"
-                            className="text-sm font-medium text-gray-700 mb-2 block"
+                            className="text-sm font-medium text-foreground mb-2 block"
                         >
                             Department <span className="text-danger">*</span>
                         </Label>

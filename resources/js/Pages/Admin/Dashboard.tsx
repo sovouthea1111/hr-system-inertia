@@ -249,13 +249,13 @@ export default function AdminDashboard() {
                                 </Button>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-4">
+                                <div className="space-y-4 border-border-card">
                                     {safeRecentLeaveRequests.length > 0 ? (
                                         safeRecentLeaveRequests.map(
                                             (request) => (
                                                 <div
                                                     key={request.id}
-                                                    className="flex items-center justify-between p-4 border rounded-lg"
+                                                    className="flex items-center justify-between p-4 border-border-card rounded-lg"
                                                 >
                                                     <div>
                                                         <p className="font-medium">

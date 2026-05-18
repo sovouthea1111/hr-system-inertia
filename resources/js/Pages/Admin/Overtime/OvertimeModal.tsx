@@ -232,7 +232,7 @@ export function OvertimeModal({
             }
         >
             <div className="mb-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                     Fill out the form below to submit your overtime request.
                 </p>
             </div>
@@ -265,7 +265,7 @@ export function OvertimeModal({
 
                     {/* Overtime Type */}
                     <div className="space-y-2">
-                        <Label htmlFor="overtime_type" className="dark:text-gray-700">
+                        <Label htmlFor="overtime_type">
                             Overtime Type <span className="text-danger">*</span>
                         </Label>
                         <Select
@@ -294,7 +294,7 @@ export function OvertimeModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Start Time */}
                     <div className="space-y-2">
-                        <Label htmlFor="start_time" className="dark:text-gray-700">
+                        <Label htmlFor="start_time">
                             Start Time <span className="text-danger">*</span>
                         </Label>
                         <div className="flex gap-2">
@@ -373,7 +373,7 @@ export function OvertimeModal({
 
                     {/* End Time */}
                     <div className="space-y-2">
-                        <Label htmlFor="end_time" className="dark:text-gray-700">
+                        <Label htmlFor="end_time">
                             End Time <span className="text-danger">*</span>
                         </Label>
                         <div className="flex gap-2">
@@ -461,14 +461,14 @@ export function OvertimeModal({
                         required
                         value={hourlyRate}
                         disabled={true}
-                        className="bg-gray-100 cursor-not-allowed"
+                        className="bg-muted cursor-not-allowed"
                         placeholder="Hourly rate will be set automatically"
                     />
                 </div>
 
                 {/* Reason */}
                 <div className="space-y-2">
-                    <Label htmlFor="reason" className="dark:text-gray-700">
+                    <Label htmlFor="reason">
                         Reason for Overtime{" "}
                         <span className="text-danger">*</span>
                     </Label>
@@ -481,7 +481,7 @@ export function OvertimeModal({
                         placeholder="Please provide a detailed reason for the overtime request..."
                         required
                         rows={4}
-                        className="w-full dark:text-gray-700 bg-inputBackground"
+                        className="w-full bg-inputBackground"
                     />
                 </div>
             </form>
