@@ -224,7 +224,6 @@ export function EditEmployeeModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="department"
-                            className="dark:text-gray-700"
                         >
                             Department <span className="text-danger">*</span>
                         </Label>
@@ -325,7 +324,7 @@ export function EditEmployeeModal({
 
                 {/* Status */}
                 <div className="space-y-2">
-                    <Label htmlFor="status" className="dark:text-gray-700">
+                    <Label htmlFor="status">
                         Status <span className="text-danger">*</span>
                     </Label>
                     <Select
@@ -352,7 +351,7 @@ export function EditEmployeeModal({
                     )}
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-primary/10 p-4 rounded-lg">
                     <p className="text-sm text-primary">
                         <strong>Note:</strong> All fields marked with * are
                         required. {isHROrSuperAdmin ? "Salary information is only visible to HR and SuperAdmin users." : ""} Changes will be saved immediately upon

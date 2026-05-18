@@ -297,17 +297,17 @@ export function UpdateOvertimeModal({
                 className="space-y-6"
             >
                 {/* Employee Info Display */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium text-gray-900 mb-2">
+                <div className="bg-muted/30 p-4 rounded-lg">
+                    <h3 className="font-medium text-foreground mb-2">
                         Employee Information
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm dark:text-gray-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span className="font-medium dark:text-gray-700">Name:</span>{" "}
+                            <span className="font-medium">Name:</span>{" "}
                             {selectedOvertime.employee.full_name}
                         </div>
                         <div>
-                            <span className="font-medium dark:text-gray-700">Email:</span>{" "}
+                            <span className="font-medium">Email:</span>{" "}
                             {selectedOvertime.employee.email}
                         </div>
                         <div>
@@ -315,7 +315,7 @@ export function UpdateOvertimeModal({
                             {selectedOvertime.employee.department}
                         </div>
                         <div>
-                            <span className="font-medium dark:text-gray-700">Status:</span>
+                            <span className="font-medium">Status:</span>
                             <span
                                 className={`ml-2 px-2 py-1 rounded-full text-sm font-medium ${
                                     selectedOvertime.status === "approved"
@@ -338,7 +338,7 @@ export function UpdateOvertimeModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Overtime Date */}
                     <div className="space-y-2">
-                        <Label htmlFor="overtime_date" className="dark:text-gray-700">
+                        <Label htmlFor="overtime_date">
                             Overtime Date{" "}
                             <span className="text-red-500">*</span>
                         </Label>
@@ -367,7 +367,7 @@ export function UpdateOvertimeModal({
                     </div>
                     {/* Overtime Type */}
                     <div className="space-y-2">
-                        <Label htmlFor="overtime_type" className="dark:text-gray-700">
+                        <Label htmlFor="overtime_type">
                             Overtime Type{" "}
                             <span className="text-red-500">*</span>
                         </Label>
@@ -407,7 +407,7 @@ export function UpdateOvertimeModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Start Time */}
                     <div className="space-y-2">
-                        <Label htmlFor="start_time" className="dark:text-gray-700">
+                        <Label htmlFor="start_time">
                             Start Time <span className="text-danger">*</span>
                         </Label>
                         <div className="flex gap-2">
@@ -525,7 +525,7 @@ export function UpdateOvertimeModal({
 
                     {/* End Time */}
                     <div className="space-y-2">
-                        <Label htmlFor="end_time" className="dark:text-gray-700">
+                        <Label htmlFor="end_time">
                             End Time <span className="text-danger">*</span>
                         </Label>
                         <div className="flex gap-2">
@@ -675,7 +675,7 @@ export function UpdateOvertimeModal({
 
                 {/* Reason */}
                 <div className="space-y-2">
-                    <Label htmlFor="reason" className="dark:text-gray-700">
+                    <Label htmlFor="reason">
                         Reason for Overtime{" "}
                         <span className="text-danger">*</span>
                     </Label>
@@ -687,10 +687,9 @@ export function UpdateOvertimeModal({
                         }
                         placeholder="Please provide a detailed reason for the overtime request..."
                         required
-                        className={`min-h-[100px] resize-none bg-inputBackground dark:text-gray-700 ${
-                            errors.reason ? "border-danger " : ""
+                        className={`min-h-[100px] resize-none bg-inputBackground ${
+                            errors.reason ? "border-danger" : ""
                         }`}
-                        maxLength={1000}
                     />
                     <div className="flex justify-between items-center">
                         {errors.reason && (

@@ -372,7 +372,7 @@ export default function EmployeeDashboard() {
                                     {recentLeaves.map((leave) => (
                                         <div
                                             key={leave.id}
-                                            className="flex items-center justify-between p-3 border rounded-lg"
+                                            className="flex items-center justify-between p-3 border border-border-card rounded-lg"
                                         >
                                             <div className="flex-1">
                                                 <div className="flex items-center space-x-2">
@@ -463,7 +463,7 @@ export default function EmployeeDashboard() {
                                 safeOnLeaveSummary.map((leave) => (
                                     <div
                                         key={leave.id}
-                                        className="p-4 border rounded-lg flex flex-col gap-1 bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
+                                        className="p-4 rounded-lg flex flex-col gap-1 border-border-card"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -474,7 +474,7 @@ export default function EmployeeDashboard() {
                                                     {leave.department}
                                                 </p>
                                             </div>
-                                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 border-border-card">
                                                 On Leave
                                             </span>
                                         </div>

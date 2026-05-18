@@ -201,7 +201,6 @@ export function RequestLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="employee_id"
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Employee <span className="text-danger">*</span>
                     </Label>
@@ -236,12 +235,12 @@ export function RequestLeaveModal({
                         </p>
                     )}
                     {(isEmployee || isHR) && (
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                             You can only create leave requests for yourself.
                         </p>
                     )}
                     {isAdmin && (
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                             You can create leave requests for any employee.
                         </p>
                     )}
@@ -276,7 +275,6 @@ export function RequestLeaveModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="duration_type"
-                            className="text-sm font-medium dark:text-gray-700"
                         >
                             Duration <span className="text-danger">*</span>
                         </Label>
@@ -343,7 +341,6 @@ export function RequestLeaveModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="half_day_period"
-                            className="text-sm font-medium dark:text-gray-700"
                         >
                             Period <span className="text-danger">*</span>
                         </Label>
@@ -359,7 +356,7 @@ export function RequestLeaveModal({
                                     }
                                     className="form-radio h-4 w-4 text-primary"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-foreground">
                                     Morning (AM)
                                 </span>
                             </label>
@@ -374,7 +371,7 @@ export function RequestLeaveModal({
                                     }
                                     className="form-radio h-4 w-4 text-primary"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-foreground">
                                     Afternoon (PM)
                                 </span>
                             </label>
@@ -386,7 +383,6 @@ export function RequestLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="leave_type"
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Leave Type <span className="text-danger">*</span>
                     </Label>
@@ -427,7 +423,6 @@ export function RequestLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="reason"
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Reason <span className="text-danger">*</span>
                     </Label>
@@ -435,7 +430,7 @@ export function RequestLeaveModal({
                         id="reason"
                         value={data.reason}
                         onChange={(e) => setData("reason", e.target.value)}
-                        className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md shadow-sm  dark:text-gray-700 bg-inputBackground"
+                        className="w-full min-h-[100px] px-3 py-2 border border-border rounded-md shadow-sm bg-inputBackground text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Enter the reason for leave request..."
                         required
                     />
@@ -465,7 +460,7 @@ export function RequestLeaveModal({
                 )}
 
                 {/* Form Actions */}
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <div className="flex justify-end space-x-3 pt-4 border-t border-border dark:border-white/10">
                     <Button
                         type="button"
                         variant="outline"
@@ -514,10 +509,10 @@ export default function Create({
             <AuthenticatedLayout>
                 <div className="py-12">
                     <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="bg-card text-card-foreground overflow-hidden shadow-sm sm:rounded-lg border border-border">
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                                    <h1 className="text-2xl font-semibold text-foreground">
                                         Leave Management
                                     </h1>
                                     <Button

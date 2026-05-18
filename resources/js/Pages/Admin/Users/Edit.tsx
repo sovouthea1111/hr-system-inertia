@@ -150,7 +150,7 @@ export function EditUserModal({
             isOpen={isOpen}
             onClose={handleCancel}
             title="Edit User"
-            className="max-w-md"
+            className="max-w-2xl"
         >
             <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div className="space-y-4 p-6">
@@ -273,7 +273,6 @@ export function EditUserModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="user_role"
-                            className="dark:text-gray-700"
                         >
                             Role <span className="text-danger">*</span>
                         </Label>
@@ -340,7 +339,7 @@ export function EditUserModal({
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 border-t bg-gray-50 px-6 py-4">
+                <div className="flex justify-end gap-3 border-t border-border dark:border-white/10 px-6 py-4">
                     <Button
                         type="button"
                         variant="outline"

@@ -92,11 +92,11 @@ export function Modal({
         >
             <div
                 className={cn(
-                    "relative w-full max-w-md mx-4 bg-white rounded-lg shadow-lg max-h-[90vh] overflow-hidden",
+                    "relative bg-background border border-border-card w-full max-w-md mx-4 rounded-lg shadow-lg max-h-[90vh] overflow-hidden",
                     "transition-all duration-200 ease-out transform",
                     isVisible
                         ? "scale-100 opacity-100 translate-y-0"
-                        : "scale-95 opacity-0 translate-y-4",
+                        : "scale-y-95 opacity-0 translate-y-4",
                     className
                 )}
                 onClick={(e) => e.stopPropagation()}
@@ -106,14 +106,14 @@ export function Modal({
             >
                 <div
                     className={cn(
-                        "flex items-center px-6 py-4 border-b border-gray-200",
+                        "flex items-center px-6 py-4 border-b border-border dark:border-white/10",
                         showCloseIcon ? "justify-between" : "justify-center",
                         headerClassName
                     )}
                 >
                     <h2
                         className={cn(
-                            "text-lg font-semibold text-gray-900",
+                            "text-lg font-semibold text-foreground",
                             !showCloseIcon && "text-center"
                         )}
                     >
@@ -122,10 +122,10 @@ export function Modal({
                     {showCloseIcon && (
                         <button
                             onClick={handleClose}
-                            className="p-1 rounded-md hover:bg-gray-100 transition-colors duration-150 hover:scale-110 active:scale-95"
+                            className="p-1 rounded-md hover:bg-muted transition-colors duration-150 hover:scale-110 active:scale-95"
                             aria-label="Close modal"
                         >
-                            <X className="h-5 w-5 text-gray-500" />
+                            <X className="h-5 w-5 text-muted-foreground" />
                         </button>
                     )}
                 </div>
@@ -140,7 +140,7 @@ export function Modal({
                 {footer && (
                     <div
                         className={cn(
-                            "flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50",
+                            "flex items-center justify-end gap-3 px-6 py-4 border-t border-border dark:border-white/10 bg-muted/30",
                             footerClassName
                         )}
                     >

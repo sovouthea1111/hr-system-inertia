@@ -229,7 +229,6 @@ export function EditLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="employee_id"
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Employee <span className="text-danger">*</span>
                     </Label>
@@ -300,7 +299,6 @@ export function EditLeaveModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="duration_type"
-                            className="text-sm font-medium dark:text-gray-700"
                         >
                             Duration <span className="text-danger">*</span>
                         </Label>
@@ -363,7 +361,6 @@ export function EditLeaveModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="half_day_period"
-                            className="text-sm font-medium dark:text-gray-700"
                         >
                             Period <span className="text-danger">*</span>
                         </Label>
@@ -379,7 +376,7 @@ export function EditLeaveModal({
                                     }
                                     className="form-radio h-4 w-4 text-primary"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-foreground">
                                     Morning (AM)
                                 </span>
                             </label>
@@ -394,7 +391,7 @@ export function EditLeaveModal({
                                     }
                                     className="form-radio h-4 w-4 text-primary"
                                 />
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-foreground">
                                     Afternoon (PM)
                                 </span>
                             </label>
@@ -406,7 +403,6 @@ export function EditLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="leave_type"
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Leave Type <span className="text-danger">*</span>
                     </Label>
@@ -442,18 +438,15 @@ export function EditLeaveModal({
                 <div className="space-y-2">
                     <Label
                         htmlFor="reason"
-                        className="text-sm font-medium dark:text-gray-700"
                     >
                         Reason <span className="text-danger">*</span>
                     </Label>
                     <textarea
                         id="reason"
                         value={data.reason}
-                        onChange={(e) =>
-                            handleInputChange("reason", e.target.value)
-                        }
-                        className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent resize-vertical  dark:text-gray-700 bg-inputBackground"
-                        placeholder="Enter reason for leave..."
+                        onChange={(e) => handleInputChange("reason", e.target.value)}
+                        placeholder="Please provide a detailed reason for your leave..."
+                        className="w-full min-h-[100px] px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring resize-vertical bg-inputBackground text-foreground"
                         required
                     />
                     {errors.reason && (
@@ -466,7 +459,6 @@ export function EditLeaveModal({
                     <div className="space-y-2">
                         <Label
                             htmlFor="status"
-                            className="text-sm font-medium dark:text-gray-700"
                         >
                             Status <span className="text-danger">*</span>
                         </Label>
@@ -501,24 +493,24 @@ export function EditLeaveModal({
                 {/* Show current status for employees and HR editing their own leaves */}
                 {shouldDisableStatusSelect && (
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium dark:text-gray-700">
+                        <Label>
                             Current Status
                         </Label>
-                        <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 border border-border rounded-md">
                             <div
                                 className={`w-2 h-2 rounded-full ${
                                     data.status === "approved"
-                                        ? "bg-green-500"
+                                        ? "bg-success"
                                         : data.status === "pending"
-                                        ? "bg-yellow-500 animate-pulse"
-                                        : "bg-red-500"
+                                        ? "bg-warning animate-pulse"
+                                        : "bg-danger"
                                 }`}
                             />
-                            <span className="text-sm font-medium capitalize">
+                            <span className="text-sm font-medium capitalize text-foreground">
                                 {data.status}
                             </span>
                         </div>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                             {isHR && isOwnLeave
                                 ? "You cannot change the status of your own leave request."
                                 : "You cannot change the status of your leave request."}
@@ -549,7 +541,7 @@ export function EditLeaveModal({
                                 {errors.image}
                             </p>
                         )}
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                             Medical certificate is required for sick leave
                             requests.
                         </p>
@@ -557,7 +549,7 @@ export function EditLeaveModal({
                 )}
 
                 {/* Form Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
                     <Button
                         type="button"
                         variant="outline"

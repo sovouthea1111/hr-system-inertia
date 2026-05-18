@@ -34,14 +34,14 @@ export function DeleteConfirmationModal({
         if (type === "bulk") {
             return (
                 <>
-                    <p className="text-gray-700 text-base leading-relaxed">
+                    <p className="text-foreground text-base leading-relaxed">
                         Are you sure you want to delete{" "}
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-semibold text-foreground">
                             {count} {itemType}
                             {count !== 1 ? "s" : ""}?
                         </span>
                     </p>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-muted-foreground text-sm">
                         This action cannot be undone.
                     </p>
                 </>
@@ -49,14 +49,14 @@ export function DeleteConfirmationModal({
         }
         return (
             <>
-                <p className="text-gray-700 text-base leading-relaxed">
+                <p className="text-foreground text-base leading-relaxed">
                     Are you sure you want to delete{" "}
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-foreground">
                         '{itemName}'
                     </span>
                     ?
                 </p>
-                <p className="text-gray-600 text-sm">
+                <p className="text-muted-foreground text-sm">
                     You cannot undo this action.
                 </p>
             </>
