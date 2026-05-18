@@ -177,13 +177,20 @@ export function AppLayout({
     React.useEffect(() => {
         fetchNotifications();
 
-        // Poll for updates every 30 seconds
-        const interval = setInterval(() => {
-            fetchNotifications();
-        }, 30000);
+        if (window.Echo && auth.user) {
+            window.Echo.private(`App.Models.User.${auth.user.id}`)
+                .notification((notification: any) => {
+                    fetchNotifications();
+                    toast.success(notification.message);
+                });
+        }
 
-        return () => clearInterval(interval);
-    }, [fetchNotifications]);
+        return () => {
+            if (window.Echo && auth.user) {
+                window.Echo.leave(`App.Models.User.${auth.user.id}`);
+            }
+        };
+    }, [fetchNotifications, auth.user]);
 
     const handleNotificationUpdate = (
         updatedNotifications: Notification[],

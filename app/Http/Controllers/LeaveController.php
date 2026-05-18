@@ -12,6 +12,8 @@ use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LeaveApplicationNotification;
+use App\Notifications\LeaveNotification;
+use Illuminate\Support\Facades\Notification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -118,6 +120,10 @@ class LeaveController extends Controller
 
             $validated['status'] = 'pending';
             $leave = Leave::create($validated);
+
+            // Notify HR and SuperAdmin
+            $hrUsers = User::whereIn('user_role', ['HR', 'SuperAdmin'])->get();
+            Notification::send($hrUsers, new LeaveNotification($leave, 'leave_request', "New leave request from {$employee->first_name} {$employee->last_name}"));
 
             try {
                 $employee = Employee::find($validated['employee_id']);

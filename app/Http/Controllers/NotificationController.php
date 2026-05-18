@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Leave;
 use App\Models\Employee;
 use App\Traits\HasEmployee;
+use App\Notifications\LeaveNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -99,6 +100,8 @@ class NotificationController extends Controller
             'status' => $status,
             'approved_by' => Auth::id()
         ]);
+
+        $leave->employee->user->notify(new LeaveNotification($leave, 'leave_status', "Your leave request has been {$status}"));
         
         return response()->json([
             'message' => "Leave request {$status} successfully",
