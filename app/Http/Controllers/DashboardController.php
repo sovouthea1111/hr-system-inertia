@@ -60,7 +60,7 @@ class DashboardController extends Controller
                 'id' => $leave->id,
                 'name' => $leave->employee?->full_name ?? 'Unknown Employee',
                 'leaveType' => $leave->leave_type,
-                'duration' => $leave->days_requested . ' days',
+                'duration' => $leave->duration_type === 'half_day' ? 'Half Day' : $leave->days_requested . ' days',
                 'start_date' => $leave->start_date->format('Y-m-d'),
                 'reason' => $leave->reason,
             ]);
@@ -145,7 +145,7 @@ class DashboardController extends Controller
                 'leave_type' => ucfirst($leave->leave_type),
                 'start_date' => $leave->start_date->format('Y-m-d'),
                 'end_date' => $leave->end_date->format('Y-m-d'),
-                'days_requested' => $leave->days_requested,
+                'days_requested' => $leave->duration_type === 'half_day' ? 'Half Day' : $leave->days_requested,
                 'status' => $leave->status,
                 'reason' => $leave->reason,
             ]);
@@ -161,7 +161,7 @@ class DashboardController extends Controller
                 'leave_type' => ucfirst($leave->leave_type),
                 'start_date' => $leave->start_date->format('Y-m-d'),
                 'end_date' => $leave->end_date->format('Y-m-d'),
-                'days_requested' => $leave->days_requested,
+                'days_requested' => $leave->duration_type === 'half_day' ? 'Half Day' : $leave->days_requested,
             ]);
 
         $onLeaveSummary = Leave::with('employee')

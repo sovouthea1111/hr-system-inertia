@@ -123,17 +123,25 @@ class NotificationController extends Controller
     {
         return $leaves->map(function ($leave) use ($notificationType) {
             if ($notificationType === 'leave_request') {
+                $durationText = match($leave->duration_type) {
+                    'half_day' => "Half Day",
+                    default => ($leave->is_last_day_half 
+                        ? ($leave->start_date->diffInDays($leave->end_date) + 0.5) 
+                        : ($leave->start_date->diffInDays($leave->end_date) + 1)) . ".0 days",
+                };
                 return [
                     'id' => $leave->id,
                     'type' => 'leave_request',
                     'title' => 'Leave Request - ' . ucfirst($leave->status),
-                    'message' => "{$leave->employee->full_name} has requested {$leave->leave_type} leave - Status: {$leave->status}",
+                    'message' => "{$leave->employee->full_name} has requested {$leave->leave_type} leave for {$durationText} - Status: {$leave->status}",
                     'data' => [
                         'leave_id' => $leave->id,
                         'employee_name' => $leave->employee->full_name,
                         'leave_type' => $leave->leave_type,
                         'start_date' => $leave->start_date,
                         'end_date' => $leave->end_date,
+                        'duration_type' => $leave->duration_type,
+                        'half_day_period' => $leave->half_day_period,
                         'reason' => $leave->reason,
                         'status' => $leave->status
                     ],
@@ -142,17 +150,22 @@ class NotificationController extends Controller
                 ];
             }
             
+            $durationText = $leave->duration_type === 'half_day' 
+                ? "Half Day (" . strtoupper($leave->half_day_period) . ")" 
+                : $leave->days_requested . " Days";
             return [
                 'id' => $leave->id,
                 'type' => 'leave_status',
                 'title' => 'Your Leave Request ' . ucfirst($leave->status),
-                'message' => "Your {$leave->leave_type} leave request has been {$leave->status}",
+                'message' => "Your {$leave->leave_type} leave request for {$durationText} has been {$leave->status}",
                 'data' => [
                     'leave_id' => $leave->id,
                     'employee_name' => 'Your',
                     'leave_type' => $leave->leave_type,
                     'start_date' => $leave->start_date,
                     'end_date' => $leave->end_date,
+                    'duration_type' => $leave->duration_type,
+                    'half_day_period' => $leave->half_day_period,
                     'status' => $leave->status,
                     'reason' => $leave->reason
                 ],

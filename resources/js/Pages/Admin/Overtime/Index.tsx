@@ -572,7 +572,6 @@ export default function OvertimeIndex() {
                                             <TableHead>Total</TableHead>
                                         )}
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Reason</TableHead>
                                         {isEmployee && (
                                             <TableHead className="text-center">
                                                 Action
@@ -753,9 +752,10 @@ export default function OvertimeIndex() {
                                                         </Select>
                                                     ) : (
                                                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
-                                                            {overtime.status ===
-                                                            "approved" ? (
+                                                            {overtime.status === "approved" ? (
                                                                 <CheckCircle className="w-4 h-4 text-success" />
+                                                            ) : overtime.status === "pending" ? (
+                                                                <Clock className="w-4 h-4 text-warning" />
                                                             ) : (
                                                                 <XCircle className="w-4 h-4 text-danger" />
                                                             )}
@@ -771,14 +771,6 @@ export default function OvertimeIndex() {
                                                             </span>
                                                         </div>
                                                     )}
-                                                </TableCell>
-                                                <TableCell className="max-w-xs">
-                                                    <div
-                                                        className="truncate"
-                                                        title={overtime.reason}
-                                                    >
-                                                        {overtime.reason}
-                                                    </div>
                                                 </TableCell>
                                                 {isEmployee && (
                                                     <TableCell className="text-center">
