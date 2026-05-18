@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
-
 class RegisteredUserController extends Controller
 {
     /**
@@ -45,6 +45,20 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // Check if user has an associated employee record
+        // We allow SuperAdmin to skip this check for system management purposes
+        if ($user->user_role !== 'SuperAdmin') {
+            $employee = $user->employee ?? Employee::where('email', $user->email)->first();
+
+            if (!$employee) {
+                Auth::logout();
+                
+                return redirect()->route('login')->withErrors([
+                    'email' => 'This account is not associated with any employee record. Please contact HR.',
+                ]);
+            }
+        }
 
         return redirect(route('dashboard', absolute: false));
     }

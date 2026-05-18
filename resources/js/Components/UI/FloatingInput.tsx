@@ -53,7 +53,7 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
                     className={cn(
                         "relative flex items-center w-full transition-all duration-300 border-2 rounded-2xl bg-white shadow-sm",
                         isFocused 
-                            ? "border-cyan-500" 
+                            ? "border-primary" 
                             : error 
                                 ? "border-red-500" 
                                 : "border-gray-200 hover:border-gray-300",
@@ -64,13 +64,13 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
                         <div className="flex items-center h-full">
                             <div className={cn(
                                 "px-4 flex items-center justify-center transition-colors duration-200",
-                                isFocused ? "text-cyan-500" : (error ? "text-red-500" : "text-gray-400")
+                                isFocused ? "text-primary" : (error ? "text-red-500" : "text-gray-400")
                             )}>
                                 {icon}
                             </div>
                             <div className={cn(
                                 "w-[1px] h-6 transition-colors duration-200",
-                                isFocused ? "bg-cyan-500" : (error ? "bg-red-500" : "bg-gray-200")
+                                isFocused ? "bg-primary" : (error ? "bg-red-500" : "bg-gray-200")
                             )} />
                         </div>
                     )}
@@ -98,7 +98,7 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
                                 : (icon ? "left-14 top-1/2 -translate-y-1/2 text-base font-medium" : "left-4 top-1/2 -translate-y-1/2 text-base font-medium"),
                             
                             isFocused 
-                                ? "text-cyan-500" 
+                                ? "text-primary" 
                                 : error 
                                     ? "text-red-500" 
                                     : "text-gray-400"
