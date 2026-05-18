@@ -29,7 +29,10 @@ interface LeaveApplication {
     leave_type: string;
     start_date: string;
     end_date: string;
-    days_requested: number;
+    duration_type: "half_day" | "multiple_days";
+    half_day_period: "am" | "pm" | "";
+    is_last_day_half: boolean;
+    days_requested: number | string;
     reason: string;
     image: string;
     status: "pending" | "approved" | "rejected";
@@ -62,6 +65,9 @@ export function EditLeaveModal({
             employee_id: "",
             start_date: "",
             end_date: "",
+            duration_type: "multiple_days" as "half_day" | "multiple_days",
+            half_day_period: "" as "am" | "pm" | "",
+            is_last_day_half: false as boolean,
             leave_type: "",
             reason: "",
             status: "",
@@ -97,6 +103,9 @@ export function EditLeaveModal({
                 employee_id: employeeId,
                 start_date: leave.start_date,
                 end_date: leave.end_date,
+                duration_type: leave.duration_type || "multiple_days",
+                half_day_period: leave.half_day_period || "",
+                is_last_day_half: leave.is_last_day_half || false,
                 leave_type: leave.leave_type,
                 reason: leave.reason,
                 status: leave.status,
@@ -133,6 +142,9 @@ export function EditLeaveModal({
         formData.append("employee_id", data.employee_id);
         formData.append("start_date", data.start_date);
         formData.append("end_date", data.end_date);
+        formData.append("duration_type", data.duration_type);
+        formData.append("half_day_period", data.half_day_period);
+        formData.append("is_last_day_half", data.is_last_day_half ? "1" : "0");
         formData.append("leave_type", data.leave_type);
         formData.append("reason", data.reason);
         formData.append("status", data.status);
@@ -258,48 +270,137 @@ export function EditLeaveModal({
                     )}
                 </div>
 
-                {/* Start Date */}
-                <div className="space-y-2">
-                    <Input
-                        id="start_date"
-                        type="date"
-                        label="Start Date"
-                        value={data.start_date}
-                        onChange={(e) =>
-                            handleInputChange("start_date", e.target.value)
-                        }
-                        className="w-full"
-                        required
-                        min={new Date().toISOString().split("T")[0]} // Prevent past dates
-                    />
-                    {errors.start_date && (
-                        <p className="text-sm text-danger">
-                            {errors.start_date}
-                        </p>
-                    )}
+                {/* Date Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Input
+                            id="start_date"
+                            type="date"
+                            label={data.duration_type === "multiple_days" ? "Start Date" : "Date"}
+                            value={data.start_date}
+                            onChange={(e) => {
+                                const newDate = e.target.value;
+                                setData((prev) => ({
+                                    ...prev,
+                                    start_date: newDate,
+                                    end_date: prev.duration_type === "multiple_days" ? prev.end_date : newDate,
+                                }));
+                            }}
+                            className="w-full"
+                            required
+                            min={new Date().toISOString().split("T")[0]}
+                        />
+                        {errors.start_date && (
+                            <p className="text-sm text-danger">
+                                {errors.start_date}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label
+                            htmlFor="duration_type"
+                            className="text-sm font-medium dark:text-gray-700"
+                        >
+                            Duration <span className="text-danger">*</span>
+                        </Label>
+                        <Select
+                            value={data.duration_type}
+                            onValueChange={(value: "half_day" | "multiple_days") => {
+                                setData((prev) => ({
+                                    ...prev,
+                                    duration_type: value,
+                                    half_day_period:
+                                        value === "half_day" ? "am" : "",
+                                    is_last_day_half: false,
+                                    end_date: value === "multiple_days" ? (prev.end_date || prev.start_date) : prev.start_date
+                                }));
+                            }}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select duration" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="half_day">
+                                    Half Day
+                                </SelectItem>
+                                <SelectItem value="multiple_days">
+                                    Multiple Days
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.duration_type && (
+                            <p className="text-sm text-danger">
+                                {errors.duration_type}
+                            </p>
+                        )}
+                    </div>
                 </div>
 
-                {/* End Date */}
-                <div className="space-y-2">
-                    <Input
-                        id="end_date"
-                        type="date"
-                        label="End Date"
-                        value={data.end_date}
-                        onChange={(e) =>
-                            handleInputChange("end_date", e.target.value)
-                        }
-                        className="w-full"
-                        required
-                        min={
-                            data.start_date ||
-                            new Date().toISOString().split("T")[0]
-                        }
-                    />
-                    {errors.end_date && (
-                        <p className="text-sm text-danger">{errors.end_date}</p>
-                    )}
-                </div>
+                {/* End Date - Only for Multiple Days */}
+                {data.duration_type === "multiple_days" && (
+                    <div className="space-y-2">
+                        <Input
+                            id="end_date"
+                            type="date"
+                            label="End Date"
+                            value={data.end_date}
+                            onChange={(e) => setData("end_date", e.target.value)}
+                            className="w-full"
+                            required
+                            min={data.start_date || new Date().toISOString().split("T")[0]}
+                        />
+                        {errors.end_date && (
+                            <p className="text-sm text-danger">
+                                {errors.end_date}
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                {/* Half Day Period Selection */}
+                {data.duration_type === "half_day" && (
+                    <div className="space-y-2">
+                        <Label
+                            htmlFor="half_day_period"
+                            className="text-sm font-medium dark:text-gray-700"
+                        >
+                            Period <span className="text-danger">*</span>
+                        </Label>
+                        <div className="flex space-x-4">
+                            <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="half_day_period"
+                                    value="am"
+                                    checked={data.half_day_period === "am"}
+                                    onChange={() =>
+                                        setData("half_day_period", "am")
+                                    }
+                                    className="form-radio h-4 w-4 text-primary"
+                                />
+                                <span className="text-sm text-gray-700">
+                                    Morning (AM)
+                                </span>
+                            </label>
+                            <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="half_day_period"
+                                    value="pm"
+                                    checked={data.half_day_period === "pm"}
+                                    onChange={() =>
+                                        setData("half_day_period", "pm")
+                                    }
+                                    className="form-radio h-4 w-4 text-primary"
+                                />
+                                <span className="text-sm text-gray-700">
+                                    Afternoon (PM)
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                )}
 
                 {/* Leave Type */}
                 <div className="space-y-2">

@@ -30,7 +30,6 @@
                 <th>End Date</th>
                 <th>Days</th>
                 <th>Status</th>
-                <th>Reason</th>
             </tr>
         </thead>
         <tbody>
@@ -42,7 +41,6 @@
                 <td>{{ $leave->end_date->format('Y-m-d') }}</td>
                 <td>{{ $leave->days_requested }}</td>
                 <td class="status-{{ $leave->status }}">{{ ucfirst($leave->status) }}</td>
-                <td>{{ $leave->reason }}</td>
             </tr>
             @endforeach
         </tbody>

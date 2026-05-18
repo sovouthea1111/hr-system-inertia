@@ -16,7 +16,10 @@ interface LeaveApplication {
     leave_type: string;
     start_date: string;
     end_date: string;
-    days_requested: number;
+    duration_type: "half_day" | "multiple_days";
+    half_day_period: "am" | "pm" | "";
+    is_last_day_half: boolean;
+    days_requested: number | string;
     reason: string;
     image: string;
     status: "pending" | "approved" | "rejected";
@@ -149,42 +152,29 @@ export default function ViewPage({ leave, auth }: ViewPageProps) {
                         </div>
                         <div>
                             <label className="text-sm font-medium text-gray-600">
-                                Days Requested
+                                Duration
                             </label>
                             <p className="text-card-foreground">
-                                {leave.days_requested} days
+                                {typeof leave.days_requested === "string"
+                                    ? leave.days_requested
+                                    : `${leave.days_requested}${
+                                          (leave.days_requested as number) %
+                                              1 ===
+                                          0
+                                              ? "Half"
+                                              : ""
+                                      } Days`}
                             </p>
                         </div>
                         <div>
                             <label className="text-sm font-medium text-gray-600">
-                                Start Date
+                                Date
                             </label>
                             <p className="text-card-foreground">
                                 {formatDate(leave.start_date)}
                             </p>
                         </div>
-                        <div>
-                            <label className="text-sm font-medium text-gray-600">
-                                End Date
-                            </label>
-                            <p className="text-card-foreground">
-                                {formatDate(leave.end_date)}
-                            </p>
-                        </div>
                     </div>
-                </div>
-
-                {/* Reason */}
-                <div className="border border-border-card bg-card rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <FileText className="w-5 h-5 text-gray-600" />
-                        <h4 className="font-medium text-card-foreground">
-                            Reason
-                        </h4>
-                    </div>
-                    <p className="text-card-foreground whitespace-pre-wrap">
-                        {leave.reason}
-                    </p>
                 </div>
 
                 {/* Application Date */}

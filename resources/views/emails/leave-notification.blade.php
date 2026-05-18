@@ -25,16 +25,18 @@
                 <td class="py-2 px-4">{{ ucfirst($leave->leave_type) }} Leave</td>
             </tr>
             <tr class="bg-gray-50">
-                <th class="py-2 px-4 font-semibold">Start Date</th>
+                <th class="py-2 px-4 font-semibold">Date</th>
                 <td class="py-2 px-4">{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }}</td>
             </tr>
             <tr>
-                <th class="py-2 px-4 font-semibold">End Date</th>
-                <td class="py-2 px-4">{{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
-            </tr>
-            <tr class="bg-gray-50">
-                <th class="py-2 px-4 font-semibold">Total Days</th>
-                <td class="py-2 px-4">{{ $leaveDays }} {{ $leaveDays > 1 ? 'days' : 'day' }}</td>
+                <th class="py-2 px-4 font-semibold">Duration</th>
+                <td class="py-2 px-4">
+                    @if($leave->duration_type === 'half_day')
+                        Half Day ({{ strtoupper($leave->half_day_period) }})
+                    @else
+                        {{ $leave->days_requested }} Days
+                    @endif
+                </td>
             </tr>
             <tr>
                 <th class="py-2 px-4 font-semibold">Reason</th>
