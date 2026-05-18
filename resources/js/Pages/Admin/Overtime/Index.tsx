@@ -500,6 +500,7 @@ export default function OvertimeIndex() {
                                 size="sm"
                                 onClick={handleExportPDF}
                                 disabled={!hasApprovedOvertimes}
+                                className="border-border-card"
                             >
                                 <FileText className="h-4 w-4 mr-2" />
                                 Export PDF

@@ -106,7 +106,7 @@ function Calendar({
             days.push(
                 <button
                     key={`prev-${day}`}
-                    className="h-8 w-8 text-sm text-gray-400 hover:bg-gray-100 rounded"
+                    className="h-8 w-8 text-sm text-muted-foreground/50 hover:bg-muted rounded"
                     onClick={() => {
                         const newDate = new Date(
                             prevMonth.getFullYear(),
@@ -134,10 +134,10 @@ function Calendar({
                 <button
                     key={day}
                     onClick={() => handleDateClick(day)}
-                    className={`h-8 w-8 text-sm rounded hover:bg-gray-100 ${
+                    className={`h-8 w-8 text-sm rounded hover:bg-muted ${
                         isSelected
-                            ? "bg-blue-500 text-white hover:bg-blue-600"
-                            : "text-gray-700"
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                            : "text-foreground"
                     }`}
                 >
                     {day}
@@ -151,7 +151,7 @@ function Calendar({
             days.push(
                 <button
                     key={`next-${day}`}
-                    className="h-8 w-8 text-sm text-gray-400 hover:bg-gray-100 rounded"
+                    className="h-8 w-8 text-sm text-muted-foreground/50 hover:bg-muted rounded"
                     onClick={() => {
                         const nextMonth = new Date(
                             viewDate.getFullYear(),
@@ -177,9 +177,9 @@ function Calendar({
     );
 
     return (
-        <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="p-3 bg-background rounded-lg shadow-sm border border-border-card">
             {/* Month and Year selectors */}
-            <div className="flex gap-2 mb-4 bg-gray-50/50 p-2 rounded-md">
+            <div className="flex gap-2 mb-4 bg-muted/50 p-2 rounded-md">
                 <select
                     value={viewDate.getMonth()}
                     onChange={(e) =>
@@ -187,8 +187,8 @@ function Calendar({
                     }
                     disabled={disableMonthSelection}
                     className={cn(
-                        "flex-1 text-sm bg-white border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer appearance-none",
-                        disableMonthSelection && "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                        "flex-1 text-sm bg-background border border-border-card rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer appearance-none",
+                        disableMonthSelection && "bg-muted text-muted-foreground/50 cursor-not-allowed opacity-60"
                     )}
                 >
                     {months.map((month, index) => (
@@ -197,14 +197,13 @@ function Calendar({
                         </option>
                     ))}
                 </select>
-
                 <select
                     value={viewDate.getFullYear()}
                     onChange={(e) => handleYearChange(parseInt(e.target.value))}
                     disabled={disableYearSelection}
                     className={cn(
-                        "flex-1 text-sm bg-white border border-gray-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer appearance-none",
-                        disableYearSelection && "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                        "flex-1 text-sm bg-background border border-border rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer appearance-none",
+                        disableYearSelection && "bg-muted text-muted-foreground/50 cursor-not-allowed opacity-60"
                     )}
                 >
                     {years.map((year) => (
@@ -222,7 +221,7 @@ function Calendar({
                         key={day}
                         className="h-8 flex items-center justify-center"
                     >
-                        <span className="text-sm font-medium text-gray-500">
+                        <span className="text-sm font-medium text-muted-foreground">
                             {day}
                         </span>
                     </div>
@@ -296,7 +295,7 @@ export function GroupFilter({
     return (
         <div
             className={cn(
-                "border border-border rounded-xl bg-card shadow-sm hover:shadow-md transition-all duration-200",
+                "border border-border-card rounded-xl bg-card shadow-sm hover:shadow-md transition-all duration-200",
                 className
             )}
         >
@@ -356,7 +355,7 @@ export function GroupFilter({
                                                 onFieldChange(field.id, value)
                                             }
                                         >
-                                            <SelectTrigger className="h-11 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md">
+                                            <SelectTrigger className="h-11 border-border-card focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md">
                                                 <SelectValue
                                                     placeholder={
                                                         field.placeholder
@@ -389,7 +388,7 @@ export function GroupFilter({
                                                 <Button
                                                     variant="outline"
                                                     className={cn(
-                                                        "h-11 w-full justify-start text-left font-normal border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md",
+                                                        "h-11 w-full justify-start text-left font-normal border-border-card focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md",
                                                         !field.dateValue &&
                                                             "text-muted-foreground"
                                                     )}
@@ -424,7 +423,7 @@ export function GroupFilter({
                                                     disableMonthSelection={field.disableMonthSelection}
                                                     disableYearSelection={field.disableYearSelection}
                                                 />
-                                                <div className="flex justify-end mt-3 pt-3 border-t border-border px-3 pb-3">
+                                                <div className="flex justify-end mt-3 pt-3 border-t border-border-card px-3 pb-3">
                                                     <Button
                                                         size="sm"
                                                         onClick={() =>
@@ -450,7 +449,7 @@ export function GroupFilter({
                                                     e.target.value
                                                 )
                                             }
-                                            className="h-11 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md"
+                                            className="h-11 border-border-card focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-200 bg-background shadow-sm hover:shadow-md"
                                         />
                                     )}
                                 </div>
@@ -463,7 +462,7 @@ export function GroupFilter({
                                         variant="outline"
                                         size="sm"
                                         onClick={onClear}
-                                        className="h-11 flex items-center gap-2 text-muted-foreground hover:text-destructive hover:border-destructive hover:bg-destructive/10 transition-all duration-200 rounded-lg px-4"
+                                        className="h-11 flex items-center gap-2 text-muted-foreground border-border-card hover:text-destructive hover:border-destructive hover:bg-destructive/10 transition-all duration-200 rounded-lg px-4"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                         Clear All
