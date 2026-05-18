@@ -49,7 +49,10 @@ interface LeaveApplication {
     leave_type: string;
     start_date: string;
     end_date: string;
-    days_requested: number;
+    duration_type: "half_day" | "multiple_days";
+    half_day_period: "am" | "pm" | "";
+    is_last_day_half: boolean;
+    days_requested: number | string;
     reason: string;
     image: string;
     status: "pending" | "approved" | "rejected";
@@ -453,9 +456,8 @@ export default function LeaveApplicationsPage() {
                                         <TableRow>
                                             <TableHead>Employee</TableHead>
                                             <TableHead>Leave Type</TableHead>
-                                            <TableHead>Start Date</TableHead>
-                                            <TableHead>End Date</TableHead>
-                                            <TableHead>Days</TableHead>
+                                            <TableHead>Date Range</TableHead>
+                                            <TableHead>Duration</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead>Applied Date</TableHead>
                                             <TableHead className="text-center">
@@ -496,13 +498,19 @@ export default function LeaveApplicationsPage() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-muted-foreground">
-                                                            {formatDate(application.start_date)}
+                                                            {application.start_date === application.end_date
+                                                                ? `${formatDate(application.start_date)}- ${formatDate(application.start_date)}`
+                                                                : `${formatDate(application.start_date)} - ${formatDate(application.end_date)}`}
                                                         </TableCell>
                                                         <TableCell className="text-muted-foreground">
-                                                            {formatDate(application.end_date)}
-                                                        </TableCell>
-                                                        <TableCell className="text-muted-foreground">
-                                                            {application.days_requested}
+                                                            {typeof application.days_requested === "string"
+                                                                ? application.days_requested
+                                                                : `${application.days_requested}${
+                                                                      (application.days_requested as number) %
+                                                                          1 ===0
+                                                                          ? ""
+                                                                          : "Haft"
+                                                                  } Days`}
                                                         </TableCell>
                                                         <TableCell>
                                                             {isHROrSuperAdmin && application.status === "pending" ? (
@@ -552,6 +560,8 @@ export default function LeaveApplicationsPage() {
                                                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
                                                                     {application.status === "approved" ? (
                                                                         <CheckCircle className="w-4 h-4 text-success" />
+                                                                    ) : application.status === "pending" ? (
+                                                                        <Clock className="w-4 h-4 text-warning" />
                                                                     ) : (
                                                                         <XCircle className="w-4 h-4 text-danger" />
                                                                     )}
@@ -652,24 +662,24 @@ export default function LeaveApplicationsPage() {
                                                     </MobileField>
 
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <MobileField label="Start Date">
-                                                            <span className="text-sm text-muted-foreground">
-                                                                {formatDate(application.start_date)}
-                                                            </span>
-                                                        </MobileField>
-                                                        <MobileField label="End Date">
-                                                            <span className="text-sm text-muted-foreground">
-                                                                {formatDate(application.end_date)}
+                                                        <MobileField label="Date Range">
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {application.start_date === application.end_date
+                                                                ? `${formatDate(application.start_date)} - ${formatDate(application.start_date)}`
+                                                                : `${formatDate(application.start_date)} - ${formatDate(application.end_date)}`}
+                                                        </span>
+                                                    </MobileField>
+                                                        <MobileField label="Duration">
+                                                            <span className="text-sm font-medium">
+                                                                {application.duration_type === "half_day" 
+                                                                    ? `Haft Day(${application.half_day_period?.toUpperCase()})` 
+                                                                    : `${application.days_requested} Days`}
+                                                    
                                                             </span>
                                                         </MobileField>
                                                     </div>
 
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <MobileField label="Days Requested">
-                                                            <span className="text-sm font-medium">
-                                                                {application.days_requested}
-                                                            </span>
-                                                        </MobileField>
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         <MobileField label="Applied Date">
                                                             <span className="text-sm text-muted-foreground">
                                                                 {formatDate(application.applied_date)}

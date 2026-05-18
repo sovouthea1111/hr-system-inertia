@@ -38,8 +38,8 @@ class LeaveApplicationNotification extends Mailable
             with: [
                 'leave' => $this->leave,
                 'employee' => $this->employee,
-                'leaveDays' => \Carbon\Carbon::parse($this->leave->start_date)
-                    ->diffInDays(\Carbon\Carbon::parse($this->leave->end_date)) + 1
+                'leaveDays' => $this->leave->duration_type === 'half_day' ? 0.5 : (\Carbon\Carbon::parse($this->leave->start_date)
+                    ->diffInDays(\Carbon\Carbon::parse($this->leave->end_date)) + 1)
             ]
         );
     }

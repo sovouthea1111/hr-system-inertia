@@ -49,7 +49,10 @@ interface LeaveApplication {
     leave_type: string;
     start_date: string;
     end_date: string;
-    days_requested: number;
+    duration_type: "half_day" | "multiple_days";
+    half_day_period: "am" | "pm" | "";
+    is_last_day_half: boolean;
+    days_requested: number | string;
     reason: string;
     image: string;
     status: "pending" | "approved" | "rejected";
@@ -448,9 +451,8 @@ export default function HRLeaveIndex() {
                                     <TableRow>
                                         <TableHead>Employee</TableHead>
                                         <TableHead>Leave Type</TableHead>
-                                        <TableHead>Start Date</TableHead>
-                                        <TableHead>End Date</TableHead>
-                                        <TableHead>Days</TableHead>
+                                        <TableHead>Date Range</TableHead>
+                                        <TableHead>Duration</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Applied Date</TableHead>
                                         <TableHead className="text-center">
@@ -497,20 +499,21 @@ export default function HRLeaveIndex() {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="text-muted-foreground">
-                                                        {formatDate(
-                                                            application.start_date
-                                                        )}
+                                                        {application.start_date === application.end_date
+                                                            ? formatDate(application.start_date)
+                                                            : `${formatDate(application.start_date)} - ${formatDate(application.end_date)}`}
                                                     </TableCell>
                                                     <TableCell className="text-muted-foreground">
-                                                        {formatDate(
-                                                            application.end_date
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {
-                                                            application.days_requested
-                                                        }
-                                                    </TableCell>
+                                                            {typeof application.days_requested === "string"
+                                                                ? application.days_requested
+                                                                : `${application.days_requested}${
+                                                                      (application.days_requested as number) %
+                                                                          1 ===
+                                                                      0
+                                                                          ? ".0"
+                                                                          : ""
+                                                                  } Days`}
+                                                        </TableCell>
                                                     <TableCell>
                                                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground">
                                                             {application.status ===
@@ -636,19 +639,18 @@ export default function HRLeaveIndex() {
                                                 {application.leave_type}
                                             </Badge>
                                         </MobileField>
-                                        <MobileField label="Start Date">
+                                        <MobileField label="Date Range">
                                             <span className="text-sm">
-                                                {formatDate(application.start_date)}
+                                                {application.start_date === application.end_date
+                                                    ? formatDate(application.start_date)
+                                                    : `${formatDate(application.start_date)} - ${formatDate(application.end_date)}`}
                                             </span>
                                         </MobileField>
-                                        <MobileField label="End Date">
-                                            <span className="text-sm">
-                                                {formatDate(application.end_date)}
-                                            </span>
-                                        </MobileField>
-                                        <MobileField label="Days Requested">
+                                        <MobileField label="Duration">
                                             <span className="text-sm font-medium">
-                                                {application.days_requested}
+                                                {application.duration_type === "half_day" 
+                                                    ? `0.5 (${application.half_day_period?.toUpperCase()})` 
+                                                    : "1.0 (Full Day)"}
                                             </span>
                                         </MobileField>
                                         <MobileField label="Applied Date">

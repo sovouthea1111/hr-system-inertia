@@ -84,6 +84,9 @@ class LeaveController extends Controller
             'employee_id' => 'required|exists:employees,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'duration_type' => 'required|in:half_day,multiple_days',
+            'half_day_period' => 'nullable|required_if:duration_type,half_day|in:am,pm',
+            'is_last_day_half' => 'nullable|boolean',
             'leave_type' => 'required|string',
             'reason' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -102,7 +105,12 @@ class LeaveController extends Controller
 
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
-            $daysRequested = $startDate->diffInDays($endDate) + 1;
+            
+            $days = $startDate->diffInDays($endDate) + 1;
+            
+            $daysRequested = $validated['duration_type'] === 'half_day' 
+                ? 0.5 
+                : ($validated['is_last_day_half'] ? $days - 0.5 : $days);
 
             if (!Leave::canTakeLeave($validated['employee_id'], $validated['leave_type'], $daysRequested, $startDate->year)) {
                 $balance = Leave::getRemainingBalance($validated['employee_id'], $validated['leave_type'], $startDate->year);
@@ -244,6 +252,9 @@ class LeaveController extends Controller
             'employee_id' => 'required|exists:employees,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'duration_type' => 'required|in:half_day,multiple_days',
+            'half_day_period' => 'nullable|required_if:duration_type,half_day|in:am,pm',
+            'is_last_day_half' => 'nullable|boolean',
             'leave_type' => 'required|string',
             'reason' => 'required|string',
             'status' => 'required|string',
@@ -317,7 +328,10 @@ class LeaveController extends Controller
             'leave_type' => $leave->leave_type,
             'start_date' => $leave->start_date ? $leave->start_date->format('Y-m-d') : '',
             'end_date' => $leave->end_date ? $leave->end_date->format('Y-m-d') : '',
-            'days_requested' => $leave->days_requested,
+            'days_requested' => $leave->duration_type === 'half_day' ? 'Half Day' : $leave->days_requested,
+            'duration_type' => $leave->duration_type,
+            'half_day_period' => $leave->half_day_period,
+            'is_last_day_half' => $leave->is_last_day_half,
             'reason' => $leave->reason,
             'status' => $leave->status,
             'image' => $leave->image ? asset('images/' . $leave->image) : null,

@@ -22,6 +22,9 @@ class Leave extends Model
     "image",
     "hr_notification_read",
     "employee_notification_read",
+    "duration_type",
+    "half_day_period",
+    "is_last_day_half",
   ];
 
   protected $casts = [
@@ -29,6 +32,7 @@ class Leave extends Model
     "end_date" => "date",
     "hr_notification_read" => "boolean",
     "employee_notification_read" => "boolean",
+    "is_last_day_half" => "boolean",
   ];
 
   // Add scopes for unread notifications
@@ -120,7 +124,18 @@ class Leave extends Model
     if (!$this->start_date || !$this->end_date) {
       return 0;
     }
-    return $this->start_date->diff($this->end_date)->days + 1;
+    
+    $days = $this->start_date->diff($this->end_date)->days + 1;
+
+    if ($this->duration_type === 'half_day') {
+      return 0.5;
+    }
+
+    if ($this->is_last_day_half) {
+      return $days - 0.5;
+    }
+
+    return $days;
   }
 
   public function getStatusBadgeAttribute()
@@ -160,13 +175,11 @@ class Leave extends Model
     $approvedLeaves = static::where("employee_id", $employeeId)
       ->where("status", "approved")
       ->whereYear("start_date", $year)
-      ->get(["leave_type", "start_date", "end_date"])
+      ->get(["leave_type", "start_date", "end_date", "duration_type"])
       ->groupBy("leave_type")
       ->map(
         fn($leaves) => $leaves->sum(
-          fn($leave) => Carbon::parse($leave->start_date)->diffInDays(
-            Carbon::parse($leave->end_date)
-          ) + 1
+          fn($leave) => $leave->days_requested
         )
       );
 
@@ -231,18 +244,30 @@ class Leave extends Model
     $employeeId,
     $startDate,
     $endDate,
-    $excludeId = null
+    $excludeId = null,
+    $durationType = 'full_day',
+    $halfDayPeriod = null
   ) {
     $query = static::where("employee_id", $employeeId)
       ->where("status", "!=", "rejected")
-      ->where(function ($q) use ($startDate, $endDate) {
-        $q->whereBetween("start_date", [$startDate, $endDate])
-          ->orWhereBetween("end_date", [$startDate, $endDate])
-          ->orWhere(function ($q2) use ($startDate, $endDate) {
-            $q2
-              ->where("start_date", "<=", $startDate)
-              ->where("end_date", ">=", $endDate);
-          });
+      ->where(function ($q) use ($startDate, $endDate, $durationType, $halfDayPeriod) {
+        $q->where(function($sub) use ($startDate, $endDate) {
+          $sub->whereBetween("start_date", [$startDate, $endDate])
+            ->orWhereBetween("end_date", [$startDate, $endDate])
+            ->orWhere(function ($q2) use ($startDate, $endDate) {
+              $q2
+                ->where("start_date", "<=", $startDate)
+                ->where("end_date", ">=", $endDate);
+            });
+        });
+
+        // If it's a half day, it only overlaps with full days or same-period half days
+        if ($durationType === 'half_day') {
+            $q->where(function($sub) use ($halfDayPeriod) {
+                $sub->where('duration_type', 'full_day')
+                    ->orWhere('half_day_period', $halfDayPeriod);
+            });
+        }
       });
 
     if ($excludeId) {
