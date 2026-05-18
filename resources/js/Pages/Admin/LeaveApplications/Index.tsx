@@ -421,6 +421,7 @@ export default function LeaveApplicationsPage() {
                                 size="sm"
                                 onClick={handleExportPDF}
                                 disabled={!hasApprovedLeaves}
+                                className="border-border-card"
                             >
                                 <FileText className="h-4 w-4 mr-2" />
                                 Export PDF
