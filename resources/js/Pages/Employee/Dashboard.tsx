@@ -45,7 +45,10 @@ interface LeaveRequest {
     leave_type: string;
     start_date: string;
     end_date: string;
-    days_requested: number;
+    duration_type: "half_day" | "multiple_days";
+    half_day_period: "am" | "pm" | "";
+    is_last_day_half: boolean;
+    days_requested: number | string;
     status: string;
     reason?: string;
 }
@@ -385,9 +388,10 @@ export default function EmployeeDashboard() {
                                                     </Badge>
                                                 </div>
                                                 <p className="text-sm text-gray-600">
-                                                    {leave.start_date} to{" "}
-                                                    {leave.end_date} (
-                                                    {leave.days_requested} days)
+                                                    {leave.start_date} (
+                                                    {leave.duration_type === "half_day"
+                                                        ? "Half Day"
+                                                        : "Full Day"})
                                                 </p>
                                             </div>
                                         </div>
@@ -427,9 +431,10 @@ export default function EmployeeDashboard() {
                                                     </Badge>
                                                 </div>
                                                 <p className="text-sm text-gray-600">
-                                                    {leave.start_date} to{" "}
-                                                    {leave.end_date} (
-                                                    {leave.days_requested} days)
+                                                    {leave.start_date} (
+                                                    {leave.duration_type === "half_day" 
+                                                        ? `0.5 Day - ${leave.half_day_period?.toUpperCase()}` 
+                                                        : "1.0 Day - Full Day"})
                                                 </p>
                                             </div>
                                         </div>
