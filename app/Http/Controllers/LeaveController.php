@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Leave;
 use App\Models\Employee;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -132,6 +133,13 @@ class LeaveController extends Controller
             // Notify HR and SuperAdmin
             $hrUsers = User::whereIn('user_role', ['HR', 'SuperAdmin'])->get();
             Notification::send($hrUsers, new LeaveNotification($leave, 'leave_request', "New leave request from {$employee->first_name} {$employee->last_name}"));
+            ActivityLogger::log(
+                'created',
+                'leaves',
+                $leave,
+                'Created leave request.',
+                ['leave' => $leave->only(['id', 'employee_id', 'leave_type', 'start_date', 'end_date', 'status'])]
+            );
 
             try {
                 $employee = Employee::find($validated['employee_id']);
@@ -280,6 +288,15 @@ class LeaveController extends Controller
             }
 
             $leaf->update($validated);
+            $changes = ActivityLogger::changes($leaf);
+
+            ActivityLogger::log(
+                'updated',
+                'leaves',
+                $leaf,
+                "Updated leave request #{$leaf->id}.",
+                $changes
+            );
 
             return back()->with('success', 'Leave application updated successfully!');
         } catch (\Exception $e) {
@@ -294,6 +311,13 @@ class LeaveController extends Controller
                 @unlink(public_path(self::IMAGE_PATH . '/' . $leaf->image));
             }
             $leaf->delete();
+            ActivityLogger::log(
+                'deleted',
+                'leaves',
+                $leaf,
+                "Deleted leave request #{$leaf->id}.",
+                ['leave' => $leaf->only(['id', 'employee_id', 'leave_type', 'start_date', 'end_date', 'status'])]
+            );
             return back()->with('success', 'Leave application deleted successfully!');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete leave application.']);
@@ -311,6 +335,20 @@ class LeaveController extends Controller
                 'status' => $validated['status'],
                 'approved_by' => Auth::id(),
             ]);
+
+            $action = match ($validated['status']) {
+                'approved' => 'approved',
+                'rejected' => 'rejected',
+                default => 'updated',
+            };
+
+            ActivityLogger::log(
+                $action,
+                'leaves',
+                $leave,
+                ucfirst($validated['status']) . " leave request #{$leave->id}.",
+                ['status' => $validated['status']]
+            );
 
             return back()->with('success', 'Leave status updated successfully!');
         } catch (\Exception $e) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Employee;
+use App\Services\ActivityLogger;
 use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -67,6 +68,14 @@ class UserController extends Controller
                 $employee->update(['user_id' => $user->id]);
             }
 
+            ActivityLogger::log(
+                'created',
+                'users',
+                $user,
+                "Created user {$user->name}.",
+                ['user' => $user->only(['id', 'name', 'email', 'user_role'])]
+            );
+
             return back()->with([
                 'success' => 'User created successfully.',
                 'user' => $user
@@ -90,9 +99,11 @@ class UserController extends Controller
         
         try {
             $updateData = $this->prepareUpdateData($request, $validatedData);
+            $changes = [];
             
-            DB::transaction(function () use ($user, $updateData) {
+            DB::transaction(function () use ($user, $updateData, &$changes) {
                 $user->update($updateData);
+                $changes = ActivityLogger::changes($user);
 
                 if ($user->employee) {
                     $user->employee->update([
@@ -101,6 +112,14 @@ class UserController extends Controller
                     ]);
                 }
             });
+
+            ActivityLogger::log(
+                'updated',
+                'users',
+                $user,
+                "Updated user {$user->name}.",
+                $changes
+            );
 
             return back()->with([
                 'success' => 'User updated successfully.',
@@ -126,6 +145,13 @@ class UserController extends Controller
                 }
                 $user->delete();
             });
+            ActivityLogger::log(
+                'deleted',
+                'users',
+                $user,
+                "Deleted user {$user->name}.",
+                ['user' => $user->only(['id', 'name', 'email', 'user_role'])]
+            );
             return back()->with('success', 'User and associated employee record deleted successfully.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete user: ' . $e->getMessage()]);
@@ -150,6 +176,13 @@ class UserController extends Controller
                 Employee::whereIn('user_id', $validUserIds)->delete();
                 return User::whereIn('id', $validUserIds)->delete();
             });
+            ActivityLogger::log(
+                'bulk_deleted',
+                'users',
+                null,
+                "Bulk deleted {$deletedCount} user(s).",
+                ['user_ids' => array_values($validUserIds), 'deleted_count' => $deletedCount]
+            );
             return back()->with('success', "Successfully deleted {$deletedCount} user(s) and associated employee records.");
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete users: ' . $e->getMessage()]);

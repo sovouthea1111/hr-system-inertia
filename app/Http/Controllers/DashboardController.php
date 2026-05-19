@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Leave;
 use App\Models\User;
+use App\Models\UserActivity;
 use App\Traits\HasEmployee;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -97,12 +98,27 @@ class DashboardController extends Controller
                 'start_date' => $leave->start_date->format('Y-m-d'),
                 'end_date' => $leave->end_date->format('Y-m-d'),
             ]);
+
+        $recentActivities = UserActivity::query()
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn($activity) => [
+                'id' => $activity->id,
+                'user_name' => $activity->user_name ?? 'System',
+                'user_role' => $activity->user_role ?? 'N/A',
+                'action' => $activity->action,
+                'module' => $activity->module,
+                'description' => $activity->description,
+                'created_at' => $activity->created_at->diffForHumans(),
+            ]);
     
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
             'recentLeaveRequests' => $recentLeaveRequests,
             'departmentStats' => $departmentStats,
             'onLeaveSummary' => $onLeaveSummary,
+            'recentActivities' => $recentActivities,
         ]);
     }
     

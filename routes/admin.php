@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // User Management - Resource Routes
     Route::resource('users', UserController::class);
     Route::delete('users-bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
-    
+
     // Employee Management - Resource Routes
     Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
     Route::delete('employees/{id}/force-delete', [EmployeeController::class, 'forceDelete'])->name('employees.force-delete');

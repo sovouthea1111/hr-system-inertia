@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Overtime;
 use App\Models\User;
 use App\Mail\OvertimeNotification;
+use App\Services\ActivityLogger;
 use App\Traits\HasEmployee;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -203,6 +204,14 @@ class OvertimeController extends Controller
                 'total_amount' => $totalHours * $validatedData['hourly_rate']
             ]);
 
+            ActivityLogger::log(
+                'created',
+                'overtime',
+                $overtime,
+                "Created overtime request #{$overtime->id}.",
+                ['overtime' => $overtime->only(['id', 'employee_id', 'overtime_date', 'overtime_type', 'hours_worked', 'status'])]
+            );
+
             try {
                 $superAdmin = User::where('user_role', 'SuperAdmin')->first();
                 $hrEmails = User::where('user_role', 'HR')->pluck('email')->toArray();
@@ -240,6 +249,17 @@ class OvertimeController extends Controller
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now()
         ]);
+
+        ActivityLogger::log(
+            $validatedData['status'] === 'approved' ? 'approved' : 'rejected',
+            'overtime',
+            $overtime,
+            ucfirst($validatedData['status']) . " overtime request #{$overtime->id}.",
+            [
+                'status' => $validatedData['status'],
+                'hr_comments' => $validatedData['hr_comments'] ?? null,
+            ]
+        );
 
         return back()->with('success', 'Overtime status updated successfully!');
     }
@@ -285,6 +305,14 @@ class OvertimeController extends Controller
                 'total_amount' => $totalAmount
             ]);
 
+            ActivityLogger::log(
+                'updated',
+                'overtime',
+                $overtime,
+                "Updated overtime request #{$overtime->id}.",
+                ActivityLogger::changes($overtime)
+            );
+
             return back()->with('success', 'Overtime record updated successfully!');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to update overtime record. Please try again.']);
@@ -298,6 +326,14 @@ class OvertimeController extends Controller
         }
 
         $overtime->delete();
+        ActivityLogger::log(
+            'deleted',
+            'overtime',
+            $overtime,
+            "Deleted overtime request #{$overtime->id}.",
+            ['overtime' => $overtime->only(['id', 'employee_id', 'overtime_date', 'overtime_type', 'status'])]
+        );
+
         return back()->with('success', 'Overtime record deleted successfully!');
     }
 
@@ -339,6 +375,14 @@ class OvertimeController extends Controller
             ]);
 
             $deletedCount = Overtime::whereIn('id', $request->ids)->delete();
+
+            ActivityLogger::log(
+                'bulk_deleted',
+                'overtime',
+                null,
+                "Bulk deleted {$deletedCount} overtime record(s).",
+                ['overtime_ids' => $request->ids, 'deleted_count' => $deletedCount]
+            );
 
             return back()->with(['success' => "Successfully deleted {$deletedCount} overtime record(s)."]);
         } catch (\Exception $e) {
