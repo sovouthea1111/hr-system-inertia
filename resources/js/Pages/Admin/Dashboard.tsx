@@ -45,6 +45,16 @@ interface OnLeaveSummary {
     end_date: string;
 }
 
+interface RecentActivity {
+    id: number;
+    user_name: string;
+    user_role: string;
+    action: string;
+    module: string;
+    description: string | null;
+    created_at: string;
+}
+
 interface PageProps {
     stats?: {
         total_employees: number;
@@ -56,6 +66,7 @@ interface PageProps {
     recentLeaveRequests?: LeaveRequest[];
     departmentStats?: DepartmentStat[];
     onLeaveSummary?: OnLeaveSummary[];
+    recentActivities?: RecentActivity[];
     [key: string]: any;
 }
 
@@ -68,8 +79,13 @@ interface LeaveRequest {
 
 export default function AdminDashboard() {
     const pageProps = usePage<PageProps & { auth: any }>().props;
-    const { stats, recentLeaveRequests, departmentStats, onLeaveSummary } =
-        pageProps;
+    const {
+        stats,
+        recentLeaveRequests,
+        departmentStats,
+        onLeaveSummary,
+        recentActivities,
+    } = pageProps;
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [commentModal, setCommentModal] = useState<{
         request: LeaveRequest;
@@ -88,6 +104,7 @@ export default function AdminDashboard() {
 
     const safeDepartmentStats = departmentStats || [];
     const safeOnLeaveSummary = onLeaveSummary || [];
+    const safeRecentActivities = recentActivities || [];
 
     const safeRecentLeaveRequests = recentLeaveRequests || [];
     const statsData = [
@@ -172,6 +189,46 @@ export default function AdminDashboard() {
         } finally {
             setIsProcessing(null);
         }
+    };
+
+    const formatLabel = (value: string) =>
+        value
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+
+    const getActionBadgeClass = (action: string) => {
+        const normalizedAction = action.toLowerCase();
+
+        if (
+            normalizedAction.includes("create") ||
+            normalizedAction.includes("add")
+        ) {
+            return "bg-emerald-500";
+        }
+
+        if (
+            normalizedAction.includes("update") ||
+            normalizedAction.includes("edit")
+        ) {
+            return "bg-blue-500";
+        }
+
+        if (
+            normalizedAction.includes("delete") ||
+            normalizedAction.includes("remove")
+        ) {
+            return "bg-red-500";
+        }
+
+        if (normalizedAction.includes("approve")) {
+            return "bg-green-500";
+        }
+
+        if (normalizedAction.includes("reject")) {
+            return "bg-orange-500";
+        }
+
+        return "bg-slate-400";
     };
 
     return (
@@ -381,48 +438,121 @@ export default function AdminDashboard() {
                         </Card>
                     </div>
 
-                    {/* On Leave Summary Section */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>On Leave Today</CardTitle>
-                            <CardDescription>
-                                Employees currently away for task coordination
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {safeOnLeaveSummary.length > 0 ? (
-                                    safeOnLeaveSummary.map((leave) => (
-                                        <div
-                                            key={leave.id}
-                                            className="p-4 border rounded-lg flex flex-col gap-1 bg-blue-50/50 border-blue-100"
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="font-semibold text-sm">
-                                                        {leave.name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {leave.department}
-                                                    </p>
+                    <div className="grid gap-6 lg:grid-cols-12">
+                        {/* On Leave Summary Section */}
+                        <Card className="lg:col-span-7">
+                            <CardHeader>
+                                <CardTitle>On Leave Today</CardTitle>
+                                <CardDescription>
+                                    Employees currently away for task
+                                    coordination
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    {safeOnLeaveSummary.length > 0 ? (
+                                        safeOnLeaveSummary.map((leave) => (
+                                            <div
+                                                key={leave.id}
+                                                className="p-4 border rounded-lg flex flex-col gap-1 bg-blue-50/50 border-blue-100"
+                                            >
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-semibold text-sm">
+                                                            {leave.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {leave.department}
+                                                        </p>
+                                                    </div>
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
+                                                        On Leave
+                                                    </span>
                                                 </div>
-                                                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
-                                                    On Leave
-                                                </span>
+                                                <p className="text-xs font-medium text-muted-foreground mt-1">
+                                                    {leave.leave_type}
+                                                </p>
                                             </div>
-                                            <p className="text-xs font-medium text-muted-foreground mt-1">
-                                                {leave.leave_type}
-                                            </p>
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
+                                            No employees currently on leave
+                                            today.
                                         </div>
-                                    ))
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="lg:col-span-5">
+                            <CardHeader className="pb-3">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <CardTitle>Recent Activity</CardTitle>
+                                        <CardDescription>
+                                            Latest actions completed in the
+                                            system
+                                        </CardDescription>
+                                    </div>
+                                    <span className="rounded-md border px-2 py-1 text-xs font-medium text-muted-foreground">
+                                        {safeRecentActivities.length}
+                                    </span>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {safeRecentActivities.length > 0 ? (
+                                    <div className="divide-y divide-border">
+                                        {safeRecentActivities.map((activity) => (
+                                            <div
+                                                key={activity.id}
+                                                className="flex gap-3 py-3 first:pt-0 last:pb-0"
+                                            >
+                                                <span
+                                                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${getActionBadgeClass(
+                                                        activity.action
+                                                    )}`}
+                                                />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex min-w-0 items-center justify-between gap-3">
+                                                        <p className="truncate text-sm font-medium text-foreground">
+                                                            {activity.description ||
+                                                                `${formatLabel(
+                                                                    activity.module
+                                                                )} activity`}
+                                                        </p>
+                                                        <span className="shrink-0 text-[11px] text-muted-foreground">
+                                                            {activity.created_at}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                                                        <span className="truncate">
+                                                            {activity.user_name}
+                                                        </span>
+                                                        <span>-</span>
+                                                        <span>
+                                                            {formatLabel(
+                                                                activity.action
+                                                            )}
+                                                        </span>
+                                                        <span>-</span>
+                                                        <span>
+                                                            {formatLabel(
+                                                                activity.module
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
-                                    <div className="col-span-full py-8 text-center text-muted-foreground text-sm">
-                                        No employees currently on leave today.
+                                    <div className="rounded-lg border border-dashed py-8 text-center text-sm text-muted-foreground">
+                                        No recent activity yet.
                                     </div>
                                 )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 {/* Comment Alert Dialog */}

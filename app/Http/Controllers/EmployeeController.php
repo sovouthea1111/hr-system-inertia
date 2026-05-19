@@ -6,6 +6,7 @@ use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
 use App\Models\Overtime;
+use App\Services\ActivityLogger;
 use App\Traits\HasEmployee;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -98,6 +99,14 @@ class EmployeeController extends Controller
                 $employee = Employee::create($data);
             });
 
+            ActivityLogger::log(
+                'created',
+                'employees',
+                $employee,
+                "Created employee {$employee->full_name}.",
+                ['employee' => $employee->only(['id', 'full_name', 'email', 'department', 'position', 'status'])]
+            );
+
             return back()->with([
                 'success' => 'Employee and User account created successfully.',
                 'employee' => $employee
@@ -117,10 +126,12 @@ class EmployeeController extends Controller
 
         try {
             $original_salary = $employee->salary;
+            $changes = [];
             
-            DB::transaction(function () use ($request, $employee) {
+            DB::transaction(function () use ($request, $employee, &$changes) {
                 $data = $request->validated();
                 $employee->update($data);
+                $changes = ActivityLogger::changes($employee);
                 
                 if ($employee->user) {
                     $employee->user->update([
@@ -153,6 +164,14 @@ class EmployeeController extends Controller
                 }
             }    
 
+            ActivityLogger::log(
+                'updated',
+                'employees',
+                $employee,
+                "Updated employee {$employee->full_name}.",
+                $changes
+            );
+
             return back()->with([
                 'success' => 'Employee updated successfully.',
                 'employee' => $employee->fresh()
@@ -181,6 +200,14 @@ class EmployeeController extends Controller
         try {
             $employee->delete();
 
+            ActivityLogger::log(
+                'deleted',
+                'employees',
+                $employee,
+                "Moved employee {$employee->full_name} to trash.",
+                ['employee' => $employee->only(['id', 'full_name', 'email'])]
+            );
+
             return back()->with([
                 'success' => 'Employee moved to trash successfully.'
             ]);
@@ -200,6 +227,14 @@ class EmployeeController extends Controller
             $employee = Employee::withTrashed()->findOrFail($id);
             $employee->restore();
 
+            ActivityLogger::log(
+                'restored',
+                'employees',
+                $employee,
+                "Restored employee {$employee->full_name}.",
+                ['employee' => $employee->only(['id', 'full_name', 'email'])]
+            );
+
             return back()->with([
                 'success' => 'Employee restored successfully.'
             ]);
@@ -217,6 +252,14 @@ class EmployeeController extends Controller
         try {
             $employee = Employee::withTrashed()->findOrFail($id);
             $employee->forceDelete();
+
+            ActivityLogger::log(
+                'force_deleted',
+                'employees',
+                $employee,
+                "Permanently deleted employee {$employee->full_name}.",
+                ['employee' => $employee->only(['id', 'full_name', 'email'])]
+            );
 
             return back()->with([
                 'success' => 'Employee permanently deleted.'
@@ -239,6 +282,14 @@ class EmployeeController extends Controller
             ]);
     
             $deletedCount = Employee::whereIn('id', $request->ids)->delete();
+
+            ActivityLogger::log(
+                'bulk_deleted',
+                'employees',
+                null,
+                "Bulk deleted {$deletedCount} employee(s).",
+                ['employee_ids' => $request->ids, 'deleted_count' => $deletedCount]
+            );
     
             return back()->with([
                 'success' => "Successfully deleted {$deletedCount} employee(s)."

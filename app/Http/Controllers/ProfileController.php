@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\ActivityLogger;
 use App\Traits\HasEmployee;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -33,6 +34,14 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        ActivityLogger::log(
+            'updated',
+            'users',
+            $request->user(),
+            'Updated own profile.',
+            ActivityLogger::changes($request->user())
+        );
+
         return to_route('profile.edit');
     }
 
@@ -41,6 +50,14 @@ class ProfileController extends Controller
         $request->validate(['password' => ['required', 'current_password']]);
 
         $user = $request->user();
+
+        ActivityLogger::log(
+            'deleted',
+            'users',
+            $user,
+            'Deleted own account.',
+            ['user' => $user->only(['id', 'name', 'email', 'user_role'])]
+        );
 
         Auth::logout();
 
